@@ -1,68 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Play, Pause, RotateCcw, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 
-export default function IFTimer() {
-  const [language, setLanguage] = useState('en');
-  const [selectedProgram, setSelectedProgram] = useState(null);
-  const [customHours, setCustomHours] = useState(16);
+export default function IFTimerMinimal() {
+  const [hours, setHours] = useState(16);
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [angle, setAngle] = useState(21); // Start at 16h
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasReachedMax, setHasReachedMax] = useState(false);
+  
+  const circleRef = useRef(null);
 
-  const translations = {
-    en: {
-      title: 'IF Timer',
-      subtitle: 'Simple Intermittent Fasting',
-      selectProgram: 'Choose your fasting program',
-      customDuration: 'Fasting duration in hours',
-      hours: 'Hours',
-      start: 'Start Fasting',
-      pause: 'Pause',
-      resume: 'Resume',
-      reset: 'Reset',
-      end: 'End',
-      clock: 'o\'clock',
-      completed: 'Congratulations! Fasting completed!',
-      completedDesc: 'successfully completed',
-      backToPrograms: '← Back to Programs',
-      programs: [
-        { id: '16-8', name: '16:8', hours: 16, desc: 'Classic - 16h fast, 8h eat' },
-        { id: '18-6', name: '18:6', hours: 18, desc: 'Intensive - 18h fast, 6h eat' },
-        { id: '20-4', name: '20:4', hours: 20, desc: 'Warrior - 20h fast, 4h eat' },
-        { id: '14-10', name: '14:10', hours: 14, desc: 'Gentle - 14h fast, 10h eat' },
-        { id: '23-1', name: '23:1 (OMAD)', hours: 23, desc: 'One Meal A Day' },
-        { id: 'custom', name: 'Custom', hours: null, desc: 'Your own duration' }
-      ]
-    },
-    de: {
-      title: 'IF Timer',
-      subtitle: 'Einfaches Intervall-Fasten',
-      selectProgram: 'Wähle dein Fasten-Programm',
-      customDuration: 'Fastendauer in Stunden',
-      hours: 'Stunden',
-      start: 'Fasten starten',
-      pause: 'Pausieren',
-      resume: 'Fortsetzen',
-      reset: 'Zurücksetzen',
-      end: 'Ende',
-      clock: 'Uhr',
-      completed: 'Glückwunsch! Fasten beendet!',
-      completedDesc: 'erfolgreich abgeschlossen',
-      backToPrograms: '← Zurück zu Programmen',
-      programs: [
-        { id: '16-8', name: '16:8', hours: 16, desc: 'Klassisch - 16h fasten, 8h essen' },
-        { id: '18-6', name: '18:6', hours: 18, desc: 'Intensiv - 18h fasten, 6h essen' },
-        { id: '20-4', name: '20:4', hours: 20, desc: 'Warrior - 20h fasten, 4h essen' },
-        { id: '14-10', name: '14:10', hours: 14, desc: 'Sanft - 14h fasten, 10h essen' },
-        { id: '23-1', name: '23:1 (OMAD)', hours: 23, desc: 'One Meal A Day' },
-        { id: 'custom', name: 'Individuell', hours: null, desc: 'Eigene Fastendauer' }
-      ]
-    }
-  };
-
-  const t = translations[language];
-
+  // Timer countdown
   useEffect(() => {
     let interval;
     if (isRunning && !isPaused && timeLeft > 0) {
@@ -80,7 +30,110 @@ export default function IFTimer() {
     return () => clearInterval(interval);
   }, [isRunning, isPaused, timeLeft]);
 
-  const startTimer = (hours) => {
+  // Handle mouse/touch drag
+  const handlePointerDown = (e) => {
+    if (isRunning) return;
+    e.preventDefault();
+    setIsDragging(true);
+    updateAngleFromEvent(e);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging || isRunning) return;
+    e.preventDefault();
+    updateAngleFromEvent(e);
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
+
+  const updateAngleFromEvent = (e) => {
+    if (!circleRef.current) return;
+    
+    const rect = circleRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    
+    if (!clientX || !clientY) return;
+    
+    const deltaX = clientX - centerX;
+    const deltaY = clientY - centerY;
+    
+    let newAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 90;
+    if (newAngle < 0) newAngle += 360;
+    
+    const maxAngle = 340; // ~48h (just before completing circle)
+    const startZone = 30;  // 12 o'clock region
+    
+    // Prevent going left (counter-clockwise) from start
+    // Block angles 181-359 unless already at max
+    if (newAngle > 180 && newAngle < maxAngle && !hasReachedMax) {
+      // Trying to go left side - block it
+      return;
+    }
+    
+    // Check if reached max (right side, near top)
+    if (newAngle >= maxAngle && !hasReachedMax) {
+      setHasReachedMax(true);
+      setAngle(maxAngle);
+      setHours(48);
+      return;
+    }
+    
+    // If at max, only allow going back (counter-clockwise)
+    if (hasReachedMax) {
+      // Allow counter-clockwise movement (through left side now)
+      // But block trying to go further clockwise
+      if (newAngle < angle && angle > 180) {
+        // Going back through left side - OK
+        setAngle(newAngle);
+      } else if (newAngle <= startZone) {
+        // Reached start zone - reset
+        setAngle(newAngle);
+        setHasReachedMax(false);
+      } else if (newAngle > angle) {
+        // Trying to continue clockwise - block
+        return;
+      } else {
+        setAngle(newAngle);
+      }
+    } else {
+      // Normal forward movement (0° to maxAngle)
+      if (newAngle <= maxAngle || newAngle <= startZone) {
+        setAngle(newAngle);
+      }
+    }
+    
+    // Map angle to hours
+    const hourRange = 34; // 48 - 14
+    const mappedHours = 14 + (angle / maxAngle) * hourRange;
+    setHours(Math.round(Math.min(48, Math.max(14, mappedHours))));
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      const handleMove = (e) => handlePointerMove(e);
+      const handleUp = () => handlePointerUp();
+      
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleUp);
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('touchend', handleUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('mouseup', handleUp);
+        document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('touchend', handleUp);
+      };
+    }
+  }, [isDragging]);
+
+  const startTimer = () => {
     const totalSeconds = hours * 3600;
     setTimeLeft(totalSeconds);
     setIsRunning(true);
@@ -88,29 +141,15 @@ export default function IFTimer() {
     setStartTime(new Date());
   };
 
-  const handleProgramSelect = (program) => {
-    if (program.id === 'custom') {
-      setSelectedProgram(program);
-    } else {
-      setSelectedProgram(program);
-      startTimer(program.hours);
-    }
-  };
-
-  const handleCustomStart = () => {
-    startTimer(customHours);
-  };
-
   const togglePause = () => {
     setIsPaused(!isPaused);
   };
 
-  const resetTimer = () => {
+  const cancelTimer = () => {
     setIsRunning(false);
     setIsPaused(false);
     setTimeLeft(0);
     setStartTime(null);
-    setSelectedProgram(null);
   };
 
   const formatTime = (seconds) => {
@@ -122,194 +161,358 @@ export default function IFTimer() {
 
   const getProgress = () => {
     if (!startTime || timeLeft === 0) return 0;
-    const hours = selectedProgram?.hours || customHours;
     const totalSeconds = hours * 3600;
     return ((totalSeconds - timeLeft) / totalSeconds) * 100;
   };
 
-  const getEndTime = () => {
-    if (!startTime) return '';
-    const hours = selectedProgram?.hours || customHours;
-    const end = new Date(startTime.getTime() + hours * 3600 * 1000);
-    return end.toLocaleTimeString(language === 'de' ? 'de-DE' : 'en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+  const getFastingLevel = () => {
+    if (hours >= 14 && hours < 16) return 0;
+    if (hours >= 16 && hours < 18) return 1;
+    if (hours >= 18 && hours < 20) return 2;
+    if (hours >= 20 && hours < 24) return 3;
+    if (hours >= 24 && hours < 36) return 4;
+    return 5;
+  };
+
+  const getBodyMode = () => {
+    const elapsed = hours * 3600 - timeLeft;
+    const elapsedHours = elapsed / 3600;
+    
+    if (elapsedHours < 4) return 0;
+    if (elapsedHours < 12) return 1;
+    if (elapsedHours < 18) return 2;
+    if (elapsedHours < 24) return 3;
+    return 4;
+  };
+
+  const getProgressColor = () => {
+    const progress = getProgress();
+    if (progress < 25) return '#d32f2f';
+    if (progress < 50) return '#f57c00';
+    if (progress < 75) return '#388e3c';
+    if (progress < 100) return '#1976d2';
+    return '#7b1fa2';
+  };
+
+  const fastingLevels = [
+    { range: '14-16h', label: 'Gentle' },
+    { range: '16-18h', label: 'Classic' },
+    { range: '18-20h', label: 'Intensive' },
+    { range: '20-24h', label: 'Warrior' },
+    { range: '24-36h', label: 'Monk' },
+    { range: '36+h', label: 'Extended' }
+  ];
+
+  const bodyModes = [
+    { range: '0-4h', label: 'Digesting' },
+    { range: '4-12h', label: 'Getting ready' },
+    { range: '12-18h', label: 'Fat burning' },
+    { range: '18-24h', label: 'Cell renewal' },
+    { range: '24+h', label: 'Deep healing' }
+  ];
+
+  const handleX = angle * (Math.PI / 180);
+  const handleY = angle * (Math.PI / 180);
+  const radius = 114;
+  const handlePosX = 140 + Math.sin(handleX) * radius;
+  const handlePosY = 140 - Math.cos(handleY) * radius;
+
+  const circumference = 2 * Math.PI * 120;
+  const progressOffset = circumference - (getProgress() / 100) * circumference;
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: '#fafafa',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '40px 20px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+    },
+    app: {
+      display: 'flex',
+      gap: '80px',
+      maxWidth: '900px',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      justifyContent: 'center'
+    },
+    timerSection: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      minWidth: '320px'
+    },
+    title: {
+      fontSize: '24px',
+      fontWeight: '300',
+      color: '#555',
+      marginBottom: '50px',
+      letterSpacing: '1px',
+      textShadow: '0 4px 12px rgba(0,0,0,0.18)',
+      WebkitTextStroke: '0.8px rgba(85, 85, 85, 0.25)'
+    },
+    circleContainer: {
+      position: 'relative',
+      width: '280px',
+      height: '280px',
+      marginBottom: '40px'
+    },
+    hoursDisplay: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      textAlign: 'center',
+      pointerEvents: 'none'
+    },
+    hoursNumber: {
+      fontSize: '72px',
+      fontWeight: '300',
+      color: '#333',
+      lineHeight: '1'
+    },
+    hoursLabel: {
+      fontSize: '18px',
+      color: '#999',
+      marginTop: '5px'
+    },
+    handle: {
+      position: 'absolute',
+      width: '20px',
+      height: '20px',
+      background: '#d32f2f',
+      borderRadius: '50%',
+      boxShadow: '0 2px 4px rgba(211, 47, 47, 0.25)',
+      touchAction: 'none',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      MozUserSelect: 'none'
+    },
+    startButton: {
+      background: '#333',
+      color: 'white',
+      border: 'none',
+      padding: '16px 60px',
+      fontSize: '16px',
+      borderRadius: '50px',
+      letterSpacing: '1px',
+      cursor: 'pointer',
+      transition: 'background 0.2s'
+    },
+    countdownDisplay: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      textAlign: 'center',
+      pointerEvents: 'none'
+    },
+    countdownTime: {
+      fontSize: '48px',
+      fontWeight: '300',
+      color: '#333',
+      marginBottom: '8px'
+    },
+    countdownLabel: {
+      fontSize: '14px',
+      color: '#999'
+    },
+    controls: {
+      display: 'flex',
+      gap: '16px',
+      justifyContent: 'center'
+    },
+    controlButton: {
+      background: 'transparent',
+      color: '#666',
+      border: '2px solid #ddd',
+      padding: '12px 32px',
+      fontSize: '14px',
+      borderRadius: '50px',
+      letterSpacing: '0.5px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    },
+    infoSection: {
+      minWidth: '240px'
+    },
+    infoTitle: {
+      fontSize: '12px',
+      fontWeight: '500',
+      letterSpacing: '2px',
+      color: '#aaa',
+      marginBottom: '24px',
+      textTransform: 'uppercase',
+      position: 'relative',
+      paddingBottom: '12px'
+    },
+    infoTitleLine: {
+      position: 'absolute',
+      bottom: '0',
+      left: '0',
+      width: '140%',
+      height: '1px',
+      background: '#e0e0e0'
+    },
+    infoList: {
+      listStyle: 'none',
+      padding: '0',
+      margin: '0'
+    },
+    infoItem: {
+      padding: '12px 0',
+      fontSize: '15px',
+      transition: 'color 0.2s',
+      lineHeight: '1.6'
+    },
+    infoHours: {
+      display: 'inline-block',
+      minWidth: '80px',
+      fontWeight: '500'
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
-            className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-sm text-gray-700"
-          >
-            <Globe className="w-4 h-4" />
-            {language === 'en' ? 'Deutsch' : 'English'}
-          </button>
-        </div>
+    <div style={styles.container}>
+      <div style={styles.app}>
+        <div style={styles.timerSection}>
+          <h1 style={styles.title}>IF Timer</h1>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
-              <Clock className="w-8 h-8 text-indigo-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{t.title}</h1>
-            <p className="text-gray-600">{t.subtitle}</p>
-          </div>
-
-          {!isRunning && !selectedProgram ? (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">{t.selectProgram}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {t.programs.map(program => (
-                  <button
-                    key={program.id}
-                    onClick={() => handleProgramSelect(program)}
-                    className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl hover:from-indigo-100 hover:to-purple-100 transition-all border-2 border-transparent hover:border-indigo-300 text-left group"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-bold text-xl text-indigo-600 mb-1">{program.name}</h3>
-                        <p className="text-sm text-gray-600">{program.desc}</p>
-                      </div>
-                      <Play className="w-5 h-5 text-indigo-400 group-hover:text-indigo-600 transition-colors" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : selectedProgram?.id === 'custom' && !isRunning ? (
-            <div className="space-y-6">
-              <button
-                onClick={() => setSelectedProgram(null)}
-                className="text-indigo-600 hover:text-indigo-700 font-medium mb-4"
+          {!isRunning ? (
+            <>
+              <div 
+                ref={circleRef}
+                style={styles.circleContainer}
               >
-                {t.backToPrograms}
-              </button>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  {t.customDuration}
-                </label>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setCustomHours(Math.max(1, customHours - 1))}
-                    className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xl hover:bg-indigo-200 transition-colors"
-                  >
-                    -
-                  </button>
-                  <div className="flex-1 text-center">
-                    <div className="text-5xl font-bold text-indigo-600">{customHours}</div>
-                    <div className="text-sm text-gray-500 mt-1">{t.hours}</div>
-                  </div>
-                  <button
-                    onClick={() => setCustomHours(Math.min(48, customHours + 1))}
-                    className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xl hover:bg-indigo-200 transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2">
-                {[12, 14, 16, 18, 20, 24, 36, 48].map(h => (
-                  <button
-                    key={h}
-                    onClick={() => setCustomHours(h)}
-                    className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                      customHours === h
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {h}h
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={handleCustomStart}
-                className="w-full bg-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <Play className="w-5 h-5" />
-                {t.start}
-              </button>
-            </div>
-          ) : isRunning ? (
-            <div className="space-y-6">
-              <div className="text-center mb-4">
-                <span className="inline-block px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                  {selectedProgram?.name || `${customHours}h Custom`}
-                </span>
-              </div>
-
-              <div className="relative">
-                <svg className="w-full h-64" viewBox="0 0 200 200">
+                <svg width="280" height="280" style={{ position: 'absolute', top: 0, left: 0 }}>
                   <circle
-                    cx="100"
-                    cy="100"
-                    r="85"
+                    cx="140"
+                    cy="140"
+                    r="130"
                     fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="12"
-                  />
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="85"
-                    fill="none"
-                    stroke="#4f46e5"
-                    strokeWidth="12"
-                    strokeDasharray={`${2 * Math.PI * 85}`}
-                    strokeDashoffset={`${2 * Math.PI * 85 * (1 - getProgress() / 100)}`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 100 100)"
-                    className="transition-all duration-1000"
+                    stroke="#e0e0e0"
+                    strokeWidth="3"
                   />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-5xl font-bold text-gray-800">{formatTime(timeLeft)}</div>
-                  <div className="text-sm text-gray-500 mt-2">
-                    {timeLeft > 0 ? `${t.end}: ${getEndTime()} ${t.clock}` : t.completed}
-                  </div>
+                
+                <div
+                  style={{
+                    ...styles.handle,
+                    left: `${handlePosX - 10}px`,
+                    top: `${handlePosY - 10}px`,
+                    cursor: isDragging ? 'grabbing' : 'grab'
+                  }}
+                  onMouseDown={handlePointerDown}
+                  onTouchStart={handlePointerDown}
+                />
+
+                <div style={styles.hoursDisplay}>
+                  <div style={styles.hoursNumber}>{hours}</div>
+                  <div style={styles.hoursLabel}>hours</div>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <button
+                onClick={startTimer}
+                style={styles.startButton}
+                onMouseEnter={(e) => e.target.style.background = '#555'}
+                onMouseLeave={(e) => e.target.style.background = '#333'}
+              >
+                START
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={styles.circleContainer}>
+                <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
+                  <circle
+                    cx="140"
+                    cy="140"
+                    r="120"
+                    fill="none"
+                    stroke="#e0e0e0"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="140"
+                    cy="140"
+                    r="120"
+                    fill="none"
+                    stroke={getProgressColor()}
+                    strokeWidth="8"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={progressOffset}
+                    strokeLinecap="round"
+                    style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease' }}
+                  />
+                </svg>
+
+                <div style={styles.countdownDisplay}>
+                  <div style={styles.countdownTime}>{formatTime(timeLeft)}</div>
+                  <div style={styles.countdownLabel}>remaining</div>
+                </div>
+              </div>
+
+              <div style={styles.controls}>
                 <button
                   onClick={togglePause}
-                  className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                  style={styles.controlButton}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#999';
+                    e.currentTarget.style.color = '#333';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#ddd';
+                    e.currentTarget.style.color = '#666';
+                  }}
                 >
-                  {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
-                  {isPaused ? t.resume : t.pause}
+                  {isPaused ? '▶' : '⏸'} {isPaused ? 'RESUME' : 'PAUSE'}
                 </button>
                 <button
-                  onClick={resetTimer}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+                  onClick={cancelTimer}
+                  style={styles.controlButton}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#999';
+                    e.currentTarget.style.color = '#333';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#ddd';
+                    e.currentTarget.style.color = '#666';
+                  }}
                 >
-                  <RotateCcw className="w-5 h-5" />
-                  {t.reset}
+                  ✕ CANCEL
                 </button>
               </div>
-
-              {timeLeft === 0 && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                  <p className="text-green-800 font-semibold text-lg mb-2">
-                    🎊 {t.completed}
-                  </p>
-                  <p className="text-green-700 text-sm">
-                    {selectedProgram?.name || `${customHours}h`} {t.completedDesc}
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : null}
+            </>
+          )}
         </div>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Stage 1 ✓ | Stage 2 ✓</p>
+        <div style={styles.infoSection}>
+          <div style={styles.infoTitle}>
+            {!isRunning ? 'Fasting Levels' : 'Body Mode'}
+            <div style={styles.infoTitleLine} />
+          </div>
+
+          <ul style={styles.infoList}>
+            {(!isRunning ? fastingLevels : bodyModes).map((item, index) => (
+              <li
+                key={index}
+                style={{
+                  ...styles.infoItem,
+                  color: (!isRunning ? getFastingLevel() : getBodyMode()) === index ? '#333' : '#999',
+                  fontWeight: (!isRunning ? getFastingLevel() : getBodyMode()) === index ? '500' : 'normal'
+                }}
+              >
+                <span style={styles.infoHours}>{item.range}</span>
+                {item.label}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
