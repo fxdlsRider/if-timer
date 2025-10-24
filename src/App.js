@@ -1,14 +1,59 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function IFTimerMinimal() {
-  const [hours, setHours] = useState(14);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [startTime, setStartTime] = useState(null);
-  const [angle, setAngle] = useState(0);
+  const [hours, setHours] = useState(() => {
+    const saved = localStorage.getItem('if-timer-hours');
+    return saved ? parseInt(saved) : 14;
+  });
+  const [isRunning, setIsRunning] = useState(() => {
+    const saved = localStorage.getItem('if-timer-running');
+    return saved === 'true';
+  });
+  const [isPaused, setIsPaused] = useState(() => {
+    const saved = localStorage.getItem('if-timer-paused');
+    return saved === 'true';
+  });
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('if-timer-timeLeft');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [startTime, setStartTime] = useState(() => {
+    const saved = localStorage.getItem('if-timer-startTime');
+    return saved ? new Date(saved) : null;
+  });
+  const [angle, setAngle] = useState(() => {
+    const saved = localStorage.getItem('if-timer-angle');
+    return saved ? parseFloat(saved) : 0;
+  });
   const [isDragging, setIsDragging] = useState(false);
   
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem('if-timer-hours', hours.toString());
+  }, [hours]);
+
+  useEffect(() => {
+    localStorage.setItem('if-timer-running', isRunning.toString());
+  }, [isRunning]);
+
+  useEffect(() => {
+    localStorage.setItem('if-timer-paused', isPaused.toString());
+  }, [isPaused]);
+
+  useEffect(() => {
+    localStorage.setItem('if-timer-timeLeft', timeLeft.toString());
+  }, [timeLeft]);
+
+  useEffect(() => {
+    if (startTime) {
+      localStorage.setItem('if-timer-startTime', startTime.toISOString());
+    }
+  }, [startTime]);
+
+  useEffect(() => {
+    localStorage.setItem('if-timer-angle', angle.toString());
+  }, [angle]);
+
   const circleRef = useRef(null);
 
   // Timer countdown
@@ -116,6 +161,12 @@ export default function IFTimerMinimal() {
     setIsPaused(false);
     setTimeLeft(0);
     setStartTime(null);
+    
+    // Clear localStorage
+    localStorage.removeItem('if-timer-running');
+    localStorage.removeItem('if-timer-paused');
+    localStorage.removeItem('if-timer-timeLeft');
+    localStorage.removeItem('if-timer-startTime');
   };
 
   const formatTime = (seconds) => {
