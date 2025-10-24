@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function IFTimerMinimal() {
-  const [hours, setHours] = useState(16);
+  const [hours, setHours] = useState(14);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(null);
-  const [angle, setAngle] = useState(21); // Start at 16h
+  const [angle, setAngle] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [hasReachedMax, setHasReachedMax] = useState(false);
   
   const circleRef = useRef(null);
 
@@ -66,52 +65,19 @@ export default function IFTimerMinimal() {
     let newAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 90;
     if (newAngle < 0) newAngle += 360;
     
-    const maxAngle = 340; // ~48h (just before completing circle)
-    const startZone = 30;  // 12 o'clock region
-    
-    // Prevent going left (counter-clockwise) from start
-    // Block angles 181-359 unless already at max
-    if (newAngle > 180 && newAngle < maxAngle && !hasReachedMax) {
-      // Trying to go left side - block it
+    // Block ONLY the left side FROM START (180° to 360° when starting from 0°)
+    // But allow going all the way around clockwise (0° -> 359°)
+    // So only block if trying to START going left
+    if (angle < 90 && newAngle > 270) {
+      // At start area, trying to jump to left side - block
       return;
     }
     
-    // Check if reached max (right side, near top)
-    if (newAngle >= maxAngle && !hasReachedMax) {
-      setHasReachedMax(true);
-      setAngle(maxAngle);
-      setHours(48);
-      return;
-    }
+    setAngle(newAngle);
     
-    // If at max, only allow going back (counter-clockwise)
-    if (hasReachedMax) {
-      // Allow counter-clockwise movement (through left side now)
-      // But block trying to go further clockwise
-      if (newAngle < angle && angle > 180) {
-        // Going back through left side - OK
-        setAngle(newAngle);
-      } else if (newAngle <= startZone) {
-        // Reached start zone - reset
-        setAngle(newAngle);
-        setHasReachedMax(false);
-      } else if (newAngle > angle) {
-        // Trying to continue clockwise - block
-        return;
-      } else {
-        setAngle(newAngle);
-      }
-    } else {
-      // Normal forward movement (0° to maxAngle)
-      if (newAngle <= maxAngle || newAngle <= startZone) {
-        setAngle(newAngle);
-      }
-    }
-    
-    // Map angle to hours
-    const hourRange = 34; // 48 - 14
-    const mappedHours = 14 + (angle / maxAngle) * hourRange;
-    setHours(Math.round(Math.min(48, Math.max(14, mappedHours))));
+    const hourRange = 34;
+    const mappedHours = Math.round(14 + (newAngle / 360) * hourRange);
+    setHours(Math.min(48, Math.max(14, mappedHours)));
   };
 
   useEffect(() => {
