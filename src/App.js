@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 export default function IFTimerMinimal() {
   const [hours, setHours] = useState(() => {
     const saved = localStorage.getItem('if-timer-hours');
-    return saved ? parseInt(saved) : 14;
+    return saved ? parseInt(saved) : 16;
   });
   const [isRunning, setIsRunning] = useState(() => {
     const saved = localStorage.getItem('if-timer-running');
@@ -23,10 +23,13 @@ export default function IFTimerMinimal() {
   });
   const [angle, setAngle] = useState(() => {
     const saved = localStorage.getItem('if-timer-angle');
-    return saved ? parseFloat(saved) : 0;
+    if (saved) return parseFloat(saved);
+    // Calculate angle for 16h (default)
+    const hourRange = 34; // 14-48h
+    return ((16 - 14) / hourRange) * 360; // ~21°
   });
   const [isDragging, setIsDragging] = useState(false);
-  
+
   // Save to localStorage whenever state changes
   useEffect(() => {
     localStorage.setItem('if-timer-hours', hours.toString());
@@ -94,32 +97,29 @@ export default function IFTimerMinimal() {
 
   const updateAngleFromEvent = (e) => {
     if (!circleRef.current) return;
-    
+
     const rect = circleRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    
+
     if (!clientX || !clientY) return;
-    
+
     const deltaX = clientX - centerX;
     const deltaY = clientY - centerY;
-    
+
     let newAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 90;
     if (newAngle < 0) newAngle += 360;
-    
+
     // Block ONLY the left side FROM START (180° to 360° when starting from 0°)
-    // But allow going all the way around clockwise (0° -> 359°)
-    // So only block if trying to START going left
     if (angle < 90 && newAngle > 270) {
-      // At start area, trying to jump to left side - block
       return;
     }
-    
+
     setAngle(newAngle);
-    
+
     const hourRange = 34;
     const mappedHours = Math.round(14 + (newAngle / 360) * hourRange);
     setHours(Math.min(48, Math.max(14, mappedHours)));
@@ -129,7 +129,7 @@ export default function IFTimerMinimal() {
     if (isDragging) {
       const handleMove = (e) => handlePointerMove(e);
       const handleUp = () => handlePointerUp();
-      
+
       document.addEventListener('mousemove', handleMove);
       document.addEventListener('mouseup', handleUp);
       document.addEventListener('touchmove', handleMove, { passive: false });
@@ -143,6 +143,19 @@ export default function IFTimerMinimal() {
       };
     }
   }, [isDragging]);
+
+  // NEW: Handle click on fasting level
+  const handleLevelClick = (targetHours) => {
+    if (isRunning) return; // Don't allow changes while timer is running
+    
+    // Calculate angle for target hours
+    const hourRange = 34; // 14-48h range
+    const normalizedHours = Math.max(14, Math.min(48, targetHours));
+    const newAngle = ((normalizedHours - 14) / hourRange) * 360;
+    
+    setHours(normalizedHours);
+    setAngle(newAngle);
+  };
 
   const startTimer = () => {
     const totalSeconds = hours * 3600;
@@ -161,7 +174,7 @@ export default function IFTimerMinimal() {
     setIsPaused(false);
     setTimeLeft(0);
     setStartTime(null);
-    
+
     // Clear localStorage
     localStorage.removeItem('if-timer-running');
     localStorage.removeItem('if-timer-paused');
@@ -194,7 +207,7 @@ export default function IFTimerMinimal() {
   const getBodyMode = () => {
     const elapsed = hours * 3600 - timeLeft;
     const elapsedHours = elapsed / 3600;
-    
+
     if (elapsedHours < 4) return 0;
     if (elapsedHours < 12) return 1;
     if (elapsedHours < 18) return 2;
@@ -212,12 +225,12 @@ export default function IFTimerMinimal() {
   };
 
   const fastingLevels = [
-    { range: '14-16h', label: 'Gentle' },
-    { range: '16-18h', label: 'Classic' },
-    { range: '18-20h', label: 'Intensive' },
-    { range: '20-24h', label: 'Warrior' },
-    { range: '24-36h', label: 'Monk' },
-    { range: '36+h', label: 'Extended' }
+    { range: '14-16h', label: 'Gentle', startHour: 14 },
+    { range: '16-18h', label: 'Classic', startHour: 16 },
+    { range: '18-20h', label: 'Intensive', startHour: 18 },
+    { range: '20-24h', label: 'Warrior', startHour: 20 },
+    { range: '24-36h', label: 'Monk', startHour: 24 },
+    { range: '36+h', label: 'Extended', startHour: 36 }
   ];
 
   const bodyModes = [
@@ -385,7 +398,8 @@ export default function IFTimerMinimal() {
       padding: '12px 0',
       fontSize: '15px',
       transition: 'color 0.2s',
-      lineHeight: '1.6'
+      lineHeight: '1.6',
+      cursor: 'pointer'
     },
     infoHours: {
       display: 'inline-block',
@@ -407,6 +421,32 @@ export default function IFTimerMinimal() {
                 style={styles.circleContainer}
               >
                 <svg width="280" height="280" style={{ position: 'absolute', top: 0, left: 0 }}>
+                  {/* Target Zone highlight (second half - 30-48h) */}
+                  <g transform="rotate(90 140 140)">
+                    <circle
+                      cx="140"
+                      cy="140"
+                      r="130"
+                      fill="none"
+                      stroke="#ffebee"
+                      strokeWidth="16"
+                      strokeDasharray="204 204"
+                      strokeLinecap="butt"
+                    />
+                    <circle
+                      cx="140"
+                      cy="140"
+                      r="130"
+                      fill="none"
+                      stroke="#ef5350"
+                      strokeWidth="3"
+                      strokeDasharray="204 204"
+                      strokeLinecap="butt"
+                      opacity="0.4"
+                    />
+                  </g>
+                  
+                  {/* Main circle */}
                   <circle
                     cx="140"
                     cy="140"
@@ -415,6 +455,58 @@ export default function IFTimerMinimal() {
                     stroke="#e0e0e0"
                     strokeWidth="3"
                   />
+                  
+                  {/* Trail (user's selection) */}
+                  <g transform="rotate(-90 140 140)">
+                    <defs>
+                      <linearGradient id="trailGradient" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#d32f2f" stopOpacity="0.15" />
+                        <stop offset="100%" stopColor="#d32f2f" stopOpacity="0.4" />
+                      </linearGradient>
+                    </defs>
+                    <circle
+                      cx="140"
+                      cy="140"
+                      r="130"
+                      fill="none"
+                      stroke="url(#trailGradient)"
+                      strokeWidth="3"
+                      strokeDasharray={`${(angle / 360) * (2 * Math.PI * 130)} ${2 * Math.PI * 130}`}
+                      strokeLinecap="round"
+                      style={{ transition: 'stroke-dasharray 0.3s ease' }}
+                    />
+                  </g>
+                  
+                  {/* Zone labels */}
+                  <text
+                    x="140"
+                    y="25"
+                    textAnchor="middle"
+                    fontSize="10"
+                    fill="#999"
+                    fontWeight="500"
+                  >
+                    START 14h
+                  </text>
+                  <text
+                    x="140"
+                    y="250"
+                    textAnchor="middle"
+                    fontSize="11"
+                    fill="#d32f2f"
+                    fontWeight="600"
+                  >
+                    TARGET ZONE
+                  </text>
+                  <text
+                    x="140"
+                    y="262"
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill="#ef5350"
+                  >
+                    30-48h
+                  </text>
                 </svg>
                 
                 <div
@@ -523,6 +615,19 @@ export default function IFTimerMinimal() {
                   ...styles.infoItem,
                   color: (!isRunning ? getFastingLevel() : getBodyMode()) === index ? '#333' : '#999',
                   fontWeight: (!isRunning ? getFastingLevel() : getBodyMode()) === index ? '500' : 'normal'
+                }}
+                onClick={() => !isRunning && item.startHour && handleLevelClick(item.startHour)}
+                onMouseEnter={(e) => {
+                  if (!isRunning && item.startHour) {
+                    e.currentTarget.style.color = '#333';
+                    e.currentTarget.style.fontWeight = '500';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isRunning && item.startHour && getFastingLevel() !== index) {
+                    e.currentTarget.style.color = '#999';
+                    e.currentTarget.style.fontWeight = 'normal';
+                  }
                 }}
               >
                 <span style={styles.infoHours}>{item.range}</span>
