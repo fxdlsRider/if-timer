@@ -110,17 +110,34 @@ export default function IFTimerMinimal() {
     const deltaX = clientX - centerX;
     const deltaY = clientY - centerY;
 
-    let newAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 90;
-    if (newAngle < 0) newAngle += 360;
+    // Calculate raw angle from mouse position
+    let rawAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 90;
+    if (rawAngle < 0) rawAngle += 360;
+    
+    let newAngle = rawAngle;
 
-    // Block ONLY the left side FROM START (180° to 360° when starting from 0°)
+    // RULE 1: Block backwards movement from start area
+    // When angle < 90° (start area), don't allow jumping to left side (270°+)
     if (angle < 90 && newAngle > 270) {
       return;
+    }
+    
+    // RULE 2: Hard stop at 48h (360°)
+    // When we're past 270° (in the last quarter), don't allow wrapping to small angles
+    if (angle > 270 && newAngle < 90) {
+      // We're in the last quarter (270-360°) trying to go to first quarter (0-90°)
+      // This means wrapping - block it!
+      return;
+    }
+    
+    // RULE 3: Never allow angle > 360° by clamping
+    if (newAngle > 360) {
+      newAngle = 360;
     }
 
     setAngle(newAngle);
 
-    const hourRange = 34;
+    const hourRange = 34; // 14-48h = 34 hours
     const mappedHours = Math.round(14 + (newAngle / 360) * hourRange);
     setHours(Math.min(48, Math.max(14, mappedHours)));
   };
