@@ -1001,7 +1001,7 @@ export default function IFTimerFinal() {
                   onMouseEnter={(e) => e.target.style.background = '#555'}
                   onMouseLeave={(e) => e.target.style.background = '#333'}
                 >
-                  Stop & Save
+                  {user ? 'Stop & Save' : 'Stop Fasting'}
                 </button>
                 
                 <button
@@ -1030,6 +1030,23 @@ export default function IFTimerFinal() {
                   Start New Fast
                 </button>
               </div>
+
+              {/* Sign-in hint for non-logged users */}
+              {!user && (
+                <div style={{
+                  marginTop: '20px',
+                  padding: '12px 16px',
+                  background: '#F0F7FF',
+                  border: '1px solid #B3D9FF',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  color: '#666',
+                  textAlign: 'center',
+                  lineHeight: '1.5'
+                }}>
+                  💡 <strong>Sign in</strong> to save your progress and track stats!
+                </div>
+              )}
             </div>
           </div>
         );
