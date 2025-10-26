@@ -7,19 +7,27 @@ export default function IFTimerFinal() {
   const { user, signOut } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   
+  // 🧪 TEST MODE - When true, uses seconds instead of hours for quick testing
+  const TEST_MODE = true; // Change to false for production!
+  const TIME_MULTIPLIER = TEST_MODE ? 1 : 3600; // 1 second or 3600 seconds (1 hour)
+  const TIME_UNIT = TEST_MODE ? 'seconds' : 'hours';
+  
   const [hours, setHours] = useState(16);
   const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [targetTime, setTargetTime] = useState(null);
-  const [pausedTimeLeft, setPausedTimeLeft] = useState(null);
   const [angle, setAngle] = useState(21.2);
   const [isDragging, setIsDragging] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [completedFastData, setCompletedFastData] = useState(null);
+  const [isExtended, setIsExtended] = useState(false);
+  const [originalGoalTime, setOriginalGoalTime] = useState(null);
 
   const circleRef = useRef(null);
   const notificationShownRef = useRef(false);
+  const audioContextRef = useRef(null);
 
   // Update current time every second for display
   useEffect(() => {
@@ -31,49 +39,103 @@ export default function IFTimerFinal() {
 
   // Calculate time left based on target time
   const getTimeLeft = () => {
-    if (!isRunning) return 0;
-    if (isPaused && pausedTimeLeft !== null) return pausedTimeLeft;
-    if (!targetTime) return 0;
+    if (!isRunning || !targetTime) return 0;
     
+    if (isExtended) {
+      // Extended mode: show time SINCE goal was reached
+      const elapsed = Math.floor((currentTime - originalGoalTime) / 1000);
+      return elapsed; // Positive number = time beyond goal
+    }
+    
+    // Normal mode: countdown to goal
     const remaining = Math.max(0, Math.floor((targetTime - currentTime) / 1000));
     return remaining;
   };
 
   const timeLeft = getTimeLeft();
 
-  // Request notification permission on mount
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
+  // NOTE: Notification permission will be requested on first timer start
+  // Safari requires user gesture - can't request automatically on page load
 
   // Show notification when timer completes
   useEffect(() => {
     if (isRunning && timeLeft === 0 && !notificationShownRef.current) {
       notificationShownRef.current = true;
       
+      // Save completion data for celebration screen
+      const completionData = {
+        duration: hours,
+        startTime: new Date(targetTime - (hours * TIME_MULTIPLIER * 1000)),
+        endTime: new Date(targetTime),
+        unit: TIME_UNIT
+      };
+      setCompletedFastData(completionData);
+      
+      // Play completion sound
+      const playSound = () => {
+        try {
+          const audioContext = audioContextRef.current;
+          
+          if (!audioContext) {
+            console.log('❌ No AudioContext available');
+            return;
+          }
+          
+          if (audioContext.state === 'suspended') {
+            console.log('⚠️ AudioContext suspended, attempting resume...');
+            audioContext.resume();
+          }
+          
+          console.log('🔊 Playing completion sound...');
+          
+          // Success melody: 3 ascending tones
+          const playTone = (frequency, startTime, duration) => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.frequency.value = frequency;
+            gain.gain.setValueAtTime(0.3, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+          };
+          
+          const now = audioContext.currentTime;
+          playTone(523.25, now, 0.15);        // C5
+          playTone(659.25, now + 0.15, 0.15); // E5
+          playTone(783.99, now + 0.3, 0.3);   // G5
+          
+          console.log('✅ Sound played successfully!');
+        } catch (e) {
+          console.error('❌ Error playing sound:', e);
+        }
+      };
+      
+      playSound();
+      
       // Show browser notification
       if ('Notification' in window && Notification.permission === 'granted') {
+        const duration = TEST_MODE ? `${hours} seconds` : `${hours}h`;
         new Notification('IF Timer Complete! 🎉', {
-          body: `Your ${hours}h fast is complete! Great job!`,
+          body: `Your ${duration} fast is complete! Great job!`,
           icon: '/favicon.ico',
           tag: 'if-timer-complete'
         });
       }
 
-      // Reset timer
-      setIsRunning(false);
-      setIsPaused(false);
-      setTargetTime(null);
-      setPausedTimeLeft(null);
+      // Show celebration screen instead of resetting
+      setShowCelebration(true);
       
       // Reset notification flag after 5 seconds
       setTimeout(() => {
         notificationShownRef.current = false;
       }, 5000);
     }
-  }, [isRunning, timeLeft, hours]);
+  }, [isRunning, timeLeft, hours, TEST_MODE, TIME_MULTIPLIER, TIME_UNIT, targetTime]);
 
   // Load state from localStorage on mount (if not logged in)
   useEffect(() => {
@@ -86,9 +148,7 @@ export default function IFTimerFinal() {
         setHours(state.hours || 16);
         setAngle(state.angle || 21.2);
         setIsRunning(state.isRunning || false);
-        setIsPaused(state.isPaused || false);
         setTargetTime(state.targetTime || null);
-        setPausedTimeLeft(state.pausedTimeLeft || null);
       } catch (e) {
         console.error('Error loading state:', e);
       }
@@ -103,12 +163,10 @@ export default function IFTimerFinal() {
       hours,
       angle,
       isRunning,
-      isPaused,
-      targetTime,
-      pausedTimeLeft
+      targetTime
     };
     localStorage.setItem('ifTimerState', JSON.stringify(state));
-  }, [hours, angle, isRunning, isPaused, targetTime, pausedTimeLeft, user]);
+  }, [hours, angle, isRunning, targetTime, user]);
 
   // Load from Supabase (if logged in)
   useEffect(() => {
@@ -133,26 +191,27 @@ export default function IFTimerFinal() {
         
         // Check if timer is actually still running
         const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
+        const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
         const now = Date.now();
         
-        if (targetTimeMs && targetTimeMs > now && data.is_running && !data.is_paused) {
-          // Timer is still running!
+        if (targetTimeMs && data.is_running) {
           setIsRunning(true);
-          setIsPaused(false);
           setTargetTime(targetTimeMs);
-          setPausedTimeLeft(null);
-        } else if (data.is_paused && data.paused_time_left) {
-          // Timer is paused
-          setIsRunning(true);
-          setIsPaused(true);
-          setTargetTime(targetTimeMs);
-          setPausedTimeLeft(data.paused_time_left);
+          
+          // Check if in extended mode
+          if (data.is_extended && originalGoalMs) {
+            setIsExtended(true);
+            setOriginalGoalTime(originalGoalMs);
+          } else {
+            setIsExtended(false);
+            setOriginalGoalTime(null);
+          }
         } else {
-          // Timer completed or not started
+          // Timer not running or completed
           setIsRunning(false);
-          setIsPaused(false);
           setTargetTime(null);
-          setPausedTimeLeft(null);
+          setIsExtended(false);
+          setOriginalGoalTime(null);
         }
       }
       
@@ -185,26 +244,26 @@ export default function IFTimerFinal() {
             
             // Check if timer is actually still running
             const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
-            const now = Date.now();
+            const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
             
-            if (targetTimeMs && targetTimeMs > now && data.is_running && !data.is_paused) {
-              // Timer is still running!
+            if (targetTimeMs && data.is_running) {
               setIsRunning(true);
-              setIsPaused(false);
               setTargetTime(targetTimeMs);
-              setPausedTimeLeft(null);
-            } else if (data.is_paused && data.paused_time_left) {
-              // Timer is paused
-              setIsRunning(true);
-              setIsPaused(true);
-              setTargetTime(targetTimeMs);
-              setPausedTimeLeft(data.paused_time_left);
+              
+              // Check if in extended mode
+              if (data.is_extended && originalGoalMs) {
+                setIsExtended(true);
+                setOriginalGoalTime(originalGoalMs);
+              } else {
+                setIsExtended(false);
+                setOriginalGoalTime(null);
+              }
             } else {
-              // Timer completed or not started
+              // Timer not running
               setIsRunning(false);
-              setIsPaused(false);
               setTargetTime(null);
-              setPausedTimeLeft(null);
+              setIsExtended(false);
+              setOriginalGoalTime(null);
             }
           }
         }
@@ -230,11 +289,11 @@ export default function IFTimerFinal() {
           hours,
           angle,
           is_running: isRunning,
-          is_paused: isPaused,
           target_time: targetTime ? new Date(targetTime).toISOString() : null,
-          paused_time_left: pausedTimeLeft
+          is_extended: isExtended,
+          original_goal_time: originalGoalTime ? new Date(originalGoalTime).toISOString() : null
         }, {
-          onConflict: 'user_id'  // IMPORTANT: Handle duplicate user_id
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
@@ -253,7 +312,7 @@ export default function IFTimerFinal() {
     if (isInitialLoad) return;
     
     saveToSupabase();
-  }, [hours, angle, isRunning, isPaused, targetTime, pausedTimeLeft, user]);
+  }, [hours, angle, isRunning, targetTime, isExtended, originalGoalTime, user]);
 
   // Handle drag
   const handlePointerDown = (e) => {
@@ -332,37 +391,114 @@ export default function IFTimerFinal() {
   };
 
   const startTimer = () => {
+    // Request notification permission on first start (Safari requires user gesture)
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    
+    // Initialize AudioContext on user gesture (required for autoplay policy)
+    if (!audioContextRef.current) {
+      try {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.log('AudioContext not supported:', e);
+      }
+    }
+    
+    // Resume AudioContext if suspended
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+    
     const now = Date.now();
-    const target = now + (hours * 3600 * 1000);
+    const target = now + (hours * TIME_MULTIPLIER * 1000);
     
     setTargetTime(target);
     setIsRunning(true);
-    setIsPaused(false);
-    setPausedTimeLeft(null);
     notificationShownRef.current = false;
-  };
-
-  const togglePause = () => {
-    if (isPaused) {
-      // Resume: calculate new target time
-      const now = Date.now();
-      const newTarget = now + (pausedTimeLeft * 1000);
-      setTargetTime(newTarget);
-      setIsPaused(false);
-      setPausedTimeLeft(null);
-    } else {
-      // Pause: save current time left
-      setPausedTimeLeft(timeLeft);
-      setIsPaused(true);
-    }
   };
 
   const cancelTimer = () => {
     setIsRunning(false);
-    setIsPaused(false);
     setTargetTime(null);
-    setPausedTimeLeft(null);
     notificationShownRef.current = false;
+  };
+
+  // Celebration Screen Actions
+  const handleContinueFasting = () => {
+    // Enable extended mode
+    setIsExtended(true);
+    setOriginalGoalTime(targetTime); // Save when goal was reached
+    setShowCelebration(false);
+    // Timer continues running, now showing extended time
+  };
+
+  const handleStopFasting = () => {
+    // Save session and reset
+    setShowCelebration(false);
+    setIsRunning(false);
+    setTargetTime(null);
+    setIsExtended(false);
+    setOriginalGoalTime(null);
+    // TODO: Save to fasting_sessions table
+  };
+
+  const handleStartNewFast = () => {
+    // Save previous session and start fresh
+    setShowCelebration(false);
+    setIsRunning(false);
+    setTargetTime(null);
+    setIsExtended(false);
+    setOriginalGoalTime(null);
+    // Reset to selection screen
+    // TODO: Save to fasting_sessions table
+  };
+
+  // Get celebration content based on fasting level
+  const getCelebrationContent = (duration) => {
+    if (duration >= 14 && duration < 16) {
+      return {
+        title: 'GENTLE WARRIOR',
+        subtitle: `You completed your ${duration}h gentle fast!`,
+        message: 'Building healthy habits, one fast at a time.',
+        color: '#4CAF50' // Soft green
+      };
+    } else if (duration >= 16 && duration < 18) {
+      return {
+        title: 'CLASSIC ACHIEVER',
+        subtitle: `You completed your ${duration}h classic fast!`,
+        message: 'This is the gold standard. You nailed it.',
+        color: '#2196F3' // Blue
+      };
+    } else if (duration >= 18 && duration < 20) {
+      return {
+        title: 'INTENSIVE CHAMPION',
+        subtitle: `You completed your ${duration}h intensive fast!`,
+        message: "Most people can't do this. You're not most people.",
+        color: '#FF9800' // Orange
+      };
+    } else if (duration >= 20 && duration < 24) {
+      return {
+        title: 'WARRIOR ELITE',
+        subtitle: `You completed your ${duration}h warrior fast!`,
+        message: 'Discipline. Focus. Power. This is mastery.',
+        color: '#F44336' // Red
+      };
+    } else if (duration >= 24 && duration < 36) {
+      return {
+        title: 'MONK MODE MASTER',
+        subtitle: `You completed your ${duration}h monk fast!`,
+        message: 'Few reach this level. You have transcended.',
+        color: '#9C27B0' // Purple
+      };
+    } else {
+      return {
+        title: 'LEGEND STATUS',
+        subtitle: `You completed your ${duration}h extended fast!`,
+        message: "This is legendary. You've earned your place.",
+        color: '#FFD700' // Gold
+      };
+    }
   };
 
   const formatTime = (seconds) => {
@@ -693,6 +829,231 @@ export default function IFTimerFinal() {
 
   return (
     <div style={styles.container}>
+      {/* CELEBRATION SCREEN - Fullscreen overlay when fast completes */}
+      {showCelebration && completedFastData && (() => {
+        const content = getCelebrationContent(completedFastData.duration);
+        return (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            animation: 'fadeIn 0.3s ease'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '50px 40px',
+              maxWidth: '500px',
+              width: '90%',
+              textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+            }}>
+              {/* Color Bar at top */}
+              <div style={{
+                height: '4px',
+                background: content.color,
+                marginBottom: '40px',
+                borderRadius: '2px'
+              }} />
+              
+              {/* Title */}
+              <h1 style={{
+                fontSize: '32px',
+                fontWeight: '300',
+                color: '#333',
+                margin: '0 0 16px 0',
+                letterSpacing: '1px'
+              }}>
+                {content.title}
+              </h1>
+              
+              {/* Subtitle */}
+              <p style={{
+                fontSize: '18px',
+                color: '#666',
+                margin: '0 0 12px 0',
+                fontWeight: '400'
+              }}>
+                {content.subtitle}
+              </p>
+              
+              {/* Message */}
+              <p style={{
+                fontSize: '15px',
+                color: '#999',
+                margin: '0 0 30px 0',
+                fontStyle: 'italic',
+                lineHeight: '1.6'
+              }}>
+                {content.message}
+              </p>
+              
+              {/* Divider */}
+              <div style={{
+                height: '1px',
+                background: '#e0e0e0',
+                margin: '30px 0'
+              }} />
+              
+              {/* Stats */}
+              <div style={{
+                textAlign: 'left',
+                marginBottom: '30px',
+                fontSize: '14px',
+                color: '#666',
+                lineHeight: '2',
+                background: '#f9f9f9',
+                padding: '20px',
+                borderRadius: '8px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#999' }}>Started</span>
+                  <span style={{ fontWeight: '500', color: '#333' }}>
+                    {completedFastData.startTime.toLocaleString('en-US', { 
+                      weekday: 'short', 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#999' }}>Ended</span>
+                  <span style={{ fontWeight: '500', color: '#333' }}>
+                    {completedFastData.endTime.toLocaleString('en-US', { 
+                      weekday: 'short', 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#999' }}>Duration</span>
+                  <span style={{ fontWeight: '600', color: content.color }}>
+                    {completedFastData.duration} {completedFastData.unit}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Divider */}
+              <div style={{
+                height: '1px',
+                background: '#e0e0e0',
+                margin: '30px 0'
+              }} />
+              
+              {/* Question */}
+              <p style={{
+                fontSize: '15px',
+                color: '#666',
+                marginBottom: '20px',
+                fontWeight: '500'
+              }}>
+                What's next?
+              </p>
+              
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <button
+                  onClick={handleContinueFasting}
+                  style={{
+                    padding: '16px',
+                    fontSize: '15px',
+                    fontWeight: '500',
+                    background: content.color,
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.target.style.opacity = '1'}
+                >
+                  Continue Fasting (Extended)
+                </button>
+                
+                <button
+                  onClick={handleStopFasting}
+                  style={{
+                    padding: '16px',
+                    fontSize: '15px',
+                    fontWeight: '500',
+                    background: '#333',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#555'}
+                  onMouseLeave={(e) => e.target.style.background = '#333'}
+                >
+                  Stop & Save
+                </button>
+                
+                <button
+                  onClick={handleStartNewFast}
+                  style={{
+                    padding: '16px',
+                    fontSize: '15px',
+                    fontWeight: '500',
+                    background: 'transparent',
+                    color: '#666',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.borderColor = '#999';
+                    e.target.style.color = '#333';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.borderColor = '#e0e0e0';
+                    e.target.style.color = '#666';
+                  }}
+                >
+                  Start New Fast
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* TEST MODE INDICATOR */}
+      {TEST_MODE && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          background: '#FF4444',
+          color: 'white',
+          padding: '8px',
+          textAlign: 'center',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          zIndex: 9999
+        }}>
+          🧪 TEST MODE: Timer uses SECONDS instead of HOURS
+        </div>
+      )}
+      
       <div style={styles.topBar}>
         <div style={styles.syncIndicator}>
           {user && (
@@ -741,6 +1102,22 @@ export default function IFTimerFinal() {
       <div style={styles.app}>
         <div style={styles.timerSection}>
           <h1 style={styles.title}>IF Timer</h1>
+
+          {/* TEST MODE Banner */}
+          {TEST_MODE && (
+            <div style={{
+              background: '#FF6B6B',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              🧪 TEST MODE: Using seconds instead of hours
+            </div>
+          )}
 
           {!isRunning ? (
             <>
@@ -792,9 +1169,28 @@ export default function IFTimerFinal() {
 
                 <div style={styles.hoursDisplay}>
                   <div style={styles.hoursNumber}>{hours}</div>
-                  <div style={styles.hoursLabel}>hours</div>
+                  <div style={styles.hoursLabel}>{TIME_UNIT}</div>
                 </div>
               </div>
+
+              {/* Notification Info Banner - only show if permission not granted */}
+              {Notification.permission === 'default' && (
+                <div style={{
+                  background: '#FFF9E6',
+                  border: '1px solid #FFE066',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  marginBottom: '20px',
+                  fontSize: '13px',
+                  color: '#666',
+                  textAlign: 'center',
+                  lineHeight: '1.5',
+                  maxWidth: '320px'
+                }}>
+                  🔔 <strong>Get notified</strong> when your fast completes!<br/>
+                  <span style={{ fontSize: '12px' }}>We'll ask for permission when you start</span>
+                </div>
+              )}
 
               <button
                 onClick={startTimer}
@@ -832,39 +1228,64 @@ export default function IFTimerFinal() {
                 </svg>
 
                 <div style={styles.countdownDisplay}>
-                  <div style={styles.countdownTime}>{formatTime(timeLeft)}</div>
-                  <div style={styles.countdownLabel}>remaining</div>
+                  {isExtended ? (
+                    <>
+                      {/* Extended Mode Display */}
+                      <div style={{
+                        fontSize: '14px',
+                        color: '#4CAF50',
+                        fontWeight: '600',
+                        marginBottom: '8px',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {hours}{TEST_MODE ? 'sec' : 'h'} ✓ GOAL REACHED
+                      </div>
+                      <div style={styles.countdownTime}>
+                        +{formatTime(timeLeft)}
+                      </div>
+                      <div style={{
+                        ...styles.countdownLabel,
+                        color: '#FF6B6B',
+                        fontWeight: '600'
+                      }}>
+                        extended
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Normal Mode Display */}
+                      <div style={styles.countdownTime}>{formatTime(timeLeft)}</div>
+                      <div style={styles.countdownLabel}>remaining</div>
+                    </>
+                  )}
                 </div>
               </div>
 
-              <div style={styles.controls}>
-                <button
-                  onClick={togglePause}
-                  style={styles.controlButton}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#999';
-                    e.currentTarget.style.color = '#333';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#ddd';
-                    e.currentTarget.style.color = '#666';
-                  }}
-                >
-                  {isPaused ? '▶' : '⏸'} {isPaused ? 'RESUME' : 'PAUSE'}
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                 <button
                   onClick={cancelTimer}
-                  style={styles.controlButton}
+                  style={{
+                    ...styles.controlButton,
+                    background: 'transparent',
+                    color: '#999',
+                    border: '2px solid #e0e0e0',
+                    padding: '12px 40px',
+                    fontSize: '14px',
+                    borderRadius: '50px',
+                    letterSpacing: '0.5px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#999';
-                    e.currentTarget.style.color = '#333';
+                    e.currentTarget.style.borderColor = '#d32f2f';
+                    e.currentTarget.style.color = '#d32f2f';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#ddd';
-                    e.currentTarget.style.color = '#666';
+                    e.currentTarget.style.borderColor = '#e0e0e0';
+                    e.currentTarget.style.color = '#999';
                   }}
                 >
-                  ✕ CANCEL
+                  ✕ STOP FASTING
                 </button>
               </div>
             </>
@@ -916,6 +1337,7 @@ export default function IFTimerFinal() {
 function LoginModal({ onClose }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState('');
   const { signInWithEmail } = useAuth();
 
@@ -932,9 +1354,11 @@ function LoginModal({ onClose }) {
 
     try {
       await signInWithEmail(email);
-      setMessage('✅ Check your email for the magic link!');
-      setEmail('');
+      setSuccess(true);
+      setMessage('');
+      // No auto-close - user decides when to close
     } catch (error) {
+      setSuccess(false);
       setMessage('❌ Error: ' + error.message);
     } finally {
       setLoading(false);
@@ -1016,43 +1440,106 @@ function LoginModal({ onClose }) {
   return (
     <div style={styles.modal} onClick={onClose}>
       <div style={styles.card} onClick={(e) => e.stopPropagation()}>
-        <h2 style={styles.title}>Sign in to sync</h2>
-        <p style={styles.subtitle}>
-          Enter your email to sync your timer<br />
-          across all your devices. No password needed!
-        </p>
+        {!success ? (
+          <>
+            <h2 style={styles.title}>Sign in to sync</h2>
+            <p style={styles.subtitle}>
+              Enter your email to sync your timer<br />
+              across all your devices. No password needed!
+            </p>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            style={styles.input}
-          />
+            <form onSubmit={handleSubmit}>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                style={styles.input}
+              />
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={styles.button}
-          >
-            {loading ? 'Sending...' : 'Send Magic Link'}
-          </button>
+              <button
+                type="submit"
+                disabled={loading}
+                style={styles.button}
+              >
+                {loading ? 'Sending...' : 'Send Magic Link'}
+              </button>
 
-          <button
-            type="button"
-            onClick={onClose}
-            style={styles.cancel}
-          >
-            Cancel
-          </button>
-        </form>
+              <button
+                type="button"
+                onClick={onClose}
+                style={styles.cancel}
+              >
+                Cancel
+              </button>
+            </form>
 
-        {message && (
-          <div style={styles.message}>
-            {message}
-          </div>
+            {message && (
+              <div style={styles.message}>
+                {message}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Success Screen */}
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📧</div>
+            <h2 style={styles.title}>Check your inbox!</h2>
+            <p style={{ 
+              fontSize: '15px', 
+              color: '#666', 
+              lineHeight: '1.6',
+              marginBottom: '8px'
+            }}>
+              We sent a magic link to<br />
+              <strong style={{ color: '#333' }}>{email}</strong>
+            </p>
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#999', 
+              lineHeight: '1.6',
+              marginBottom: '20px'
+            }}>
+              Click the link in the email to sign in.
+            </p>
+
+            {/* HIGHLIGHTED: Close tab instruction */}
+            <div style={{
+              background: '#FFF9E6',
+              border: '2px solid #FFE066',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginBottom: '24px'
+            }}>
+              <p style={{ 
+                fontSize: '14px', 
+                color: '#333',
+                fontWeight: '600',
+                margin: 0
+              }}>
+                ✓ You can close this tab now
+              </p>
+            </div>
+
+            <button
+              onClick={onClose}
+              style={{
+                ...styles.button,
+                background: '#4CAF50'
+              }}
+            >
+              Got it!
+            </button>
+
+            <p style={{ 
+              fontSize: '12px', 
+              color: '#999',
+              marginTop: '16px'
+            }}>
+              💡 The link works on all your devices
+            </p>
+          </>
         )}
       </div>
     </div>

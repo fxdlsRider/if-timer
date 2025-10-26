@@ -18,6 +18,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check active session
+    // NOTE: Supabase automatically handles refresh tokens
+    // Sessions last 1 hour, refresh tokens last 4 weeks (2,419,200 seconds)
+    // User stays logged in for 4 weeks without re-authentication!
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
