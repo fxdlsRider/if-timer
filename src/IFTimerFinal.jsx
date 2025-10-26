@@ -8,7 +8,7 @@ export default function IFTimerFinal() {
   const [showLogin, setShowLogin] = useState(false);
   
   // 🧪 TEST MODE - When true, uses seconds instead of hours for quick testing
-  const TEST_MODE = true; // Change to false for production!
+  const TEST_MODE = false; // Change to false for production!
   const TIME_MULTIPLIER = TEST_MODE ? 1 : 3600; // 1 second or 3600 seconds (1 hour)
   const TIME_UNIT = TEST_MODE ? 'seconds' : 'hours';
   
@@ -1065,7 +1065,7 @@ export default function IFTimerFinal() {
           padding: '12px 16px',
           textAlign: 'center',
           fontSize: '14px',
-          zIndex: 9998,
+          zIndex: 10000,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
