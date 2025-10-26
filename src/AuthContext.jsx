@@ -20,6 +20,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check for auth errors in URL hash (expired magic link, etc.)
     const checkForAuthErrors = () => {
+      if (typeof window === 'undefined') return;
+      
       const hash = window.location.hash;
       if (hash.includes('error=')) {
         const params = new URLSearchParams(hash.substring(1));
@@ -30,7 +32,7 @@ export const AuthProvider = ({ children }) => {
           console.log('Auth error detected:', error, errorDescription);
           setAuthError({
             type: error,
-            description: errorDescription?.replace(/\+/g, ' ')
+            description: errorDescription ? errorDescription.replace(/\+/g, ' ') : ''
           });
           
           // Clean URL
