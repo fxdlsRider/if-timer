@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 
 export default function IFTimerFinal() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, authError } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   
   // 🧪 TEST MODE - When true, uses seconds instead of hours for quick testing
@@ -1051,6 +1051,49 @@ export default function IFTimerFinal() {
           </div>
         );
       })()}
+
+      {/* AUTH ERROR BANNER */}
+      {authError && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          background: '#FFE5E5',
+          border: '1px solid #FF6B6B',
+          color: '#C92A2A',
+          padding: '12px 16px',
+          textAlign: 'center',
+          fontSize: '14px',
+          zIndex: 9998,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ flex: 1 }}>
+            <strong>Authentication Error:</strong> {
+              authError.type === 'otp_expired' 
+                ? 'Email link expired. Please request a new one.' 
+                : authError.description || 'Please try signing in again.'
+            }
+          </div>
+          <button
+            onClick={() => setShowLogin(true)}
+            style={{
+              background: '#C92A2A',
+              color: 'white',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '4px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              marginLeft: '12px'
+            }}
+          >
+            Sign In
+          </button>
+        </div>
+      )}
 
       {/* TEST MODE INDICATOR */}
       {TEST_MODE && (

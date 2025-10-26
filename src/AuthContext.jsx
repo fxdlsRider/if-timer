@@ -15,8 +15,32 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
+    // Check for auth errors in URL hash (expired magic link, etc.)
+    const checkForAuthErrors = () => {
+      const hash = window.location.hash;
+      if (hash.includes('error=')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const error = params.get('error');
+        const errorDescription = params.get('error_description');
+        
+        if (error) {
+          console.log('Auth error detected:', error, errorDescription);
+          setAuthError({
+            type: error,
+            description: errorDescription?.replace(/\+/g, ' ')
+          });
+          
+          // Clean URL
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+    };
+    
+    checkForAuthErrors();
+
     // Check active session
     // NOTE: Supabase automatically handles refresh tokens
     // Sessions last 1 hour, refresh tokens last 4 weeks (2,419,200 seconds)
@@ -30,6 +54,11 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Clear error on successful auth
+      if (session?.user) {
+        setAuthError(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -55,6 +84,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    authError,
     signInWithEmail,
     signOut,
   };
