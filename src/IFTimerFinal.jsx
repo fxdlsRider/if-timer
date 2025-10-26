@@ -413,6 +413,11 @@ export default function IFTimerFinal() {
     const now = Date.now();
     const target = now + (hours * TIME_MULTIPLIER * 1000);
     
+    // Reset extended mode state for new timer
+    setIsExtended(false);
+    setOriginalGoalTime(null);
+    setShowCelebration(false);
+    
     setTargetTime(target);
     setIsRunning(true);
     notificationShownRef.current = false;
@@ -421,6 +426,8 @@ export default function IFTimerFinal() {
   const cancelTimer = () => {
     setIsRunning(false);
     setTargetTime(null);
+    setIsExtended(false);
+    setOriginalGoalTime(null);
     notificationShownRef.current = false;
   };
 
