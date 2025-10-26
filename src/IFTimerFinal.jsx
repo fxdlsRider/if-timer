@@ -41,16 +41,13 @@ export default function IFTimerFinal() {
   const getTimeLeft = () => {
     if (!isRunning || !targetTime) return 0;
     
-    if (isExtended && originalGoalTime) {
-      // Extended mode: show time SINCE goal was reached
-      // Safety check: only if originalGoalTime is valid and in the past
-      if (originalGoalTime < currentTime) {
-        const elapsed = Math.floor((currentTime - originalGoalTime) / 1000);
-        return elapsed; // Positive number = time beyond goal
-      }
+    // Extended mode: only if we have a valid originalGoalTime AND it's in the past
+    if (isExtended && originalGoalTime && originalGoalTime < currentTime) {
+      const elapsed = Math.floor((currentTime - originalGoalTime) / 1000);
+      return Math.max(0, elapsed); // Positive number = time beyond goal
     }
     
-    // Normal mode: countdown to goal
+    // Normal mode: countdown to goal (or if extended mode is invalid)
     const remaining = Math.max(0, Math.floor((targetTime - currentTime) / 1000));
     return remaining;
   };
@@ -381,6 +378,15 @@ export default function IFTimerFinal() {
       };
     }
   }, [isDragging]);
+
+  // Cleanup: Force reset extended mode when timer stops
+  useEffect(() => {
+    if (!isRunning) {
+      // When timer stops, ensure extended mode is fully reset
+      setIsExtended(false);
+      setOriginalGoalTime(null);
+    }
+  }, [isRunning]);
 
   const handleLevelClick = (targetHours) => {
     if (isRunning) return;
