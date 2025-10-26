@@ -1234,7 +1234,7 @@ export default function IFTimerFinal() {
               </div>
 
               {/* Notification Info Banner - only show if permission not granted */}
-              {Notification.permission === 'default' && (
+              {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
                 <div style={{
                   background: '#FFF9E6',
                   border: '1px solid #FFE066',
