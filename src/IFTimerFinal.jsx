@@ -41,10 +41,13 @@ export default function IFTimerFinal() {
   const getTimeLeft = () => {
     if (!isRunning || !targetTime) return 0;
     
-    if (isExtended) {
+    if (isExtended && originalGoalTime) {
       // Extended mode: show time SINCE goal was reached
-      const elapsed = Math.floor((currentTime - originalGoalTime) / 1000);
-      return elapsed; // Positive number = time beyond goal
+      // Safety check: only if originalGoalTime is valid and in the past
+      if (originalGoalTime < currentTime) {
+        const elapsed = Math.floor((currentTime - originalGoalTime) / 1000);
+        return elapsed; // Positive number = time beyond goal
+      }
     }
     
     // Normal mode: countdown to goal
@@ -391,6 +394,12 @@ export default function IFTimerFinal() {
   };
 
   const startTimer = () => {
+    // CRITICAL: Reset extended mode FIRST before calculating new target
+    // Otherwise getTimeLeft() might still see old isExtended/originalGoalTime values
+    setIsExtended(false);
+    setOriginalGoalTime(null);
+    setShowCelebration(false);
+    
     // Request notification permission on first start (Safari requires user gesture)
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
@@ -412,11 +421,6 @@ export default function IFTimerFinal() {
     
     const now = Date.now();
     const target = now + (hours * TIME_MULTIPLIER * 1000);
-    
-    // Reset extended mode state for new timer
-    setIsExtended(false);
-    setOriginalGoalTime(null);
-    setShowCelebration(false);
     
     setTargetTime(target);
     setIsRunning(true);
