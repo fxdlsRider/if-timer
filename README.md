@@ -102,6 +102,7 @@ REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 Comprehensive documentation is available in the `docs/` folder:
 
+- **[Vision Alignment](docs/vision-alignment.md)** - Updated vision & new requirements ⭐ **NEW**
 - **[Brainstorming & Vision](docs/brainstorming.md)** - Project goals, features, ideas
 - **[Architecture](docs/architecture.md)** - Technical design, refactoring plan
 - **[Progress Log](docs/progress.md)** - Development timeline and decisions
