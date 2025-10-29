@@ -105,7 +105,8 @@ Comprehensive documentation is available in the `docs/` folder:
 - **[Brainstorming & Vision](docs/brainstorming.md)** - Project goals, features, ideas
 - **[Architecture](docs/architecture.md)** - Technical design, refactoring plan
 - **[Progress Log](docs/progress.md)** - Development timeline and decisions
-- **[Deployment](docs/deployment.md)** - Vercel & Supabase setup (TODO)
+- **[Database Schema](docs/database.md)** - Supabase database documentation
+- **[Deployment Guide](docs/deployment.md)** - Vercel & Supabase setup
 
 ---
 

@@ -21,6 +21,20 @@
   - Defined target architecture (clean layers)
   - Created migration roadmap (4 phases)
 
+- **Database & Deployment Documentation**
+  - Created `database.md` - Complete Supabase schema documentation
+    - Documented existing `timer_states` table
+    - Planned `fasting_sessions` table (future feature)
+    - SQL setup scripts with RLS policies
+    - Troubleshooting guide
+  - Created `deployment.md` - Full production deployment guide
+    - Step-by-step Supabase setup
+    - Step-by-step Vercel deployment
+    - Environment variable configuration
+    - Custom domain setup
+    - Monitoring and maintenance guide
+  - Updated `README.md` to link to all documentation
+
 ### 🎯 Current Status
 
 **Branch:** `claude/session-011CUZgavYBZpxkbtU7ZNUhn`
