@@ -5,6 +5,138 @@
 
 ---
 
+## 📅 2025-10-30 - Phase 1.1: Extract Utils & Services (Session 3)
+
+### ✅ Completed - Partial Refactoring
+
+- **Folder Structure Created**
+  - `src/utils/` - Pure utility functions
+  - `src/services/` - External service integrations
+  - `src/config/` - Constants and configuration
+  - `src/hooks/` - Custom React hooks (empty, for Phase 1.2)
+  - `src/assets/` - Media files (images, fonts, audio)
+  - `src/styles/` - CSS and design system (for Phase 1.3)
+
+- **Utils Extracted (✅ Complete)**
+  - `utils/timeCalculations.js` - All time-related pure functions
+    - formatTime(seconds) → HH:MM:SS
+    - getTimeLeft(target, current, isExtended, originalGoal)
+    - getProgress(totalHours, timeLeft)
+    - getFastingLevel(hours) → level index
+    - getBodyMode(totalHours, timeLeft) → mode index
+    - hoursToAngle(hours) / angleToHours(angle)
+    - calculateTargetTime(hours, multiplier)
+
+  - `utils/celebrationContent.js` - Celebration messages
+    - getCelebrationContent(duration) → {title, subtitle, message, color}
+    - getTimeOfDayMessage(completionTime)
+    - getStreakMessage(streakDays)
+    - getMilestoneMessage(totalFasts, totalHours)
+    - getCompleteCelebrationData({...}) - combined data
+
+- **Config Extracted (✅ Complete)**
+  - `config/constants.js` - Single source of truth
+    - TIMER_CONSTANTS (MIN/MAX hours, defaults)
+    - TEST_MODE / PRODUCTION_MODE config
+    - CIRCLE_CONFIG (radius, dimensions)
+    - FASTING_LEVELS array (6 levels with colors, descriptions)
+    - BODY_MODES array (5 modes with icons)
+    - PROGRESS_COLORS + getProgressColor()
+    - NOTIFICATION_CONFIG
+    - AUDIO_CONFIG (melody frequencies)
+    - STORAGE_KEYS, SUPABASE_CHANNELS
+    - BREAKPOINTS, ANIMATIONS
+
+- **Services Extracted (✅ Complete)**
+  - `services/audioService.js` - Web Audio API abstraction
+    - getAudioContext() - singleton pattern
+    - initializeAudioContext() - user gesture init
+    - playCompletionSound() - success melody
+    - playCustomTone(frequency, duration)
+    - stopAllAudio(), isAudioSupported()
+
+  - `services/notificationService.js` - Notification API abstraction
+    - isNotificationSupported()
+    - getNotificationPermission()
+    - requestNotificationPermission()
+    - showNotification(title, options)
+    - showCompletionNotification(duration, unit)
+    - showReminderNotification(message)
+    - showMilestoneNotification(title, message)
+    - getPermissionInfo()
+
+### 🎯 Current Status
+
+**Branch:** `claude/session-011CUZgavYBZpxkbtU7ZNUhn`
+**Phase:** 1.1 - Extract Utils & Services (50% complete)
+**Next:** Update IFTimerFinal.jsx to use extracted modules
+
+### 📊 Refactoring Progress
+
+**Phase 1.1: Extract Utils & Services**
+- [x] Create folder structure
+- [x] Extract time calculations
+- [x] Extract constants
+- [x] Extract celebration content
+- [x] Extract audio service
+- [x] Extract notification service
+- [ ] Update IFTimerFinal.jsx with imports (NEXT!)
+- [ ] Test timer still works
+- [ ] Verify no functionality broken
+
+**Lines Extracted:** ~600 lines moved from IFTimerFinal.jsx to separate modules
+
+### 💡 Key Architectural Improvements
+
+1. **Separation of Concerns**
+   - Pure functions isolated in utils/
+   - External APIs wrapped in services/
+   - Configuration centralized in config/
+
+2. **Testability**
+   - All utils are pure functions → easy to unit test
+   - Services have clear interfaces → mockable
+   - No React dependencies in business logic
+
+3. **Reusability**
+   - timeCalculations can be used anywhere
+   - audioService can play any sound
+   - notificationService handles all browser notifications
+
+4. **Maintainability**
+   - Single source of truth (constants.js)
+   - No magic numbers in components
+   - Clear file organization
+
+### 🚧 Known Issues / TODOs
+
+- [ ] IFTimerFinal.jsx still has 1,624 lines (not yet updated)
+- [ ] No tests written yet
+- [ ] Celebration content still uses inline definitions in IFTimerFinal
+- [ ] Audio initialization still in component
+
+### 🎯 Next Session Goals
+
+1. **Update IFTimerFinal.jsx:**
+   - Add imports for utils/services
+   - Replace inline functions with imported ones
+   - Replace magic numbers with constants
+   - Test that everything still works
+
+2. **Phase 1.2: Extract Hooks:**
+   - useTimer
+   - useTimerSync
+   - useDragHandle
+   - etc.
+
+3. **Phase 1.3: Split Components:**
+   - TimerCircle
+   - CelebrationScreen
+   - LoginModal
+   - etc.
+
+---
+
 ## 📅 2025-10-29 - Foundation Phase (Session 2)
 
 ### ✅ Completed - Vision Alignment
