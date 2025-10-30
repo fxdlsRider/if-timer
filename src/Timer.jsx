@@ -1,5 +1,5 @@
 // src/Timer.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 
 // Hooks
@@ -62,22 +62,27 @@ export default function Timer() {
     setHours
   );
 
+  // Stabilize timerState object to prevent re-renders
+  const timerStateForStorage = useMemo(() => ({
+    hours,
+    angle,
+    isRunning,
+    targetTime,
+    isExtended,
+    originalGoalTime: timerState.originalGoalTime,
+  }), [hours, angle, isRunning, targetTime, isExtended, timerState.originalGoalTime]);
+
+  // Stabilize callback to prevent re-creation
+  const handleStateLoaded = useCallback((loadedState) => {
+    if (loadedState.hours !== undefined) setHours(loadedState.hours);
+    if (loadedState.angle !== undefined) setAngle(loadedState.angle);
+  }, []);
+
   // Custom Hook - Storage and sync
   const { syncing } = useTimerStorage(
     user,
-    {
-      hours,
-      angle,
-      isRunning,
-      targetTime,
-      isExtended,
-      originalGoalTime: timerState.originalGoalTime,
-    },
-    (loadedState) => {
-      // Callback when state is loaded from storage
-      if (loadedState.hours !== undefined) setHours(loadedState.hours);
-      if (loadedState.angle !== undefined) setAngle(loadedState.angle);
-    }
+    timerStateForStorage,
+    handleStateLoaded
   );
 
   // All timer logic, storage, and drag handling now managed by custom hooks above
