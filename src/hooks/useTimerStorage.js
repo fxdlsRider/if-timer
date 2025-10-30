@@ -1,5 +1,5 @@
 // hooks/useTimerStorage.js
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 /**
