@@ -3,19 +3,52 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 
+// Utils
+import {
+  formatTime,
+  getTimeLeft as calculateTimeLeft,
+  getProgress as calculateProgress,
+  getFastingLevel as calculateFastingLevel,
+  getBodyMode as calculateBodyMode,
+  calculateTargetTime,
+} from './utils/timeCalculations';
+import { getCelebrationContent } from './utils/celebrationContent';
+
+// Services
+import {
+  initializeAudioContext,
+  playCompletionSound,
+} from './services/audioService';
+import {
+  requestNotificationPermission,
+  showCompletionNotification,
+  getNotificationPermission,
+} from './services/notificationService';
+
+// Config
+import {
+  TEST_MODE as TEST_MODE_CONFIG,
+  PRODUCTION_MODE,
+  TIMER_CONSTANTS,
+  CIRCLE_CONFIG,
+  FASTING_LEVELS,
+  BODY_MODES,
+  getProgressColor,
+} from './config/constants';
+
 export default function IFTimerFinal() {
   const { user, signOut, authError } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
-  
-  // 🧪 TEST MODE - When true, uses seconds instead of hours for quick testing
-  const TEST_MODE = true; // Change to false for production!
-  const TIME_MULTIPLIER = TEST_MODE ? 1 : 3600; // 1 second or 3600 seconds (1 hour)
-  const TIME_UNIT = TEST_MODE ? 'seconds' : 'hours';
-  
-  const [hours, setHours] = useState(16);
+
+  // 🧪 TEST MODE - Imported from config/constants.js
+  const TEST_MODE = TEST_MODE_CONFIG.ENABLED;
+  const TIME_MULTIPLIER = TEST_MODE ? TEST_MODE_CONFIG.TIME_MULTIPLIER : PRODUCTION_MODE.TIME_MULTIPLIER;
+  const TIME_UNIT = TEST_MODE ? TEST_MODE_CONFIG.TIME_UNIT : PRODUCTION_MODE.TIME_UNIT;
+
+  const [hours, setHours] = useState(TIMER_CONSTANTS.DEFAULT_HOURS);
   const [isRunning, setIsRunning] = useState(false);
   const [targetTime, setTargetTime] = useState(null);
-  const [angle, setAngle] = useState(21.2);
+  const [angle, setAngle] = useState(TIMER_CONSTANTS.DEFAULT_ANGLE);
   const [isDragging, setIsDragging] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -27,7 +60,7 @@ export default function IFTimerFinal() {
 
   const circleRef = useRef(null);
   const notificationShownRef = useRef(false);
-  const audioContextRef = useRef(null);
+  // audioContextRef removed - now managed by audioService
 
   // Update current time every second for display
   useEffect(() => {
@@ -37,22 +70,8 @@ export default function IFTimerFinal() {
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate time left based on target time
-  const getTimeLeft = () => {
-    if (!isRunning || !targetTime) return 0;
-    
-    // Extended mode: only if we have a valid originalGoalTime AND it's in the past
-    if (isExtended && originalGoalTime && originalGoalTime < currentTime) {
-      const elapsed = Math.floor((currentTime - originalGoalTime) / 1000);
-      return Math.max(0, elapsed); // Positive number = time beyond goal
-    }
-    
-    // Normal mode: countdown to goal (or if extended mode is invalid)
-    const remaining = Math.max(0, Math.floor((targetTime - currentTime) / 1000));
-    return remaining;
-  };
-
-  const timeLeft = getTimeLeft();
+  // Calculate time left based on target time (using imported utility)
+  const timeLeft = isRunning ? calculateTimeLeft(targetTime, currentTime, isExtended, originalGoalTime) : 0;
 
   // NOTE: Notification permission will be requested on first timer start
   // Safari requires user gesture - can't request automatically on page load
@@ -70,62 +89,12 @@ export default function IFTimerFinal() {
         unit: TIME_UNIT
       };
       setCompletedFastData(completionData);
-      
-      // Play completion sound
-      const playSound = () => {
-        try {
-          const audioContext = audioContextRef.current;
-          
-          if (!audioContext) {
-            console.log('❌ No AudioContext available');
-            return;
-          }
-          
-          if (audioContext.state === 'suspended') {
-            console.log('⚠️ AudioContext suspended, attempting resume...');
-            audioContext.resume();
-          }
-          
-          console.log('🔊 Playing completion sound...');
-          
-          // Success melody: 3 ascending tones
-          const playTone = (frequency, startTime, duration) => {
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            
-            osc.frequency.value = frequency;
-            gain.gain.setValueAtTime(0.3, startTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-            
-            osc.start(startTime);
-            osc.stop(startTime + duration);
-          };
-          
-          const now = audioContext.currentTime;
-          playTone(523.25, now, 0.15);        // C5
-          playTone(659.25, now + 0.15, 0.15); // E5
-          playTone(783.99, now + 0.3, 0.3);   // G5
-          
-          console.log('✅ Sound played successfully!');
-        } catch (e) {
-          console.error('❌ Error playing sound:', e);
-        }
-      };
-      
-      playSound();
-      
-      // Show browser notification
-      if ('Notification' in window && Notification.permission === 'granted') {
-        const duration = TEST_MODE ? `${hours} seconds` : `${hours}h`;
-        new Notification('IF Timer Complete! 🎉', {
-          body: `Your ${duration} fast is complete! Great job!`,
-          icon: '/favicon.ico',
-          tag: 'if-timer-complete'
-        });
-      }
+
+      // Play completion sound (using imported service)
+      playCompletionSound();
+
+      // Show browser notification (using imported service)
+      showCompletionNotification(hours, TIME_UNIT);
 
       // Show celebration screen instead of resetting
       setShowCelebration(true);
@@ -192,8 +161,7 @@ export default function IFTimerFinal() {
         // Check if timer is actually still running
         const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
         const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
-        const now = Date.now();
-        
+
         if (targetTimeMs && data.is_running) {
           setIsRunning(true);
           setTargetTime(targetTimeMs);
@@ -405,28 +373,17 @@ export default function IFTimerFinal() {
     setIsExtended(false);
     setOriginalGoalTime(null);
     setShowCelebration(false);
-    
-    // Request notification permission on first start (Safari requires user gesture)
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+
+    // Request notification permission (using imported service)
+    if (getNotificationPermission() === 'default') {
+      requestNotificationPermission();
     }
-    
-    // Initialize AudioContext on user gesture (required for autoplay policy)
-    if (!audioContextRef.current) {
-      try {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      } catch (e) {
-        console.log('AudioContext not supported:', e);
-      }
-    }
-    
-    // Resume AudioContext if suspended
-    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume();
-    }
-    
-    const now = Date.now();
-    const target = now + (hours * TIME_MULTIPLIER * 1000);
+
+    // Initialize AudioContext (using imported service)
+    initializeAudioContext();
+
+    // Calculate target time (using imported utility)
+    const target = calculateTargetTime(hours, TIME_MULTIPLIER);
     
     setTargetTime(target);
     setIsRunning(true);
@@ -471,122 +428,27 @@ export default function IFTimerFinal() {
     // TODO: Save to fasting_sessions table
   };
 
-  // Get celebration content based on fasting level
-  const getCelebrationContent = (duration) => {
-    if (duration >= 14 && duration < 16) {
-      return {
-        title: 'GENTLE WARRIOR',
-        subtitle: `You completed your ${duration}h gentle fast!`,
-        message: 'Building healthy habits, one fast at a time.',
-        color: '#4CAF50' // Soft green
-      };
-    } else if (duration >= 16 && duration < 18) {
-      return {
-        title: 'CLASSIC ACHIEVER',
-        subtitle: `You completed your ${duration}h classic fast!`,
-        message: 'This is the gold standard. You nailed it.',
-        color: '#2196F3' // Blue
-      };
-    } else if (duration >= 18 && duration < 20) {
-      return {
-        title: 'INTENSIVE CHAMPION',
-        subtitle: `You completed your ${duration}h intensive fast!`,
-        message: "Most people can't do this. You're not most people.",
-        color: '#FF9800' // Orange
-      };
-    } else if (duration >= 20 && duration < 24) {
-      return {
-        title: 'WARRIOR ELITE',
-        subtitle: `You completed your ${duration}h warrior fast!`,
-        message: 'Discipline. Focus. Power. This is mastery.',
-        color: '#F44336' // Red
-      };
-    } else if (duration >= 24 && duration < 36) {
-      return {
-        title: 'MONK MODE MASTER',
-        subtitle: `You completed your ${duration}h monk fast!`,
-        message: 'Few reach this level. You have transcended.',
-        color: '#9C27B0' // Purple
-      };
-    } else {
-      return {
-        title: 'LEGEND STATUS',
-        subtitle: `You completed your ${duration}h extended fast!`,
-        message: "This is legendary. You've earned your place.",
-        color: '#FFD700' // Gold
-      };
-    }
-  };
+  // Helper functions now imported from utils/ and config/
+  // getCelebrationContent → utils/celebrationContent.js
+  // formatTime → utils/timeCalculations.js
+  // getProgress → calculateProgress (imported)
+  // getFastingLevel → calculateFastingLevel (imported)
+  // getBodyMode → calculateBodyMode (imported)
+  // getProgressColor → imported from config/constants.js
 
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  };
-
-  const getProgress = () => {
-    if (!isRunning || !targetTime) return 0;
-    const totalSeconds = hours * 3600;
-    const elapsed = totalSeconds - timeLeft;
-    return (elapsed / totalSeconds) * 100;
-  };
-
-  const getFastingLevel = () => {
-    if (hours >= 14 && hours < 16) return 0;
-    if (hours >= 16 && hours < 18) return 1;
-    if (hours >= 18 && hours < 20) return 2;
-    if (hours >= 20 && hours < 24) return 3;
-    if (hours >= 24 && hours < 36) return 4;
-    return 5;
-  };
-
-  const getBodyMode = () => {
-    if (!isRunning || !targetTime) return 0;
-    const elapsed = (hours * 3600) - timeLeft;
-    const elapsedHours = elapsed / 3600;
-
-    if (elapsedHours < 4) return 0;
-    if (elapsedHours < 12) return 1;
-    if (elapsedHours < 18) return 2;
-    if (elapsedHours < 24) return 3;
-    return 4;
-  };
-
-  const getProgressColor = () => {
-    const progress = getProgress();
-    if (progress < 25) return '#d32f2f';
-    if (progress < 50) return '#f57c00';
-    if (progress < 75) return '#388e3c';
-    if (progress < 100) return '#1976d2';
-    return '#7b1fa2';
-  };
-
-  const fastingLevels = [
-    { range: '14-16h', label: 'Gentle', startHour: 14 },
-    { range: '16-18h', label: 'Classic', startHour: 16 },
-    { range: '18-20h', label: 'Intensive', startHour: 18 },
-    { range: '20-24h', label: 'Warrior', startHour: 20 },
-    { range: '24-36h', label: 'Monk', startHour: 24 },
-    { range: '36+h', label: 'Extended', startHour: 36 }
-  ];
-
-  const bodyModes = [
-    { range: '0-4h', label: 'Digesting' },
-    { range: '4-12h', label: 'Getting ready' },
-    { range: '12-18h', label: 'Fat burning' },
-    { range: '18-24h', label: 'Cell renewal' },
-    { range: '24+h', label: 'Deep healing' }
-  ];
+  // Use imported constants for fasting levels and body modes
+  const fastingLevels = FASTING_LEVELS;
+  const bodyModes = BODY_MODES;
 
   const handleX = angle * (Math.PI / 180);
   const handleY = angle * (Math.PI / 180);
-  const radius = 114;
-  const handlePosX = 140 + Math.sin(handleX) * radius;
-  const handlePosY = 140 - Math.cos(handleY) * radius;
+  const radius = CIRCLE_CONFIG.HANDLE_RADIUS;
+  const handlePosX = CIRCLE_CONFIG.CENTER_X + Math.sin(handleX) * radius;
+  const handlePosY = CIRCLE_CONFIG.CENTER_Y - Math.cos(handleY) * radius;
 
-  const circumference = 2 * Math.PI * 120;
-  const progressOffset = circumference - (getProgress() / 100) * circumference;
+  const circumference = 2 * Math.PI * CIRCLE_CONFIG.RADIUS;
+  const progress = isRunning && targetTime ? calculateProgress(hours, timeLeft) : 0;
+  const progressOffset = circumference - (progress / 100) * circumference;
 
   const styles = {
     container: {
@@ -1295,7 +1157,7 @@ export default function IFTimerFinal() {
                     cy="140"
                     r="120"
                     fill="none"
-                    stroke={getProgressColor()}
+                    stroke={getProgressColor(progress)}
                     strokeWidth="8"
                     strokeDasharray={circumference}
                     strokeDashoffset={progressOffset}
@@ -1381,8 +1243,8 @@ export default function IFTimerFinal() {
                 key={index}
                 style={{
                   ...styles.infoItem,
-                  color: (!isRunning ? getFastingLevel() : getBodyMode()) === index ? '#333' : '#999',
-                  fontWeight: (!isRunning ? getFastingLevel() : getBodyMode()) === index ? '500' : 'normal'
+                  color: (!isRunning ? calculateFastingLevel(hours) : calculateBodyMode(hours, timeLeft)) === index ? '#333' : '#999',
+                  fontWeight: (!isRunning ? calculateFastingLevel(hours) : calculateBodyMode(hours, timeLeft)) === index ? '500' : 'normal'
                 }}
                 onClick={() => !isRunning && item.startHour && handleLevelClick(item.startHour)}
                 onMouseEnter={(e) => {
@@ -1392,7 +1254,7 @@ export default function IFTimerFinal() {
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isRunning && item.startHour && getFastingLevel() !== index) {
+                  if (!isRunning && item.startHour && calculateFastingLevel(hours) !== index) {
                     e.currentTarget.style.color = '#999';
                     e.currentTarget.style.fontWeight = 'normal';
                   }
