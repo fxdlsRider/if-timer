@@ -1,34 +1,23 @@
 // src/IFTimerFinal.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { supabase } from './supabaseClient';
+
+// Hooks
+import { useTimerState } from './hooks/useTimerState';
+import { useTimerStorage } from './hooks/useTimerStorage';
+import { useDragHandle } from './hooks/useDragHandle';
 
 // Utils
 import {
   formatTime,
-  getTimeLeft as calculateTimeLeft,
   getProgress as calculateProgress,
   getFastingLevel as calculateFastingLevel,
   getBodyMode as calculateBodyMode,
-  calculateTargetTime,
 } from './utils/timeCalculations';
 import { getCelebrationContent } from './utils/celebrationContent';
 
-// Services
-import {
-  initializeAudioContext,
-  playCompletionSound,
-} from './services/audioService';
-import {
-  requestNotificationPermission,
-  showCompletionNotification,
-  getNotificationPermission,
-} from './services/notificationService';
-
 // Config
 import {
-  TEST_MODE as TEST_MODE_CONFIG,
-  PRODUCTION_MODE,
   TIMER_CONSTANTS,
   CIRCLE_CONFIG,
   FASTING_LEVELS,
@@ -39,394 +28,69 @@ import {
 export default function IFTimerFinal() {
   const { user, signOut, authError } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
-
-  // 🧪 TEST MODE - Imported from config/constants.js
-  const TEST_MODE = TEST_MODE_CONFIG.ENABLED;
-  const TIME_MULTIPLIER = TEST_MODE ? TEST_MODE_CONFIG.TIME_MULTIPLIER : PRODUCTION_MODE.TIME_MULTIPLIER;
-  const TIME_UNIT = TEST_MODE ? TEST_MODE_CONFIG.TIME_UNIT : PRODUCTION_MODE.TIME_UNIT;
-
-  const [hours, setHours] = useState(TIMER_CONSTANTS.DEFAULT_HOURS);
-  const [isRunning, setIsRunning] = useState(false);
-  const [targetTime, setTargetTime] = useState(null);
-  const [angle, setAngle] = useState(TIMER_CONSTANTS.DEFAULT_ANGLE);
-  const [isDragging, setIsDragging] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [currentTime, setCurrentTime] = useState(Date.now());
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [completedFastData, setCompletedFastData] = useState(null);
-  const [isExtended, setIsExtended] = useState(false);
-  const [originalGoalTime, setOriginalGoalTime] = useState(null);
-
   const circleRef = useRef(null);
-  const notificationShownRef = useRef(false);
-  // audioContextRef removed - now managed by audioService
 
-  // Update current time every second for display
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  // Custom Hooks - Timer state and logic
+  const timerState = useTimerState(TIMER_CONSTANTS.DEFAULT_HOURS);
+  const {
+    hours,
+    setHours,
+    isRunning,
+    targetTime,
+    timeLeft,
+    isExtended,
+    showCelebration,
+    completedFastData,
+    TEST_MODE,
+    TIME_UNIT,
+    startTimer,
+    cancelTimer,
+    continueFasting,
+    stopFasting,
+    startNewFast,
+  } = timerState;
 
-  // Calculate time left based on target time (using imported utility)
-  const timeLeft = isRunning ? calculateTimeLeft(targetTime, currentTime, isExtended, originalGoalTime) : 0;
+  // Custom Hook - Drag handling
+  const dragHandle = useDragHandle(
+    circleRef,
+    isRunning,
+    TIMER_CONSTANTS.DEFAULT_ANGLE,
+    hours
+  );
+  const {
+    isDragging,
+    angle,
+    handlePointerDown,
+    handleLevelClick,
+  } = dragHandle;
 
-  // NOTE: Notification permission will be requested on first timer start
-  // Safari requires user gesture - can't request automatically on page load
-
-  // Show notification when timer completes
-  useEffect(() => {
-    if (isRunning && timeLeft === 0 && !notificationShownRef.current) {
-      notificationShownRef.current = true;
-      
-      // Save completion data for celebration screen
-      const completionData = {
-        duration: hours,
-        startTime: new Date(targetTime - (hours * TIME_MULTIPLIER * 1000)),
-        endTime: new Date(targetTime),
-        unit: TIME_UNIT
-      };
-      setCompletedFastData(completionData);
-
-      // Play completion sound (using imported service)
-      playCompletionSound();
-
-      // Show browser notification (using imported service)
-      showCompletionNotification(hours, TIME_UNIT);
-
-      // Show celebration screen instead of resetting
-      setShowCelebration(true);
-      
-      // Reset notification flag after 5 seconds
-      setTimeout(() => {
-        notificationShownRef.current = false;
-      }, 5000);
+  // Sync dragHandle hours with timerState hours
+  React.useEffect(() => {
+    if (!isRunning && dragHandle.hours !== hours) {
+      setHours(dragHandle.hours);
     }
-  }, [isRunning, timeLeft, hours, TEST_MODE, TIME_MULTIPLIER, TIME_UNIT, targetTime]);
+  }, [dragHandle.hours, hours, isRunning, setHours]);
 
-  // Load state from localStorage on mount (if not logged in)
-  useEffect(() => {
-    if (user) return; // Skip if logged in (will load from Supabase)
-
-    const saved = localStorage.getItem('ifTimerState');
-    if (saved) {
-      try {
-        const state = JSON.parse(saved);
-        setHours(state.hours || 16);
-        setAngle(state.angle || 21.2);
-        setIsRunning(state.isRunning || false);
-        setTargetTime(state.targetTime || null);
-      } catch (e) {
-        console.error('Error loading state:', e);
-      }
-    }
-  }, [user]);
-
-  // Save to localStorage (if not logged in)
-  useEffect(() => {
-    if (user) return; // Skip if logged in (Supabase handles it)
-
-    const state = {
-      hours,
-      angle,
+  // Custom Hook - Storage and sync
+  const { syncing } = useTimerStorage(
+    user,
+    {
+      hours: dragHandle.hours,
+      angle: dragHandle.angle,
       isRunning,
-      targetTime
-    };
-    localStorage.setItem('ifTimerState', JSON.stringify(state));
-  }, [hours, angle, isRunning, targetTime, user]);
-
-  // Load from Supabase (if logged in)
-  useEffect(() => {
-    if (!user) return;
-
-    const loadFromSupabase = async () => {
-      const { data, error } = await supabase
-        .from('timer_states')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading:', error);
-        setIsInitialLoad(false);
-        return;
-      }
-
-      if (data) {
-        setHours(data.hours);
-        setAngle(data.angle);
-        
-        // Check if timer is actually still running
-        const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
-        const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
-
-        if (targetTimeMs && data.is_running) {
-          setIsRunning(true);
-          setTargetTime(targetTimeMs);
-          
-          // Check if in extended mode
-          if (data.is_extended && originalGoalMs) {
-            setIsExtended(true);
-            setOriginalGoalTime(originalGoalMs);
-          } else {
-            setIsExtended(false);
-            setOriginalGoalTime(null);
-          }
-        } else {
-          // Timer not running or completed
-          setIsRunning(false);
-          setTargetTime(null);
-          setIsExtended(false);
-          setOriginalGoalTime(null);
-        }
-      }
-      
-      // Mark initial load as complete
-      setIsInitialLoad(false);
-    };
-
-    loadFromSupabase();
-  }, [user]);
-
-  // Real-time sync (if logged in)
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('timer_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'timer_states',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          if (payload.new) {
-            const data = payload.new;
-            setHours(data.hours);
-            setAngle(data.angle);
-            
-            // Check if timer is actually still running
-            const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
-            const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
-            
-            if (targetTimeMs && data.is_running) {
-              setIsRunning(true);
-              setTargetTime(targetTimeMs);
-              
-              // Check if in extended mode
-              if (data.is_extended && originalGoalMs) {
-                setIsExtended(true);
-                setOriginalGoalTime(originalGoalMs);
-              } else {
-                setIsExtended(false);
-                setOriginalGoalTime(null);
-              }
-            } else {
-              // Timer not running
-              setIsRunning(false);
-              setTargetTime(null);
-              setIsExtended(false);
-              setOriginalGoalTime(null);
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  // Save to Supabase (if logged in)
-  const saveToSupabase = async () => {
-    if (!user || syncing) return;
-
-    setSyncing(true);
-
-    try {
-      const { error } = await supabase
-        .from('timer_states')
-        .upsert({
-          user_id: user.id,
-          hours,
-          angle,
-          is_running: isRunning,
-          target_time: targetTime ? new Date(targetTime).toISOString() : null,
-          is_extended: isExtended,
-          original_goal_time: originalGoalTime ? new Date(originalGoalTime).toISOString() : null
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving:', error);
-    } finally {
-      setSyncing(false);
+      targetTime,
+      isExtended,
+      originalGoalTime: timerState.originalGoalTime,
+    },
+    (loadedState) => {
+      // Callback when state is loaded from storage
+      if (loadedState.hours !== undefined) dragHandle.setHours(loadedState.hours);
+      if (loadedState.angle !== undefined) dragHandle.setAngle(loadedState.angle);
+      // Timer state is managed by useTimerState
     }
-  };
+  );
 
-  // Sync on state changes (if logged in)
-  useEffect(() => {
-    if (!user) return;
-    
-    // Skip saving on initial load - only save after user actions
-    if (isInitialLoad) return;
-    
-    saveToSupabase();
-  }, [hours, angle, isRunning, targetTime, isExtended, originalGoalTime, user]);
-
-  // Handle drag
-  const handlePointerDown = (e) => {
-    if (isRunning) return;
-    e.preventDefault();
-    setIsDragging(true);
-    updateAngleFromEvent(e);
-  };
-
-  const handlePointerMove = (e) => {
-    if (!isDragging || isRunning) return;
-    e.preventDefault();
-    updateAngleFromEvent(e);
-  };
-
-  const handlePointerUp = () => {
-    setIsDragging(false);
-  };
-
-  const updateAngleFromEvent = (e) => {
-    if (!circleRef.current) return;
-
-    const rect = circleRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-    if (!clientX || !clientY) return;
-
-    const deltaX = clientX - centerX;
-    const deltaY = clientY - centerY;
-
-    let rawAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 90;
-    if (rawAngle < 0) rawAngle += 360;
-
-    if (angle < 180 && rawAngle > 270) return;
-    if (angle > 270 && rawAngle < 90) return;
-
-    setAngle(rawAngle);
-
-    const hourRange = 34;
-    const mappedHours = Math.round(14 + (rawAngle / 360) * hourRange);
-    setHours(Math.min(48, Math.max(14, mappedHours)));
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      const handleMove = (e) => handlePointerMove(e);
-      const handleUp = () => handlePointerUp();
-
-      document.addEventListener('mousemove', handleMove);
-      document.addEventListener('mouseup', handleUp);
-      document.addEventListener('touchmove', handleMove, { passive: false });
-      document.addEventListener('touchend', handleUp);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleMove);
-        document.removeEventListener('mouseup', handleUp);
-        document.removeEventListener('touchmove', handleMove);
-        document.removeEventListener('touchend', handleUp);
-      };
-    }
-  }, [isDragging]);
-
-  // Cleanup: Force reset extended mode when timer stops
-  useEffect(() => {
-    if (!isRunning) {
-      // When timer stops, ensure extended mode is fully reset
-      setIsExtended(false);
-      setOriginalGoalTime(null);
-    }
-  }, [isRunning]);
-
-  const handleLevelClick = (targetHours) => {
-    if (isRunning) return;
-    
-    const hourRange = 34;
-    const normalizedHours = Math.max(14, Math.min(48, targetHours));
-    const newAngle = ((normalizedHours - 14) / hourRange) * 360;
-    
-    setHours(normalizedHours);
-    setAngle(newAngle);
-  };
-
-  const startTimer = () => {
-    // CRITICAL: Reset extended mode FIRST before calculating new target
-    // Otherwise getTimeLeft() might still see old isExtended/originalGoalTime values
-    setIsExtended(false);
-    setOriginalGoalTime(null);
-    setShowCelebration(false);
-
-    // Request notification permission (using imported service)
-    if (getNotificationPermission() === 'default') {
-      requestNotificationPermission();
-    }
-
-    // Initialize AudioContext (using imported service)
-    initializeAudioContext();
-
-    // Calculate target time (using imported utility)
-    const target = calculateTargetTime(hours, TIME_MULTIPLIER);
-    
-    setTargetTime(target);
-    setIsRunning(true);
-    notificationShownRef.current = false;
-  };
-
-  const cancelTimer = () => {
-    setIsRunning(false);
-    setTargetTime(null);
-    setIsExtended(false);
-    setOriginalGoalTime(null);
-    notificationShownRef.current = false;
-  };
-
-  // Celebration Screen Actions
-  const handleContinueFasting = () => {
-    // Enable extended mode
-    setIsExtended(true);
-    setOriginalGoalTime(targetTime); // Save when goal was reached
-    setShowCelebration(false);
-    // Timer continues running, now showing extended time
-  };
-
-  const handleStopFasting = () => {
-    // Save session and reset
-    setShowCelebration(false);
-    setIsRunning(false);
-    setTargetTime(null);
-    setIsExtended(false);
-    setOriginalGoalTime(null);
-    // TODO: Save to fasting_sessions table
-  };
-
-  const handleStartNewFast = () => {
-    // Save previous session and start fresh
-    setShowCelebration(false);
-    setIsRunning(false);
-    setTargetTime(null);
-    setIsExtended(false);
-    setOriginalGoalTime(null);
-    // Reset to selection screen
-    // TODO: Save to fasting_sessions table
-  };
+  // All timer logic, storage, and drag handling now managed by custom hooks above
 
   // Helper functions now imported from utils/ and config/
   // getCelebrationContent → utils/celebrationContent.js
@@ -844,7 +508,7 @@ export default function IFTimerFinal() {
                 gap: '12px'
               }}>
                 <button
-                  onClick={handleContinueFasting}
+                  onClick={continueFasting}
                   style={{
                     padding: '16px',
                     fontSize: '15px',
@@ -864,7 +528,7 @@ export default function IFTimerFinal() {
                 </button>
                 
                 <button
-                  onClick={handleStopFasting}
+                  onClick={stopFasting}
                   style={{
                     padding: '16px',
                     fontSize: '15px',
@@ -884,7 +548,7 @@ export default function IFTimerFinal() {
                 </button>
                 
                 <button
-                  onClick={handleStartNewFast}
+                  onClick={startNewFast}
                   style={{
                     padding: '16px',
                     fontSize: '15px',
