@@ -131,35 +131,6 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     };
   }, [user, onStateLoaded]);
 
-  // Save to Supabase function
-  const saveToSupabase = useCallback(async () => {
-    if (!user || syncing) return;
-
-    setSyncing(true);
-
-    try {
-      const { error } = await supabase
-        .from('timer_states')
-        .upsert({
-          user_id: user.id,
-          hours: timerState.hours,
-          angle: timerState.angle,
-          is_running: timerState.isRunning,
-          target_time: timerState.targetTime ? new Date(timerState.targetTime).toISOString() : null,
-          is_extended: timerState.isExtended || false,
-          original_goal_time: timerState.originalGoalTime ? new Date(timerState.originalGoalTime).toISOString() : null
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving to Supabase:', error);
-    } finally {
-      setSyncing(false);
-    }
-  }, [user, syncing, timerState]);
-
   // Auto-save to Supabase on state changes (if logged in)
   useEffect(() => {
     if (!user) return;
@@ -167,7 +138,37 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     // Skip saving on initial load
     if (isInitialLoad) return;
 
+    // Skip if already syncing
+    if (syncing) return;
+
+    const saveToSupabase = async () => {
+      setSyncing(true);
+
+      try {
+        const { error } = await supabase
+          .from('timer_states')
+          .upsert({
+            user_id: user.id,
+            hours: timerState.hours,
+            angle: timerState.angle,
+            is_running: timerState.isRunning,
+            target_time: timerState.targetTime ? new Date(timerState.targetTime).toISOString() : null,
+            is_extended: timerState.isExtended || false,
+            original_goal_time: timerState.originalGoalTime ? new Date(timerState.originalGoalTime).toISOString() : null
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error saving to Supabase:', error);
+      } finally {
+        setSyncing(false);
+      }
+    };
+
     saveToSupabase();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     user,
     isInitialLoad,
@@ -177,12 +178,11 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     timerState.targetTime,
     timerState.isExtended,
     timerState.originalGoalTime,
-    saveToSupabase
+    // Note: syncing NOT in deps to prevent loop
   ]);
 
   return {
     syncing,
     isInitialLoad,
-    saveToSupabase,
   };
 }

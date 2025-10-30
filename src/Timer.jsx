@@ -1,4 +1,4 @@
-// src/IFTimerFinal.jsx
+// src/Timer.jsx
 import React, { useState, useRef } from 'react';
 import { useAuth } from './AuthContext';
 
@@ -25,7 +25,7 @@ import {
   getProgressColor,
 } from './config/constants';
 
-export default function IFTimerFinal() {
+export default function Timer() {
   const { user, signOut, authError } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const circleRef = useRef(null);

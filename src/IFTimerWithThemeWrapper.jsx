@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTheme } from './ThemeContext';
 import { getThemeColors } from './themeConfig';
-import IFTimerFinal from './IFTimerFinal';
+import Timer from './Timer';
 
 const IFTimerWithThemeWrapper = () => {
   const { theme } = useTheme();
@@ -33,7 +33,7 @@ const IFTimerWithThemeWrapper = () => {
       minHeight: '100vh',
       color: colors.text
     }}>
-      <IFTimerFinal />
+      <Timer />
     </div>
   );
 };
