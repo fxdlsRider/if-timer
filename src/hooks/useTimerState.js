@@ -22,23 +22,24 @@ import {
 import {
   TEST_MODE as TEST_MODE_CONFIG,
   PRODUCTION_MODE,
-  TIMER_CONSTANTS,
 } from '../config/constants';
 
 /**
  * Custom hook for managing timer state and logic
  *
- * @param {number} initialHours - Initial hours for timer
+ * IMPORTANT: This hook does NOT manage hours state
+ * It receives hours from parent to prevent state synchronization bugs
+ *
+ * @param {number} hours - Current hours value (controlled from parent)
  * @returns {object} Timer state and control functions
  */
-export function useTimerState(initialHours = TIMER_CONSTANTS.DEFAULT_HOURS) {
+export function useTimerState(hours) {
   // Test mode configuration
   const TEST_MODE = TEST_MODE_CONFIG.ENABLED;
   const TIME_MULTIPLIER = TEST_MODE ? TEST_MODE_CONFIG.TIME_MULTIPLIER : PRODUCTION_MODE.TIME_MULTIPLIER;
   const TIME_UNIT = TEST_MODE ? TEST_MODE_CONFIG.TIME_UNIT : PRODUCTION_MODE.TIME_UNIT;
 
   // Timer state
-  const [hours, setHours] = useState(initialHours);
   const [isRunning, setIsRunning] = useState(false);
   const [targetTime, setTargetTime] = useState(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -161,8 +162,6 @@ export function useTimerState(initialHours = TIMER_CONSTANTS.DEFAULT_HOURS) {
 
   return {
     // State
-    hours,
-    setHours,
     isRunning,
     targetTime,
     currentTime,

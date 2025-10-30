@@ -30,11 +30,13 @@ export default function IFTimerFinal() {
   const [showLogin, setShowLogin] = useState(false);
   const circleRef = useRef(null);
 
+  // Local state for angle and hours (controlled by parent, not hooks)
+  const [angle, setAngle] = useState(TIMER_CONSTANTS.DEFAULT_ANGLE);
+  const [hours, setHours] = useState(TIMER_CONSTANTS.DEFAULT_HOURS);
+
   // Custom Hooks - Timer state and logic
-  const timerState = useTimerState(TIMER_CONSTANTS.DEFAULT_HOURS);
+  const timerState = useTimerState(hours);
   const {
-    hours,
-    setHours,
     isRunning,
     targetTime,
     timeLeft,
@@ -50,33 +52,22 @@ export default function IFTimerFinal() {
     startNewFast,
   } = timerState;
 
-  // Custom Hook - Drag handling
-  const dragHandle = useDragHandle(
+  // Custom Hook - Drag handling (controlled component pattern)
+  const { isDragging, handlePointerDown, handleLevelClick } = useDragHandle(
     circleRef,
     isRunning,
-    TIMER_CONSTANTS.DEFAULT_ANGLE,
-    hours
-  );
-  const {
-    isDragging,
     angle,
-    handlePointerDown,
-    handleLevelClick,
-  } = dragHandle;
-
-  // Sync dragHandle hours with timerState hours
-  React.useEffect(() => {
-    if (!isRunning && dragHandle.hours !== hours) {
-      setHours(dragHandle.hours);
-    }
-  }, [dragHandle.hours, hours, isRunning, setHours]);
+    setAngle,
+    hours,
+    setHours
+  );
 
   // Custom Hook - Storage and sync
   const { syncing } = useTimerStorage(
     user,
     {
-      hours: dragHandle.hours,
-      angle: dragHandle.angle,
+      hours,
+      angle,
       isRunning,
       targetTime,
       isExtended,
@@ -84,9 +75,8 @@ export default function IFTimerFinal() {
     },
     (loadedState) => {
       // Callback when state is loaded from storage
-      if (loadedState.hours !== undefined) dragHandle.setHours(loadedState.hours);
-      if (loadedState.angle !== undefined) dragHandle.setAngle(loadedState.angle);
-      // Timer state is managed by useTimerState
+      if (loadedState.hours !== undefined) setHours(loadedState.hours);
+      if (loadedState.angle !== undefined) setAngle(loadedState.angle);
     }
   );
 
