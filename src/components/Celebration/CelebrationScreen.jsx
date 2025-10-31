@@ -13,14 +13,12 @@ import { getCelebrationContent } from '../../utils/celebrationContent';
  * @param {object} completedFastData - Data about the completed fast
  * @param {function} onContinue - Handler for "Continue Fasting" button
  * @param {function} onStop - Handler for "Stop Fasting" button
- * @param {function} onStartNew - Handler for "Start New Fast" button
  * @param {boolean} isLoggedIn - Whether user is logged in
  */
 export default function CelebrationScreen({
   completedFastData,
   onContinue,
   onStop,
-  onStartNew,
   isLoggedIn
 }) {
   if (!completedFastData) return null;
@@ -197,32 +195,6 @@ export default function CelebrationScreen({
             onMouseLeave={(e) => e.target.style.background = '#333'}
           >
             {isLoggedIn ? 'Stop & Save' : 'Stop Fasting'}
-          </button>
-
-          <button
-            onClick={onStartNew}
-            style={{
-              padding: '16px',
-              fontSize: '15px',
-              fontWeight: '500',
-              background: 'transparent',
-              color: '#666',
-              border: '2px solid #e0e0e0',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              letterSpacing: '0.5px'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.borderColor = '#999';
-              e.target.style.color = '#333';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.borderColor = '#e0e0e0';
-              e.target.style.color = '#666';
-            }}
-          >
-            Start New Fast
           </button>
         </div>
       </div>

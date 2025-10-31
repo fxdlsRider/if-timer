@@ -55,7 +55,6 @@ export default function Timer() {
     cancelTimer,
     continueFasting,
     stopFasting,
-    startNewFast,
   } = timerState;
 
   // Custom Hook - Drag handling (controlled component pattern)
@@ -172,7 +171,6 @@ export default function Timer() {
           completedFastData={completedFastData}
           onContinue={continueFasting}
           onStop={stopFasting}
-          onStartNew={startNewFast}
           isLoggedIn={!!user}
         />
       )}
