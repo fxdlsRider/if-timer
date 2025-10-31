@@ -1,8 +1,8 @@
-# IF Timer - Session Context (Session 4 → Session 5)
+# IF Timer - Session Context (Continuation Guide)
 
 **Last Updated:** 2025-10-30 (Session 4)
-**Branch:** `claude/session-011CUZgavYBZpxkbtU7ZNUhn`
 **Working Directory:** `/home/user/if-timer`
+**Branch:** Use `git status` to check current branch (changes per session)
 
 ---
 
@@ -28,7 +28,8 @@ cd /home/user/if-timer
 ### 2. Check Current Branch
 ```bash
 git status
-# Should be on: claude/session-011CUZgavYBZpxkbtU7ZNUhn
+# NOTE: Branch name changes each session (e.g., claude/session-011-review-docs-...)
+# Always use the current branch shown by git status
 ```
 
 ### 3. Read These Documentation Files (IN ORDER):
@@ -170,10 +171,11 @@ Priority features to implement:
 - Separation: Components (UI) / Hooks (Logic) / Utils (Functions) / Services (APIs)
 
 ### Git Workflow:
-- **Branch:** `claude/session-011CUZgavYBZpxkbtU7ZNUhn`
-- Always develop on this branch
-- Commit with clear messages
-- Push when work is complete
+- **Branch:** Check with `git status` (changes per session!)
+- Important: The main branch for reviewing work is shown in git status
+- Always develop on the current branch
+- Commit with clear, descriptive messages
+- Push when work is complete (branch name shown by git status)
 
 ### Testing Strategy:
 ```bash
@@ -211,15 +213,19 @@ All docs are in `/home/user/if-timer/docs/`:
 
 ---
 
-## 🚀 Recent Commits (Session 4)
+## 🚀 Recent Work (Session 4)
 
+**Last commits from Session 4:**
 ```bash
+3149ecc - docs: Add SESSION_CONTEXT.md for seamless session handover
 c5642a5 - docs: Update progress.md - Phase 1 complete (75% overall)
 abd6248 - feat: Complete Phase 1.3 - Extract UI Components
 fb9b14c - fix: Stabilize Timer.jsx with useMemo and useCallback
 73937a8 - fix: Resolve infinite loop and rename IFTimerFinal to Timer
 d28e736 - fix: Resolve state synchronization bug causing drag jitter
 ```
+
+**Note:** These commits exist in the git history. Use `git log` to see complete history.
 
 ---
 
@@ -238,8 +244,8 @@ From previous sessions:
 
 Before starting work in new session:
 
-- [ ] In correct directory: `/home/user/if-timer`
-- [ ] On correct branch: `claude/session-011CUZgavYBZpxkbtU7ZNUhn`
+- [ ] In correct directory: `/home/user/if-timer` (use `cd /home/user/if-timer`)
+- [ ] Check current branch: `git status` (branch name changes per session)
 - [ ] Read `docs/conventions.md` (coding standards)
 - [ ] Read `docs/progress.md` (current status)
 - [ ] Understand Phase 1 is complete (75% overall progress)
