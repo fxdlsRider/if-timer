@@ -207,6 +207,16 @@ export default function TimerCircle({
     <>
       <div style={styles.circleContainer}>
         <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
+          <defs>
+            {/* Multi-color gradient for progress ring */}
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#e57373" />
+              <stop offset="33%" stopColor="#d4a574" />
+              <stop offset="66%" stopColor="#81c784" />
+              <stop offset="100%" stopColor="#b0bec5" />
+            </linearGradient>
+          </defs>
+
           <circle
             cx="140"
             cy="140"
@@ -220,12 +230,12 @@ export default function TimerCircle({
             cy="140"
             r="120"
             fill="none"
-            stroke={getProgressColor(progress)}
+            stroke="url(#progressGradient)"
             strokeWidth="8"
             strokeDasharray={circumference}
             strokeDashoffset={progressOffset}
             strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.3s' }}
+            style={{ transition: 'stroke-dashoffset 1s linear' }}
           />
         </svg>
 
