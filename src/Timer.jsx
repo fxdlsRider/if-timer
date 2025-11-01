@@ -55,6 +55,7 @@ export default function Timer() {
     isExtended,
     showCelebration,
     completedFastData,
+    showCompletionSummary,
     TEST_MODE,
     TIME_UNIT,
     startTimer,
@@ -89,6 +90,19 @@ export default function Timer() {
     if (loadedState.angle !== undefined) setAngle(loadedState.angle);
   }, []);
 
+  // Wrapper functions to reset angle on timer actions
+  const handleStartTimer = useCallback(() => {
+    setAngle(TIMER_CONSTANTS.DEFAULT_ANGLE);
+    setHours(TIMER_CONSTANTS.DEFAULT_HOURS);
+    startTimer();
+  }, [startTimer]);
+
+  const handleCancelTimer = useCallback(() => {
+    setAngle(TIMER_CONSTANTS.DEFAULT_ANGLE);
+    setHours(TIMER_CONSTANTS.DEFAULT_HOURS);
+    cancelTimer();
+  }, [cancelTimer]);
+
   // Custom Hook - Storage and sync
   useTimerStorage(
     user,
@@ -115,6 +129,8 @@ export default function Timer() {
           <TimerPage
             isRunning={isRunning}
             isExtended={isExtended}
+            showCompletionSummary={showCompletionSummary}
+            completedFastData={completedFastData}
             hours={hours}
             angle={angle}
             timeLeft={timeLeft}
@@ -126,8 +142,8 @@ export default function Timer() {
             handlePointerDown={handlePointerDown}
             formatTime={formatTime}
             getProgressColor={getProgressColor}
-            onStartTimer={startTimer}
-            onCancelTimer={cancelTimer}
+            onStartTimer={handleStartTimer}
+            onCancelTimer={handleCancelTimer}
             handlePosition={{ x: handlePosX, y: handlePosY }}
             circumference={circumference}
             progressOffset={progressOffset}

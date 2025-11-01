@@ -9,6 +9,8 @@ import React from 'react';
  *
  * @param {boolean} isRunning - Whether timer is currently running
  * @param {boolean} isExtended - Whether in extended mode (after goal reached)
+ * @param {boolean} showCompletionSummary - Whether to show post-fast summary
+ * @param {object} completedFastData - Data about completed fast (duration, times)
  * @param {number} hours - Current hours value
  * @param {number} angle - Current angle for drag handle
  * @param {number} timeLeft - Time left in seconds (when running)
@@ -28,6 +30,8 @@ import React from 'react';
 export default function TimerCircle({
   isRunning,
   isExtended = false,
+  showCompletionSummary = false,
+  completedFastData = null,
   hours,
   angle,
   timeLeft,
@@ -120,6 +124,63 @@ export default function TimerCircle({
       letterSpacing: '2px'
     }
   };
+
+  // Completion summary state: Show "Well done" with results after stopping fast
+  if (showCompletionSummary && !isRunning && completedFastData) {
+    const totalDuration = completedFastData.duration;
+
+    return (
+      <>
+        <div style={styles.circleContainer}>
+          <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
+            <circle
+              cx="140"
+              cy="140"
+              r="120"
+              fill="none"
+              stroke="#e0e0e0"
+              strokeWidth="8"
+            />
+            <circle
+              cx="140"
+              cy="140"
+              r="120"
+              fill="none"
+              stroke="#34C759"
+              strokeWidth="8"
+              strokeDasharray={`${2 * Math.PI * 120} 0`}
+              strokeLinecap="round"
+            />
+          </svg>
+
+          <div style={styles.hoursDisplay}>
+            <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
+              Well done!
+            </div>
+            <div style={{ fontSize: '32px', fontWeight: '300', color: 'var(--color-text, #333)', marginBottom: '4px' }}>
+              {totalDuration}
+            </div>
+            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>
+              {completedFastData.unit} fasted
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.statusText}>
+          FASTING COMPLETE
+        </div>
+
+        <button
+          onClick={onStartTimer}
+          style={styles.startButton}
+          onMouseEnter={(e) => e.target.style.background = '#3DBDB5'}
+          onMouseLeave={(e) => e.target.style.background = '#4ECDC4'}
+        >
+          START FAST
+        </button>
+      </>
+    );
+  }
 
   if (!isRunning) {
     // Pre-run state: draggable circle

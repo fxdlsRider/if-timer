@@ -18,6 +18,8 @@ export default function TimerPage({
   // Timer state
   isRunning,
   isExtended,
+  showCompletionSummary,
+  completedFastData,
   hours,
   angle,
   timeLeft,
@@ -98,6 +100,8 @@ export default function TimerPage({
         <TimerCircle
           isRunning={isRunning}
           isExtended={isExtended}
+          showCompletionSummary={showCompletionSummary}
+          completedFastData={completedFastData}
           hours={hours}
           angle={angle}
           timeLeft={timeLeft}

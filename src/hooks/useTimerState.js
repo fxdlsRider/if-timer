@@ -52,6 +52,9 @@ export function useTimerState(hours) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [completedFastData, setCompletedFastData] = useState(null);
 
+  // Post-fast summary state (after user clicks "Stop Fasting")
+  const [showCompletionSummary, setShowCompletionSummary] = useState(false);
+
   // Refs
   const notificationShownRef = useRef(false);
 
@@ -101,6 +104,8 @@ export function useTimerState(hours) {
     setIsExtended(false);
     setOriginalGoalTime(null);
     setShowCelebration(false);
+    setShowCompletionSummary(false);
+    setCompletedFastData(null);
 
     // Request notification permission
     if (getNotificationPermission() === 'default') {
@@ -119,13 +124,15 @@ export function useTimerState(hours) {
   };
 
   /**
-   * Cancel/stop the timer
+   * Cancel/stop the timer (before completion)
    */
   const cancelTimer = () => {
     setIsRunning(false);
     setTargetTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
+    setShowCompletionSummary(false);
+    setCompletedFastData(null);
     notificationShownRef.current = false;
   };
 
@@ -139,7 +146,8 @@ export function useTimerState(hours) {
   };
 
   /**
-   * Stop fasting and reset timer
+   * Stop fasting and show completion summary
+   * Called when user clicks "Stop Fasting" after completing/extending fast
    */
   const stopFasting = () => {
     setShowCelebration(false);
@@ -147,6 +155,10 @@ export function useTimerState(hours) {
     setTargetTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
+
+    // Show completion summary with "Start Fast" button
+    setShowCompletionSummary(true);
+    // Keep completedFastData to display results
   };
 
   /**
@@ -154,6 +166,8 @@ export function useTimerState(hours) {
    */
   const startNewFast = () => {
     setShowCelebration(false);
+    setShowCompletionSummary(false);
+    setCompletedFastData(null);
     setIsRunning(false);
     setTargetTime(null);
     setIsExtended(false);
@@ -170,6 +184,7 @@ export function useTimerState(hours) {
     originalGoalTime,
     showCelebration,
     completedFastData,
+    showCompletionSummary,
 
     // Config
     TEST_MODE,
