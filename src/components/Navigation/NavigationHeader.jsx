@@ -75,12 +75,12 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
       padding: '8px 20px',
       fontSize: '13px',
       fontWeight: '500',
-      color: '#FFFFFF',
-      background: '#FFDD00',
+      color: '#FFDD00',
+      background: 'transparent',
+      border: '1px solid #FFDD00',
       borderRadius: '20px',
       textDecoration: 'none',
       transition: 'all 0.2s',
-      boxShadow: '0 2px 8px rgba(255, 221, 0, 0.3)',
       display: 'flex',
       alignItems: 'center',
       gap: '6px'
@@ -91,13 +91,12 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
       padding: '8px 20px',
       fontSize: '13px',
       fontWeight: '500',
-      color: '#FFFFFF',
-      background: '#4ECDC4',
+      color: '#4ECDC4',
+      background: 'transparent',
+      border: '1px solid #4ECDC4',
       borderRadius: '20px',
-      border: 'none',
       cursor: 'pointer',
-      transition: 'all 0.2s',
-      boxShadow: '0 2px 8px rgba(78, 205, 196, 0.3)'
+      transition: 'all 0.2s'
     }
   };
 
@@ -110,12 +109,12 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
             onClick={onSignIn}
             style={styles.loginButton}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#3DBDB5';
-              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.background = '#4ECDC4';
+              e.currentTarget.style.color = '#FFFFFF';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#4ECDC4';
-              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#4ECDC4';
             }}
           >
             Sign In
@@ -159,12 +158,12 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
           rel="noopener noreferrer"
           style={styles.donateLink}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#FFD000';
-            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.background = '#FFDD00';
+            e.currentTarget.style.color = '#FFFFFF';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#FFDD00';
-            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#FFDD00';
           }}
         >
           ☕ Buy me a coffee

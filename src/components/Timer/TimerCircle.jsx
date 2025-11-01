@@ -138,7 +138,7 @@ export default function TimerCircle({
 
             <g transform="rotate(-90 140 140)">
               <defs>
-                <linearGradient id="trailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id="trailGradient" x1="0%" y1="100%" x2="100%" y2="0%" gradientTransform="rotate(0)">
                   <stop offset="0%" stopColor="#34C759" />
                   <stop offset="33%" stopColor="#FFE66D" />
                   <stop offset="66%" stopColor="#FF6B6B" />
