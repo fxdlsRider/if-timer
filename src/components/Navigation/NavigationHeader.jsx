@@ -9,9 +9,10 @@ import React from 'react';
  *
  * @param {string} activeTab - Currently active tab ('timer', 'stats', 'learn', 'profile')
  * @param {function} onTabChange - Handler for tab switching
- * @param {number} streakDays - Current streak in days (optional)
+ * @param {object} user - Current user object (null if not logged in)
+ * @param {function} onSignIn - Handler for sign in button
  */
-export default function NavigationHeader({ activeTab, onTabChange, streakDays = 0 }) {
+export default function NavigationHeader({ activeTab, onTabChange, user = null, onSignIn = null }) {
   const tabs = [
     { id: 'timer', label: 'Timer' },
     { id: 'stats', label: 'Stats' },
@@ -68,21 +69,59 @@ export default function NavigationHeader({ activeTab, onTabChange, streakDays = 
       background: '#4ECDC4',
       borderRadius: '2px 2px 0 0'
     },
-    streakBadge: {
+    donateLink: {
       position: 'absolute',
       right: '40px',
-      padding: '6px 16px',
+      padding: '8px 20px',
       fontSize: '13px',
       fontWeight: '500',
-      color: 'var(--color-text-secondary, #94A3B8)',
-      background: 'transparent',
-      borderRadius: '20px'
+      color: '#FFFFFF',
+      background: '#FFDD00',
+      borderRadius: '20px',
+      textDecoration: 'none',
+      transition: 'all 0.2s',
+      boxShadow: '0 2px 8px rgba(255, 221, 0, 0.3)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    },
+    loginButton: {
+      position: 'absolute',
+      left: '40px',
+      padding: '8px 20px',
+      fontSize: '13px',
+      fontWeight: '500',
+      color: '#FFFFFF',
+      background: '#4ECDC4',
+      borderRadius: '20px',
+      border: 'none',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      boxShadow: '0 2px 8px rgba(78, 205, 196, 0.3)'
     }
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
+        {/* Left: Login Button (if not logged in) */}
+        {!user && onSignIn && (
+          <button
+            onClick={onSignIn}
+            style={styles.loginButton}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#3DBDB5';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#4ECDC4';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            Sign In
+          </button>
+        )}
+
         {/* Center: Tabs */}
         <div style={styles.tabsContainer}>
           {tabs.map((tab) => {
@@ -113,12 +152,23 @@ export default function NavigationHeader({ activeTab, onTabChange, streakDays = 
           })}
         </div>
 
-        {/* Right: Streak Badge */}
-        {streakDays > 0 && (
-          <div style={styles.streakBadge}>
-            {streakDays} {streakDays === 1 ? 'day' : 'days'}
-          </div>
-        )}
+        {/* Right: Donate Button */}
+        <a
+          href="https://www.buymeacoffee.com/yourhandle"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={styles.donateLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#FFD000';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#FFDD00';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          ☕ Buy me a coffee
+        </a>
       </div>
     </div>
   );

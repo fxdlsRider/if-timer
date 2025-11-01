@@ -33,7 +33,7 @@ export default function StatusPanel({
     infoTitle: {
       fontSize: '13px',
       fontWeight: '600',
-      color: '#999',
+      color: 'var(--color-text-secondary, #999)',
       letterSpacing: '1px',
       textTransform: 'uppercase',
       marginBottom: '16px',
@@ -64,7 +64,7 @@ export default function StatusPanel({
     },
     infoHours: {
       fontSize: '12px',
-      color: '#999',
+      color: 'var(--color-text-tertiary, #999)',
       minWidth: '60px'
     }
   };
@@ -91,20 +91,20 @@ export default function StatusPanel({
               key={index}
               style={{
                 ...styles.infoItem,
-                color: isActive ? '#333' : '#999',
+                color: isActive ? 'var(--color-text, #333)' : 'var(--color-text-secondary, #999)',
                 fontWeight: isActive ? '500' : 'normal',
                 cursor: isClickable ? 'pointer' : 'default'
               }}
               onClick={() => isClickable && onLevelClick(item.startHour)}
               onMouseEnter={(e) => {
                 if (isClickable) {
-                  e.currentTarget.style.color = '#333';
+                  e.currentTarget.style.color = 'var(--color-text, #333)';
                   e.currentTarget.style.fontWeight = '500';
                 }
               }}
               onMouseLeave={(e) => {
                 if (isClickable && !isActive) {
-                  e.currentTarget.style.color = '#999';
+                  e.currentTarget.style.color = 'var(--color-text-secondary, #999)';
                   e.currentTarget.style.fontWeight = 'normal';
                 }
               }}

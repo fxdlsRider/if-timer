@@ -236,7 +236,8 @@ export default function Timer() {
       <NavigationHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        streakDays={12} // TODO: Get from Supabase
+        user={user}
+        onSignIn={() => setShowLogin(true)}
       />
 
       {/* ACTIVE PAGE CONTENT */}

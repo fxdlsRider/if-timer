@@ -30,7 +30,7 @@ export const PRODUCTION_MODE = {
 
 export const CIRCLE_CONFIG = {
   RADIUS: 120,
-  HANDLE_RADIUS: 114,
+  HANDLE_RADIUS: 109, // 3mm (11px) inside the circle
   CENTER_X: 140,
   CENTER_Y: 140,
   OUTER_RADIUS: 130,

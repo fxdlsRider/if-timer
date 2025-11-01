@@ -58,7 +58,7 @@ export default function TimerCircle({
       background: '#d32f2f',
       borderRadius: '50%',
       boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-      transition: isDragging ? 'none' : 'all 0.3s ease',
+      transition: isDragging ? 'none' : '0s',
       zIndex: 10
     },
     hoursDisplay: {
@@ -213,12 +213,12 @@ export default function TimerCircle({
       <div style={styles.circleContainer}>
         <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
           <defs>
-            {/* Multi-color gradient for progress ring */}
-            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#e57373" />
-              <stop offset="33%" stopColor="#d4a574" />
-              <stop offset="66%" stopColor="#81c784" />
-              <stop offset="100%" stopColor="#b0bec5" />
+            {/* Multi-color gradient for progress ring: green → yellow → red → purple */}
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#34C759" />
+              <stop offset="33%" stopColor="#FFE66D" />
+              <stop offset="66%" stopColor="#FF6B6B" />
+              <stop offset="100%" stopColor="#A855F7" />
             </linearGradient>
           </defs>
 
@@ -284,7 +284,7 @@ export default function TimerCircle({
           e.target.style.color = '#666';
         }}
       >
-        Cancel Timer
+        {isExtended ? 'Stop Fasting' : 'Cancel Timer'}
       </button>
     </>
   );
