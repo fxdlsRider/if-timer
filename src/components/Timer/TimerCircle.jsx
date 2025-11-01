@@ -8,6 +8,7 @@ import React from 'react';
  * Shows different UI when timer is running vs not running
  *
  * @param {boolean} isRunning - Whether timer is currently running
+ * @param {boolean} isExtended - Whether in extended mode (after goal reached)
  * @param {number} hours - Current hours value
  * @param {number} angle - Current angle for drag handle
  * @param {number} timeLeft - Time left in seconds (when running)
@@ -26,6 +27,7 @@ import React from 'react';
  */
 export default function TimerCircle({
   isRunning,
+  isExtended = false,
   hours,
   angle,
   timeLeft,
@@ -83,13 +85,14 @@ export default function TimerCircle({
       padding: '16px 48px',
       fontSize: '16px',
       fontWeight: '600',
-      background: '#333',
+      background: '#4ECDC4',
       color: 'white',
       border: 'none',
       borderRadius: '24px',
       cursor: 'pointer',
       letterSpacing: '1px',
-      transition: 'background 0.2s'
+      transition: 'background 0.2s',
+      boxShadow: '0 2px 12px rgba(78, 205, 196, 0.3)'
     },
     cancelButton: {
       padding: '12px 32px',
@@ -103,9 +106,9 @@ export default function TimerCircle({
       transition: 'all 0.2s'
     },
     timeDisplay: {
-      fontSize: '64px',
+      fontSize: '48px',
       fontWeight: '200',
-      color: '#333',
+      color: 'var(--color-text, #333)',
       marginBottom: '8px',
       fontVariantNumeric: 'tabular-nums'
     },
@@ -127,27 +130,29 @@ export default function TimerCircle({
             <circle
               cx="140"
               cy="140"
-              r="130"
+              r="120"
               fill="none"
               stroke="#e0e0e0"
-              strokeWidth="3"
+              strokeWidth="8"
             />
 
             <g transform="rotate(-90 140 140)">
               <defs>
-                <linearGradient id="trailGradient" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#d32f2f" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#d32f2f" stopOpacity="0.4" />
+                <linearGradient id="trailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#34C759" />
+                  <stop offset="33%" stopColor="#FFE66D" />
+                  <stop offset="66%" stopColor="#FF6B6B" />
+                  <stop offset="100%" stopColor="#A855F7" />
                 </linearGradient>
               </defs>
               <circle
                 cx="140"
                 cy="140"
-                r="130"
+                r="120"
                 fill="none"
                 stroke="url(#trailGradient)"
-                strokeWidth="3"
-                strokeDasharray={`${(angle / 360) * (2 * Math.PI * 130)} ${2 * Math.PI * 130}`}
+                strokeWidth="8"
+                strokeDasharray={`${(angle / 360) * (2 * Math.PI * 120)} ${2 * Math.PI * 120}`}
                 strokeLinecap="round"
                 style={{ transition: 'stroke-dasharray 0.3s ease' }}
               />
@@ -193,8 +198,8 @@ export default function TimerCircle({
         <button
           onClick={onStartTimer}
           style={styles.startButton}
-          onMouseEnter={(e) => e.target.style.background = '#555'}
-          onMouseLeave={(e) => e.target.style.background = '#333'}
+          onMouseEnter={(e) => e.target.style.background = '#3DBDB5'}
+          onMouseLeave={(e) => e.target.style.background = '#4ECDC4'}
         >
           START
         </button>
@@ -240,14 +245,31 @@ export default function TimerCircle({
         </svg>
 
         <div style={styles.hoursDisplay}>
-          <div style={styles.timeDisplay}>
-            {formatTime(timeLeft)}
-          </div>
+          {isExtended ? (
+            <>
+              <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
+                Well done!
+              </div>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
+                {hours} {TIME_UNIT} fasted
+              </div>
+              <div style={styles.timeDisplay}>
+                +{formatTime(Math.abs(timeLeft))}
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
+                additional time
+              </div>
+            </>
+          ) : (
+            <div style={styles.timeDisplay}>
+              {formatTime(timeLeft)}
+            </div>
+          )}
         </div>
       </div>
 
       <div style={styles.statusText}>
-        {timeLeft === 0 ? 'COMPLETE!' : `${hours} ${TIME_UNIT} FAST`}
+        {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : `${hours} ${TIME_UNIT} FAST`)}
       </div>
 
       <button

@@ -29,28 +29,18 @@ export default function NavigationHeader({ activeTab, onTabChange, streakDays = 
       zIndex: 100
     },
     wrapper: {
-      maxWidth: '1200px',
+      maxWidth: '1400px',
       margin: '0 auto',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'center',
       padding: '0 40px',
-      height: '64px'
-    },
-    leftSection: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '48px'
-    },
-    logo: {
-      fontSize: '18px',
-      fontWeight: '500',
-      color: 'var(--color-text, #0F172A)',
-      letterSpacing: '0.5px'
+      height: '64px',
+      position: 'relative'
     },
     tabsContainer: {
       display: 'flex',
-      gap: '32px',
+      gap: '48px',
       alignItems: 'center'
     },
     tab: {
@@ -79,6 +69,8 @@ export default function NavigationHeader({ activeTab, onTabChange, streakDays = 
       borderRadius: '2px 2px 0 0'
     },
     streakBadge: {
+      position: 'absolute',
+      right: '40px',
       padding: '6px 16px',
       fontSize: '13px',
       fontWeight: '500',
@@ -91,38 +83,34 @@ export default function NavigationHeader({ activeTab, onTabChange, streakDays = 
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
-        {/* Left: Logo + Tabs */}
-        <div style={styles.leftSection}>
-          <div style={styles.logo}>IF Timer</div>
-
-          <div style={styles.tabsContainer}>
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => onTabChange(tab.id)}
-                  style={{
-                    ...styles.tab,
-                    ...(isActive ? styles.tabActive : {})
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.target.style.color = 'var(--color-text, #0F172A)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.target.style.color = 'var(--color-text-secondary, #94A3B8)';
-                    }
-                  }}
-                >
-                  {tab.label}
-                  {isActive && <div style={styles.tabUnderline} />}
-                </button>
-              );
-            })}
-          </div>
+        {/* Center: Tabs */}
+        <div style={styles.tabsContainer}>
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
+                style={{
+                  ...styles.tab,
+                  ...(isActive ? styles.tabActive : {})
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.target.style.color = 'var(--color-text, #0F172A)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.target.style.color = 'var(--color-text-secondary, #94A3B8)';
+                  }
+                }}
+              >
+                {tab.label}
+                {isActive && <div style={styles.tabUnderline} />}
+              </button>
+            );
+          })}
         </div>
 
         {/* Right: Streak Badge */}

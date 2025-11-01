@@ -38,8 +38,8 @@ export const themes = {
   
   dark: {
     // Backgrounds
-    background: '#0F172A',
-    backgroundSecondary: '#1E293B',
+    background: '#1F1F1F',
+    backgroundSecondary: '#2D2D2D',
     
     // Text
     text: '#F8FAFC',
@@ -47,11 +47,11 @@ export const themes = {
     textTertiary: '#64748B',
     
     // Borders
-    border: '#1E293B',
-    borderSubtle: '#334155',
-    
+    border: '#3A3A3A',
+    borderSubtle: '#2D2D2D',
+
     // Ring
-    ringBackground: '#1E293B',
+    ringBackground: '#2D2D2D',
     
     // Accents (same in both themes)
     accentTeal: '#4ECDC4',

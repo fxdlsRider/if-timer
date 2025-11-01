@@ -114,6 +114,7 @@ export default function Timer() {
         return (
           <TimerPage
             isRunning={isRunning}
+            isExtended={isExtended}
             hours={hours}
             angle={angle}
             timeLeft={timeLeft}

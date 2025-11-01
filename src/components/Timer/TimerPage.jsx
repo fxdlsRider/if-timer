@@ -4,6 +4,7 @@ import TimerCircle from './TimerCircle';
 import StatusPanel from '../Levels/StatusPanel';
 import StreakDisplay from '../Shared/StreakDisplay';
 import StatsDisplay from '../Shared/StatsDisplay';
+import DashboardPanel from '../Dashboard/DashboardPanel';
 
 /**
  * TimerPage Component
@@ -16,6 +17,7 @@ import StatsDisplay from '../Shared/StatsDisplay';
 export default function TimerPage({
   // Timer state
   isRunning,
+  isExtended,
   hours,
   angle,
   timeLeft,
@@ -50,11 +52,10 @@ export default function TimerPage({
   const styles = {
     container: {
       display: 'flex',
-      gap: '80px',
-      maxWidth: '1200px',
+      gap: '40px',
+      maxWidth: '1400px',
       margin: '0 auto',
       alignItems: 'flex-start',
-      flexWrap: 'wrap',
       justifyContent: 'center',
       padding: '40px 20px'
     },
@@ -78,7 +79,10 @@ export default function TimerPage({
 
   return (
     <div style={styles.container}>
-      {/* Timer Section */}
+      {/* Dashboard Panel (Left) */}
+      <DashboardPanel />
+
+      {/* Timer Section (Center) */}
       <div style={styles.timerSection}>
         {/* TEST MODE Banner */}
         {TEST_MODE && (
@@ -93,6 +97,7 @@ export default function TimerPage({
         {/* Timer Circle */}
         <TimerCircle
           isRunning={isRunning}
+          isExtended={isExtended}
           hours={hours}
           angle={angle}
           timeLeft={timeLeft}
