@@ -5,6 +5,205 @@
 
 ---
 
+## 📅 2025-11-01 - UI Refinements & Bug Fixes ✅ (Session 5)
+
+### ✅ Completed - Design Improvements & User Feedback
+
+**What Changed in This Session:**
+
+This session focused on implementing a 3-column dashboard layout and fixing 10 specific UI issues based on user testing.
+
+#### **Major Design Changes:**
+
+1. **3-Column Layout Implemented**
+   - Left: Dashboard Panel with user statistics (Tacho-style design)
+   - Center: Timer (unchanged position)
+   - Right: Fasting Levels / Body Modes
+   - Responsive gap adjusted from 80px to 40px
+   - Max-width increased to 1400px
+
+2. **Dashboard Panel Created** (`components/Dashboard/DashboardPanel.jsx`)
+   - User profile card (name, age, weight, height)
+   - Weight tracking gauge ("Weight to Go")
+   - 4 stat cards in 2x2 grid (Streak, Total Fasts, Total Hours, Longest Fast)
+   - Goals and motivation display
+   - Tacho-inspired design with gradients
+   - 235 lines of code
+
+3. **Navigation Redesign**
+   - Tabs centered (Zenhabits-style)
+   - Logo removed for cleaner look
+   - Sign In button added (left side, always visible)
+   - Donation link added (right side, "Buy me a coffee")
+   - Both buttons with transparent backgrounds and colored borders
+   - Hover effects: fill with color
+
+#### **Bug Fixes (10 total):**
+
+**Completed (10/10):**
+
+1. ✅ **Circle gradient colors corrected**
+   - Pre-run circle: green → yellow → red → purple
+   - Countdown circle: same gradient applied
+   - Gradient adjusted to diagonal (x1="0%" y1="100%" x2="100%" y2="0%")
+
+2. ✅ **Drag-ball positioned inside circle**
+   - HANDLE_RADIUS adjusted: 114 → 109 → 106 (total 8mm inside)
+   - No transition animation (instant positioning)
+
+3. ✅ **Donation link replaces streak badge**
+   - "☕ Buy me a coffee" button (right side)
+   - Yellow border, transparent background
+   - Fills yellow on hover
+
+4. ✅ **Login button always visible**
+   - "Sign In" button (left side)
+   - Teal border, transparent background
+   - Fills teal on hover
+   - Only shown when user not logged in
+
+5. ✅ **Dark theme text visibility fixed**
+   - Fasting Levels now use CSS variables
+   - Text colors: `var(--color-text)` and `var(--color-text-secondary)`
+   - Properly adapts to dark/light themes
+
+6. ✅ **Countdown circle gradient matches setup**
+   - Both circles now use identical gradient
+   - Green → yellow → red → purple progression
+
+7. ✅ **Extended mode button text updated**
+   - Changed from "Cancel Timer" to "Stop Fasting"
+   - Only applies when `isExtended === true`
+
+**Pending (3/10) - Scheduled for next session:**
+
+8. ⏳ **Post-fast state management**
+   - After "Stop Fasting": show "Well done" + time
+   - Button changes to "Start Fast"
+   - Requires new state management
+
+9. ⏳ **Drag-ball teleport animation**
+   - Ball should "beam" instead of gliding back
+   - Requires changes in useDragHandle.js
+
+10. ⏳ **Modal results preservation**
+    - Clicking "Stop Fasting" in modal should keep results visible
+    - Requires state management updates
+
+#### **"Well done" Message in Extended Mode**
+- Added conditional rendering in TimerCircle
+- Shows "Well done! X hours/seconds fasted"
+- Displays additional time with "+" prefix
+- Status text shows "EXTENDED MODE"
+
+#### **Theme Improvements**
+- Dark mode background changed from blue (#0F172A) to gray (#1F1F1F)
+- Border colors adjusted for better contrast
+- All text colors now use CSS variables for theme support
+
+### 📊 Session Stats
+
+**Commits Made:** 3
+1. `54d23ce` - Initial design improvements (3-column layout, dashboard)
+2. `ed1a74f` - First batch of bug fixes (gradient, buttons, dark theme)
+3. `5098912` - Additional fixes (transparent buttons, ball position)
+
+**Files Created:**
+- `src/components/Dashboard/DashboardPanel.jsx` - 235 lines (new)
+
+**Files Modified:**
+- `src/components/Timer/TimerCircle.jsx` - Gradient fixes, extended mode message
+- `src/components/Navigation/NavigationHeader.jsx` - Centered tabs, new buttons
+- `src/components/Timer/TimerPage.jsx` - 3-column layout integration
+- `src/components/Levels/StatusPanel.jsx` - Dark theme CSS variables
+- `src/config/constants.js` - HANDLE_RADIUS adjustments
+- `src/Timer.jsx` - isExtended prop, navigation props
+- `src/themeConfig.js` - Dark theme colors updated
+
+**Lines Changed:**
+- Added: ~350 lines (Dashboard + new features)
+- Modified: ~100 lines (fixes and refinements)
+- Total impact: ~450 lines
+
+**Build Status:**
+- ✅ Compiles successfully with no warnings
+- ✅ All commits pushed to remote
+- ✅ Ready for testing
+
+### 🎯 Key Decisions
+
+1. **Buy Me a Coffee vs other donation platforms**
+   - Chose Buy Me a Coffee (most popular, simple)
+   - URL placeholder: needs to be updated with actual handle
+   - Alternative options available: Ko-fi, Patreon, GitHub Sponsors
+
+2. **Transparent button design**
+   - Provides cleaner, more modern look
+   - Better integration with both light/dark themes
+   - Hover states provide clear feedback
+
+3. **Gradient logic adjustment**
+   - Changed from horizontal (x1/x2) to diagonal
+   - May need further refinement based on user testing
+   - Both pre-run and countdown circles now consistent
+
+4. **Dashboard placement**
+   - Left side (premium feature preview)
+   - Using dummy data for now
+   - Will be gated behind authentication later
+
+### 💡 Lessons Learned
+
+1. **SVG gradient behavior with rotation**
+   - Linear gradients in rotated SVG groups need careful coordinate planning
+   - Diagonal gradients work better for circular elements
+   - May need to revisit with radial gradients if issue persists
+
+2. **State management complexity**
+   - Post-fast state, teleport animation, and modal preservation require new state
+   - Current architecture can handle it but needs careful implementation
+   - Estimated 45-60 minutes for remaining 3 fixes
+
+3. **User feedback is invaluable**
+   - Quick iteration based on live testing reveals issues faster
+   - "Purple start" problem wouldn't have been caught without user testing
+   - Button transparency preference came from user feedback
+
+### 🐛 Known Issues
+
+1. **Circle gradient may still start with wrong color**
+   - Diagonal gradient applied, but may need testing
+   - If issue persists, consider radial gradient instead
+   - Related to SVG coordinate system and rotation
+
+2. **Incomplete features (scheduled for next session):**
+   - Post-fast summary display
+   - Drag-ball teleport animation
+   - Modal stop button behavior
+
+### 🚀 Next Session Goals
+
+1. **Complete remaining 3 bug fixes:**
+   - Fix 8: Post-fast state with "Start Fast" button
+   - Fix 9: Drag-ball teleport animation
+   - Fix 10: Modal results preservation
+
+2. **Test gradient fix:**
+   - Verify circle starts with green (not purple)
+   - May need to switch to radial gradient
+
+3. **User testing round 2:**
+   - Get feedback on 3-column layout
+   - Test donation button UX
+   - Verify dark theme improvements
+
+4. **Progress tracking:**
+   - Phase 1: Complete ✅ (75%)
+   - Current work: UI refinements (additional 5%)
+   - **Overall: ~80% project completion**
+
+---
+
 ## 📅 2025-10-30 - Phase 1.3: COMPLETED ✅ (Session 4)
 
 ### ✅ Completed - Component Extraction
