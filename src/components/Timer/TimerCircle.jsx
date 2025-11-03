@@ -36,9 +36,9 @@ export default function TimerCircle({
   const styles = {
     circleContainer: {
       position: 'relative',
-      width: '280px',
-      height: '280px',
-      margin: '0 auto 40px auto'
+      width: '224px',
+      height: '224px',
+      margin: '0 auto 32px auto'
     },
     handle: {
       position: 'absolute',
@@ -123,23 +123,23 @@ export default function TimerCircle({
     return (
       <>
         <div style={styles.circleContainer}>
-          <svg width="280" height="280" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
+          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
             <circle
-              cx="140"
-              cy="140"
-              r="120"
+              cx="112"
+              cy="112"
+              r="96"
               fill="none"
               stroke="#e0e0e0"
-              strokeWidth="8"
+              strokeWidth="6"
             />
             <circle
-              cx="140"
-              cy="140"
-              r="120"
+              cx="112"
+              cy="112"
+              r="96"
               fill="none"
               stroke="#34C759"
-              strokeWidth="8"
-              strokeDasharray={`${2 * Math.PI * 120} 0`}
+              strokeWidth="6"
+              strokeDasharray={`${2 * Math.PI * 96} 0`}
               strokeLinecap="round"
             />
           </svg>
@@ -181,17 +181,17 @@ export default function TimerCircle({
     return (
       <>
         <div ref={circleRef} style={styles.circleContainer}>
-          <svg width="280" height="280" style={{ position: 'absolute', top: 0, left: 0 }}>
+          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0 }}>
             <circle
-              cx="140"
-              cy="140"
-              r="120"
+              cx="112"
+              cy="112"
+              r="96"
               fill="none"
               stroke="#e0e0e0"
-              strokeWidth="8"
+              strokeWidth="6"
             />
 
-            <g transform="rotate(-90 140 140)">
+            <g transform="rotate(-90 112 112)">
               <defs>
                 <linearGradient id="trailGradient" x1="0%" y1="100%" x2="100%" y2="0%" gradientTransform="rotate(0)">
                   <stop offset="0%" stopColor="#34C759" />
@@ -201,13 +201,13 @@ export default function TimerCircle({
                 </linearGradient>
               </defs>
               <circle
-                cx="140"
-                cy="140"
-                r="120"
+                cx="112"
+                cy="112"
+                r="96"
                 fill="none"
                 stroke="url(#trailGradient)"
-                strokeWidth="8"
-                strokeDasharray={`${(angle / 360) * (2 * Math.PI * 120)} ${2 * Math.PI * 120}`}
+                strokeWidth="6"
+                strokeDasharray={`${(angle / 360) * (2 * Math.PI * 96)} ${2 * Math.PI * 96}`}
                 strokeLinecap="round"
                 style={{ transition: 'stroke-dasharray 0.3s ease' }}
               />
@@ -267,7 +267,7 @@ export default function TimerCircle({
   return (
     <>
       <div style={styles.circleContainer}>
-        <svg width="280" height="280" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
+        <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
           <defs>
             <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#34C759" />
@@ -278,20 +278,20 @@ export default function TimerCircle({
           </defs>
 
           <circle
-            cx="140"
-            cy="140"
-            r="120"
+            cx="112"
+            cy="112"
+            r="96"
             fill="none"
             stroke="#e0e0e0"
-            strokeWidth="8"
+            strokeWidth="6"
           />
           <circle
-            cx="140"
-            cy="140"
-            r="120"
+            cx="112"
+            cy="112"
+            r="96"
             fill="none"
             stroke="url(#progressGradient)"
-            strokeWidth="8"
+            strokeWidth="6"
             strokeDasharray={circumference}
             strokeDashoffset={progressOffset}
             strokeLinecap="round"

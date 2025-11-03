@@ -29,12 +29,12 @@ export const PRODUCTION_MODE = {
 // ===== CIRCLE/UI CONSTANTS =====
 
 export const CIRCLE_CONFIG = {
-  RADIUS: 120,
-  HANDLE_RADIUS: 106, // 6mm (14px) inside the circle (109 - 3)
-  CENTER_X: 140,
-  CENTER_Y: 140,
-  OUTER_RADIUS: 130,
-  CONTAINER_SIZE: 280,
+  RADIUS: 96,
+  HANDLE_RADIUS: 85, // Scaled down 20% from original
+  CENTER_X: 112,
+  CENTER_Y: 112,
+  OUTER_RADIUS: 104,
+  CONTAINER_SIZE: 224,
 };
 
 // ===== FASTING LEVELS =====

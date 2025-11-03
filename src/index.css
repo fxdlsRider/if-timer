@@ -16,16 +16,13 @@
   --color-accent-purple: #A855F7;
 }
 
-/* Force scrollbar to ALWAYS be visible to prevent layout shift */
+/* Prevent layout shift when scrollbar appears */
 html {
-  overflow-y: scroll;
   scrollbar-gutter: stable;
-  min-height: 101vh; /* Force scrollbar by making content slightly taller than viewport */
 }
 
 body {
   margin: 0;
-  min-height: 101vh; /* Ensure body is also tall enough to trigger scrollbar */
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
