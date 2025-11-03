@@ -105,9 +105,9 @@ export default function TimerCircle({
       textTransform: 'uppercase',
       letterSpacing: '2px'
     },
-    // CRITICAL: Fixed height container used in ALL states
+    // CRITICAL: Fixed height container used in ALL states - reduced for closer button placement
     contentContainer: {
-      height: '88px',
+      height: '40px',
       marginBottom: '0px',
       display: 'flex',
       flexDirection: 'column',
@@ -123,7 +123,7 @@ export default function TimerCircle({
     return (
       <>
         <div style={styles.circleContainer}>
-          <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
+          <svg width="280" height="280" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
             <circle
               cx="140"
               cy="140"
@@ -267,7 +267,7 @@ export default function TimerCircle({
   return (
     <>
       <div style={styles.circleContainer}>
-        <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
+        <svg width="280" height="280" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
           <defs>
             <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#34C759" />
