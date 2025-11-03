@@ -240,6 +240,11 @@ export default function TimerCircle({
           </div>
         </div>
 
+        {/* Status Text Placeholder - same height as running state */}
+        <div style={{ ...styles.statusText, visibility: 'hidden' }}>
+          PLACEHOLDER
+        </div>
+
         {/* Notification Info Banner - Reserve space even when hidden */}
         <div style={{
           minHeight: '68px',
@@ -343,6 +348,12 @@ export default function TimerCircle({
         {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : `${hours} ${TIME_UNIT} FAST`)}
       </div>
 
+      {/* Notification Banner Placeholder - same height as pre-run state */}
+      <div style={{
+        minHeight: '68px',
+        marginBottom: '20px'
+      }} />
+
       <button
         onClick={onCancelTimer}
         style={styles.cancelButton}
@@ -355,7 +366,7 @@ export default function TimerCircle({
           e.target.style.color = '#666';
         }}
       >
-        {isExtended ? 'Stop Fasting' : 'Cancel Timer'}
+        Cancel
       </button>
     </>
   );
