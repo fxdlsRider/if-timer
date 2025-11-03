@@ -52,14 +52,20 @@ export default function TimerPage({
   goalHours = 16
 }) {
   const styles = {
+    wrapper: {
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '40px 20px',
+      boxSizing: 'border-box'
+    },
     container: {
       display: 'flex',
       gap: '40px',
       maxWidth: '1400px',
-      margin: '0 auto',
+      width: '100%',
       alignItems: 'flex-start',
-      justifyContent: 'center',
-      padding: '40px 20px'
+      justifyContent: 'center'
     },
     timerSection: {
       display: 'flex',
@@ -80,12 +86,13 @@ export default function TimerPage({
   };
 
   return (
-    <div style={styles.container}>
-      {/* Dashboard Panel (Left) */}
-      <DashboardPanel />
+    <div style={styles.wrapper}>
+      <div style={styles.container}>
+        {/* Dashboard Panel (Left) */}
+        <DashboardPanel />
 
-      {/* Timer Section (Center) */}
-      <div style={styles.timerSection}>
+        {/* Timer Section (Center) */}
+        <div style={styles.timerSection}>
         {/* TEST MODE Banner */}
         {TEST_MODE && (
           <div style={styles.testModeBanner}>
@@ -126,17 +133,18 @@ export default function TimerPage({
         />
       </div>
 
-      {/* Status Panel (Fasting Levels) */}
-      <StatusPanel
-        isRunning={isRunning}
-        hours={hours}
-        timeLeft={timeLeft}
-        fastingLevels={fastingLevels}
-        bodyModes={bodyModes}
-        onLevelClick={onLevelClick}
-        calculateFastingLevel={calculateFastingLevel}
-        calculateBodyMode={calculateBodyMode}
-      />
+        {/* Status Panel (Fasting Levels) */}
+        <StatusPanel
+          isRunning={isRunning}
+          hours={hours}
+          timeLeft={timeLeft}
+          fastingLevels={fastingLevels}
+          bodyModes={bodyModes}
+          onLevelClick={onLevelClick}
+          calculateFastingLevel={calculateFastingLevel}
+          calculateBodyMode={calculateBodyMode}
+        />
+      </div>
     </div>
   );
 }
