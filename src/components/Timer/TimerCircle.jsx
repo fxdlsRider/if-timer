@@ -7,25 +7,10 @@ import React from 'react';
  * Displays the circular timer interface
  * Shows different UI when timer is running vs not running
  *
- * @param {boolean} isRunning - Whether timer is currently running
- * @param {boolean} isExtended - Whether in extended mode (after goal reached)
- * @param {boolean} showCompletionSummary - Whether to show post-fast summary
- * @param {object} completedFastData - Data about completed fast (duration, times)
- * @param {number} hours - Current hours value
- * @param {number} angle - Current angle for drag handle
- * @param {number} timeLeft - Time left in seconds (when running)
- * @param {number} progress - Progress percentage (0-100)
- * @param {string} TIME_UNIT - Time unit (hours/seconds)
- * @param {object} circleRef - Ref to circle container
- * @param {boolean} isDragging - Whether currently dragging
- * @param {function} handlePointerDown - Handler for drag start
- * @param {function} formatTime - Function to format time display
- * @param {function} getProgressColor - Function to get progress color
- * @param {function} onStartTimer - Handler for start button
- * @param {function} onCancelTimer - Handler for cancel button
- * @param {object} handlePosition - {x, y} position of drag handle
- * @param {number} circumference - Circle circumference
- * @param {number} progressOffset - Progress offset for stroke
+ * IMPORTANT: All three states use identical container structure to prevent layout shift
+ * 1. Pre-run state (not running, no completion)
+ * 2. Running state (timer active)
+ * 3. Completion state (after fast ends)
  */
 export default function TimerCircle({
   isRunning,
@@ -85,32 +70,26 @@ export default function TimerCircle({
       textTransform: 'uppercase',
       letterSpacing: '1px'
     },
-    startButton: {
+    button: {
       minWidth: '160px',
       padding: '16px 48px',
       fontSize: '16px',
       fontWeight: '600',
-      background: '#4ECDC4',
-      color: 'white',
       border: 'none',
       borderRadius: '24px',
       cursor: 'pointer',
       letterSpacing: '1px',
-      transition: 'background 0.2s',
+      transition: 'all 0.2s'
+    },
+    startButton: {
+      background: '#4ECDC4',
+      color: 'white',
       boxShadow: '0 2px 12px rgba(78, 205, 196, 0.3)'
     },
     cancelButton: {
-      minWidth: '160px',
-      padding: '16px 48px',
-      fontSize: '16px',
-      fontWeight: '600',
       background: 'transparent',
       color: '#666',
-      border: '1px solid #ddd',
-      borderRadius: '24px',
-      cursor: 'pointer',
-      marginTop: '16px',
-      transition: 'all 0.2s'
+      border: '1px solid #ddd'
     },
     timeDisplay: {
       fontSize: '48px',
@@ -125,10 +104,19 @@ export default function TimerCircle({
       marginTop: '12px',
       textTransform: 'uppercase',
       letterSpacing: '2px'
+    },
+    // CRITICAL: Fixed height container used in ALL states
+    contentContainer: {
+      minHeight: '108px',
+      marginBottom: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start'
     }
   };
 
-  // Completion summary state: Show "Well done" with results after stopping fast
+  // STATE 1: Completion summary (after fast ends)
   if (showCompletionSummary && !isRunning && completedFastData) {
     const totalDuration = completedFastData.duration;
 
@@ -169,24 +157,27 @@ export default function TimerCircle({
           </div>
         </div>
 
-        <div style={styles.statusText}>
-          FASTING COMPLETE
+        {/* Fixed container - same height as other states */}
+        <div style={styles.contentContainer}>
+          <div style={styles.statusText}>
+            FASTING COMPLETE
+          </div>
         </div>
 
         <button
           onClick={onStartTimer}
-          style={styles.startButton}
+          style={{ ...styles.button, ...styles.startButton }}
           onMouseEnter={(e) => e.target.style.background = '#3DBDB5'}
           onMouseLeave={(e) => e.target.style.background = '#4ECDC4'}
         >
-          START FAST
+          START
         </button>
       </>
     );
   }
 
+  // STATE 2: Pre-run (before starting timer)
   if (!isRunning) {
-    // Pre-run state: draggable circle
     return (
       <>
         <div ref={circleRef} style={styles.circleContainer}>
@@ -240,9 +231,8 @@ export default function TimerCircle({
           </div>
         </div>
 
-        {/* Fixed height container to prevent layout shift */}
-        <div style={{ minHeight: '108px', marginBottom: '20px' }}>
-          {/* Notification Info Banner */}
+        {/* Fixed container - same height as other states */}
+        <div style={styles.contentContainer}>
           {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
             <div style={{
               background: '#FFF9E6',
@@ -253,8 +243,7 @@ export default function TimerCircle({
               color: '#666',
               textAlign: 'center',
               lineHeight: '1.5',
-              maxWidth: '320px',
-              margin: '0 auto'
+              maxWidth: '320px'
             }}>
               🔔 <strong>Get notified</strong> when your fast completes!<br />
               <span style={{ fontSize: '12px' }}>We'll ask for permission when you start</span>
@@ -264,7 +253,7 @@ export default function TimerCircle({
 
         <button
           onClick={onStartTimer}
-          style={styles.startButton}
+          style={{ ...styles.button, ...styles.startButton }}
           onMouseEnter={(e) => e.target.style.background = '#3DBDB5'}
           onMouseLeave={(e) => e.target.style.background = '#4ECDC4'}
         >
@@ -274,13 +263,12 @@ export default function TimerCircle({
     );
   }
 
-  // Running state: progress circle
+  // STATE 3: Running (timer active)
   return (
     <>
       <div style={styles.circleContainer}>
         <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
           <defs>
-            {/* Multi-color gradient for progress ring: green → yellow → red → purple */}
             <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#34C759" />
               <stop offset="33%" stopColor="#FFE66D" />
@@ -335,8 +323,8 @@ export default function TimerCircle({
         </div>
       </div>
 
-      {/* Fixed height container to match pre-run state */}
-      <div style={{ minHeight: '108px', marginBottom: '20px' }}>
+      {/* Fixed container - same height as other states */}
+      <div style={styles.contentContainer}>
         <div style={styles.statusText}>
           {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : `${hours} ${TIME_UNIT} FAST`)}
         </div>
@@ -344,7 +332,7 @@ export default function TimerCircle({
 
       <button
         onClick={onCancelTimer}
-        style={styles.cancelButton}
+        style={{ ...styles.button, ...styles.cancelButton }}
         onMouseEnter={(e) => {
           e.target.style.borderColor = '#999';
           e.target.style.color = '#333';
@@ -354,7 +342,7 @@ export default function TimerCircle({
           e.target.style.color = '#666';
         }}
       >
-        Cancel
+        CANCEL
       </button>
     </>
   );
