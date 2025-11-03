@@ -107,8 +107,8 @@ export default function TimerCircle({
     },
     // CRITICAL: Fixed height container used in ALL states
     contentContainer: {
-      minHeight: '108px',
-      marginBottom: '20px',
+      height: '88px',
+      marginBottom: '0px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

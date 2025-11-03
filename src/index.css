@@ -16,13 +16,15 @@
   --color-accent-purple: #A855F7;
 }
 
-/* Force scrollbar to always show to prevent layout shift */
+/* Force scrollbar space to always be reserved to prevent layout shift */
 html {
   overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 
 body {
   margin: 0;
+  overflow-y: scroll;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
