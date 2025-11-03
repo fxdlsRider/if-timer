@@ -240,19 +240,9 @@ export default function TimerCircle({
           </div>
         </div>
 
-        {/* Status Text Placeholder - same height as running state */}
-        <div style={{ ...styles.statusText, visibility: 'hidden' }}>
-          PLACEHOLDER
-        </div>
-
-        {/* Notification Info Banner - Reserve space even when hidden */}
-        <div style={{
-          minHeight: '68px',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        {/* Fixed height container to prevent layout shift */}
+        <div style={{ minHeight: '108px', marginBottom: '20px' }}>
+          {/* Notification Info Banner */}
           {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
             <div style={{
               background: '#FFF9E6',
@@ -263,7 +253,8 @@ export default function TimerCircle({
               color: '#666',
               textAlign: 'center',
               lineHeight: '1.5',
-              maxWidth: '320px'
+              maxWidth: '320px',
+              margin: '0 auto'
             }}>
               🔔 <strong>Get notified</strong> when your fast completes!<br />
               <span style={{ fontSize: '12px' }}>We'll ask for permission when you start</span>
@@ -344,15 +335,12 @@ export default function TimerCircle({
         </div>
       </div>
 
-      <div style={styles.statusText}>
-        {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : `${hours} ${TIME_UNIT} FAST`)}
+      {/* Fixed height container to match pre-run state */}
+      <div style={{ minHeight: '108px', marginBottom: '20px' }}>
+        <div style={styles.statusText}>
+          {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : `${hours} ${TIME_UNIT} FAST`)}
+        </div>
       </div>
-
-      {/* Notification Banner Placeholder - same height as pre-run state */}
-      <div style={{
-        minHeight: '68px',
-        marginBottom: '20px'
-      }} />
 
       <button
         onClick={onCancelTimer}
