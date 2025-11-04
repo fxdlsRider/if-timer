@@ -1,7 +1,7 @@
 // components/Timer/TimerPage.jsx
 import React from 'react';
 import TimerCircle from './TimerCircle';
-import StatusPanel from '../Levels/StatusPanel';
+// import StatusPanel from '../Levels/StatusPanel'; // TEMPORARILY DISABLED FOR TESTING
 import StreakDisplay from '../Shared/StreakDisplay';
 import StatsDisplay from '../Shared/StatsDisplay';
 import DashboardPanel from '../Dashboard/DashboardPanel';
@@ -133,8 +133,8 @@ export default function TimerPage({
         />
       </div>
 
-        {/* Status Panel (Fasting Levels) */}
-        <StatusPanel
+        {/* Status Panel (Fasting Levels) - TEMPORARILY REMOVED FOR TESTING */}
+        {/* <StatusPanel
           isRunning={isRunning}
           hours={hours}
           timeLeft={timeLeft}
@@ -143,7 +143,7 @@ export default function TimerPage({
           onLevelClick={onLevelClick}
           calculateFastingLevel={calculateFastingLevel}
           calculateBodyMode={calculateBodyMode}
-        />
+        /> */}
       </div>
     </div>
   );
