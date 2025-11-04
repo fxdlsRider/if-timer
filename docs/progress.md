@@ -5,6 +5,198 @@
 
 ---
 
+## 📅 2025-11-04 - Layout-Shift Debugging & Timer Redesign 🔍 (Session 6)
+
+### ✅ Completed - Critical Bug Fixes & UI Refinements
+
+**What Changed in This Session:**
+
+This session was dedicated to solving persistent layout-shift bugs and redesigning the countdown timer display. Through systematic debugging, we identified the root cause and proposed a definitive solution.
+
+#### **Critical Bug: Layout Shift Investigation**
+
+**Problem Reported:**
+- Entire window shifts left when timer starts
+- Buttons positioned too far down
+- Content jumps on state transitions
+
+**Debugging Process:**
+1. ✅ Attempted scrollbar fixes (forced visibility, scrollbar-gutter)
+2. ✅ Unified SVG styles across all three timer states
+3. ✅ Fixed button spacing and container heights
+4. ✅ Removed StatusPanel → **Shift disappeared!**
+5. ✅ **ROOT CAUSE IDENTIFIED:** StatusPanel height changes
+
+**Root Cause:**
+- StatusPanel shows 6 items (Fasting Levels) when NOT running
+- StatusPanel shows 5 items (Body Modes) when running
+- Height difference causes flexbox re-layout
+- `justifyContent: 'center'` recalculates center point → shift!
+
+#### **Solutions Implemented:**
+
+1. **Timer Circles Scaled Down 20%**
+   - SVG: 280px → 224px
+   - Radius: 120px → 96px
+   - Center: (140,140) → (112,112)
+   - Stroke: 8px → 6px
+   - Updated CIRCLE_CONFIG constants
+
+2. **SVG Styles Unified**
+   - All three states now use identical SVG positioning
+   - `style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}`
+   - Eliminates rendering inconsistencies
+
+3. **Countdown Timer Redesigned**
+   - Simplified to clean digital display
+   - Font: Courier New (monospace)
+   - Size: 36px → 18px (50% smaller)
+   - letterSpacing: 2px for digital look
+   - Removed all backgrounds, borders, shadows
+   - Clean, minimal aesthetic
+
+4. **Button Spacing Optimized**
+   - contentContainer: 108px → 88px → 40px
+   - Buttons now significantly closer to timer circle
+
+5. **Scrollbar Handling**
+   - Removed forced scrollbar (min-height: 101vh)
+   - Kept scrollbar-gutter: stable for modern browsers
+   - Cleaner UI without permanent scrollbar
+
+#### **Proposed Solution: CSS Grid Layout** 🎯
+
+**Problem:** Flexbox with `justifyContent: 'center'` shifts when child heights change
+
+**Solution:** CSS Grid with fixed column positioning
+```javascript
+container: {
+  display: 'grid',
+  gridTemplateColumns: '1fr auto 1fr',
+  gap: '40px'
+}
+// Dashboard → justifySelf: 'start' (left)
+// Timer → justifySelf: 'center' (center)
+// Fasting Levels → justifySelf: 'end' (right)
+```
+
+**Benefits:**
+- ✅ Timer ALWAYS centered regardless of side column heights
+- ✅ Dashboard anchored left
+- ✅ Fasting Levels anchored right
+- ✅ Height changes don't affect positioning
+- ✅ Responsive and works on all screen sizes
+
+**Status:** Ready to implement in next session
+
+### 📊 Session Stats
+
+**Commits Made:** 11
+1. `021852d` - Initial scrollbar and button fixes
+2. `b7819a4` - Layout shift elimination attempts
+3. `b521ecd` - Fixed-height container approach
+4. `55ff324` - Complete TimerCircle rewrite (3 states)
+5. `d9a5858` - Scrollbar gutter implementation
+6. `73e7d6a` - SVG unification (20% scaling)
+7. `1f38753` - Wrapper layer addition
+8. `82929b4` - Remove forced scrollbar, scale timers
+9. `2a6c835` - Casio LCD display style (complex)
+10. `47e0180` - Simplified timer display (clean)
+11. `e312dbb` - Remove StatusPanel for testing
+
+**Files Modified:**
+- `src/index.css` - Scrollbar handling
+- `src/components/Timer/TimerCircle.jsx` - Complete rewrite, 3 states unified
+- `src/components/Timer/TimerPage.jsx` - Layout structure, StatusPanel removed
+- `src/config/constants.js` - CIRCLE_CONFIG scaled down 20%
+
+**Lines Changed:**
+- Modified: ~200 lines (refactoring, fixes)
+- Identified: Root cause of layout shift bug
+- Proposed: Definitive CSS Grid solution
+
+**Build Status:**
+- ✅ All commits compile successfully
+- ✅ No ESLint errors
+- ✅ Ready for CSS Grid implementation
+
+### 🎯 Key Decisions
+
+1. **Scrollbar Strategy:**
+   - Decision: Use scrollbar-gutter only, no forced scrollbar
+   - Reason: Cleaner UI, modern browser support sufficient
+   - Trade-off: Older browsers might still see minor shifts
+
+2. **Timer Size:**
+   - Decision: 20% smaller (280px → 224px)
+   - Reason: User request for more compact UI
+   - Impact: More space for other content
+
+3. **Countdown Display:**
+   - Decision: Minimal digital font, no background
+   - Reason: User feedback - "too much styling"
+   - Result: Clean 18px monospace display
+
+4. **Layout Strategy:**
+   - Decision: CSS Grid instead of Flexbox
+   - Reason: Fixed column positions prevent shifts
+   - Next: Implement in next session
+
+### 💡 Lessons Learned
+
+1. **Flexbox Centering is Fragile:**
+   - `justifyContent: 'center'` recalculates when child sizes change
+   - Not suitable for dynamic content with varying heights
+   - CSS Grid provides more stable positioning
+
+2. **Systematic Debugging:**
+   - Removing components systematically identified root cause
+   - StatusPanel was suspected, confirmed by removal test
+   - Proper isolation is key to finding layout bugs
+
+3. **User Feedback is Direct:**
+   - "Too much styling" → Simplified immediately
+   - "Too big" → Made 50% smaller
+   - Rapid iteration based on clear feedback works
+
+### 🐛 Known Issues
+
+**IDENTIFIED BUT NOT YET FIXED:**
+- ❌ Layout shifts left when timer starts (ROOT CAUSE: StatusPanel height)
+- ⏳ Solution ready: CSS Grid with fixed column positioning
+- ⏳ StatusPanel currently disabled for testing
+
+**PENDING IMPLEMENTATION:**
+- [ ] Implement CSS Grid layout (Dashboard left, Timer center, Fasting right)
+- [ ] Re-enable StatusPanel with new layout
+- [ ] Test all state transitions for stability
+
+### 🚀 Next Session Goals
+
+1. **Implement CSS Grid Solution:**
+   - Update TimerPage.jsx with CSS Grid
+   - Set Dashboard to justifySelf: 'start'
+   - Set Timer to justifySelf: 'center'
+   - Set StatusPanel to justifySelf: 'end'
+
+2. **Re-enable StatusPanel:**
+   - Uncomment StatusPanel in TimerPage.jsx
+   - Verify no layout shift with new Grid layout
+   - Test all timer state transitions
+
+3. **Final Testing:**
+   - Test on different screen sizes
+   - Verify responsive behavior
+   - Confirm no layout shifts remain
+
+4. **Progress Tracking:**
+   - Phase 1: Complete ✅ (75%)
+   - Phase 1.5: UI Refinements Complete ✅ (+5%)
+   - Phase 1.6: Layout Stability Complete ⏳ (+3%)
+   - **Overall: ~83% project completion** (pending Grid implementation)
+
+---
+
 ## 📅 2025-11-01 - UI Refinements & Bug Fixes ✅ (Session 5)
 
 ### ✅ Completed - Design Improvements & User Feedback
