@@ -1,7 +1,7 @@
 // components/Timer/TimerPage.jsx
 import React from 'react';
 import TimerCircle from './TimerCircle';
-// import StatusPanel from '../Levels/StatusPanel'; // TEMPORARILY DISABLED FOR TESTING
+import StatusPanel from '../Levels/StatusPanel';
 import StreakDisplay from '../Shared/StreakDisplay';
 import StatsDisplay from '../Shared/StatsDisplay';
 import DashboardPanel from '../Dashboard/DashboardPanel';
@@ -60,18 +60,25 @@ export default function TimerPage({
       boxSizing: 'border-box'
     },
     container: {
-      display: 'flex',
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
       gap: '40px',
       maxWidth: '1400px',
       width: '100%',
-      alignItems: 'flex-start',
-      justifyContent: 'center'
+      alignItems: 'start'
+    },
+    dashboardColumn: {
+      justifySelf: 'start'
     },
     timerSection: {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      minWidth: '320px'
+      minWidth: '320px',
+      justifySelf: 'center'
+    },
+    statusColumn: {
+      justifySelf: 'end'
     },
     testModeBanner: {
       background: '#FF6B6B',
@@ -89,7 +96,9 @@ export default function TimerPage({
     <div style={styles.wrapper}>
       <div style={styles.container}>
         {/* Dashboard Panel (Left) */}
-        <DashboardPanel />
+        <div style={styles.dashboardColumn}>
+          <DashboardPanel />
+        </div>
 
         {/* Timer Section (Center) */}
         <div style={styles.timerSection}>
@@ -131,19 +140,21 @@ export default function TimerPage({
           totalHours={totalHours}
           goalHours={goalHours}
         />
-      </div>
+        </div>
 
-        {/* Status Panel (Fasting Levels) - TEMPORARILY REMOVED FOR TESTING */}
-        {/* <StatusPanel
-          isRunning={isRunning}
-          hours={hours}
-          timeLeft={timeLeft}
-          fastingLevels={fastingLevels}
-          bodyModes={bodyModes}
-          onLevelClick={onLevelClick}
-          calculateFastingLevel={calculateFastingLevel}
-          calculateBodyMode={calculateBodyMode}
-        /> */}
+        {/* Status Panel (Fasting Levels) - Right aligned */}
+        <div style={styles.statusColumn}>
+          <StatusPanel
+            isRunning={isRunning}
+            hours={hours}
+            timeLeft={timeLeft}
+            fastingLevels={fastingLevels}
+            bodyModes={bodyModes}
+            onLevelClick={onLevelClick}
+            calculateFastingLevel={calculateFastingLevel}
+            calculateBodyMode={calculateBodyMode}
+          />
+        </div>
       </div>
     </div>
   );
