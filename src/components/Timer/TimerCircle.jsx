@@ -92,19 +92,13 @@ export default function TimerCircle({
       border: '1px solid #ddd'
     },
     timeDisplay: {
-      fontSize: '36px',
-      fontWeight: '900',
-      fontFamily: '"Courier New", "Consolas", "Monaco", "Lucida Console", monospace',
-      color: '#1a1a1a',
-      letterSpacing: '6px',
-      marginBottom: '0px',
-      fontVariantNumeric: 'tabular-nums',
-      textShadow: '1px 1px 0 rgba(0,0,0,0.15)',
-      padding: '8px 16px',
-      borderRadius: '3px',
-      background: 'linear-gradient(to bottom, #b8c5b8 0%, #a8b5a8 100%)',
-      border: '2px solid #7a8a7a',
-      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1), 0 1px 2px rgba(255,255,255,0.3)'
+      fontSize: '18px',
+      fontWeight: '700',
+      fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
+      color: 'var(--color-text, #333)',
+      letterSpacing: '2px',
+      marginBottom: '8px',
+      fontVariantNumeric: 'tabular-nums'
     },
     statusText: {
       fontSize: '16px',
