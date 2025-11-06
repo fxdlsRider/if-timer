@@ -1,5 +1,6 @@
 // components/Timer/TimerCircle.jsx
 import React from 'react';
+import { hasUserRespondedToPermission } from '../../services/notificationService';
 
 /**
  * TimerCircle Component
@@ -235,7 +236,7 @@ export default function TimerCircle({
 
         {/* Fixed container - same height as other states */}
         <div style={styles.contentContainer}>
-          {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
+          {!hasUserRespondedToPermission() && (
             <div style={{
               background: '#FFF9E6',
               border: '1px solid #FFE066',
