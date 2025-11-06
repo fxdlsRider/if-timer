@@ -1,5 +1,5 @@
 // components/Timer/TimerCircle.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { hasUserRespondedToPermission } from '../../services/notificationService';
 
 /**
@@ -34,6 +34,24 @@ export default function TimerCircle({
   circumference,
   progressOffset
 }) {
+  // State to track if notification banner should be shown
+  const [showNotificationBanner, setShowNotificationBanner] = useState(() => {
+    // Check localStorage first (persists across sessions)
+    const dismissed = localStorage.getItem('notificationBannerDismissed');
+    if (dismissed === 'true') return false;
+
+    // Check if user has already responded to permission
+    return !hasUserRespondedToPermission();
+  });
+
+  // Hide banner when timer starts (permission will be requested)
+  useEffect(() => {
+    if (isRunning && showNotificationBanner) {
+      setShowNotificationBanner(false);
+      localStorage.setItem('notificationBannerDismissed', 'true');
+    }
+  }, [isRunning, showNotificationBanner]);
+
   const styles = {
     circleContainer: {
       position: 'relative',
@@ -236,7 +254,7 @@ export default function TimerCircle({
 
         {/* Fixed container - same height as other states */}
         <div style={styles.contentContainer}>
-          {!hasUserRespondedToPermission() && (
+          {showNotificationBanner && (
             <div style={{
               background: '#FFF9E6',
               border: '1px solid #FFE066',
