@@ -67,18 +67,22 @@ export const getFastingLevel = (hours) => {
 
 /**
  * Calculate body mode based on elapsed time
- * @param {number} totalHours - Total fasting duration (hours)
+ * @param {number} totalHours - Total fasting duration (hours in production, seconds in test mode)
  * @param {number} timeLeft - Time remaining (seconds)
+ * @param {number} timeMultiplier - Time multiplier (1 for test mode, 3600 for production)
  * @returns {number} Body mode index (0-4)
  */
-export const getBodyMode = (totalHours, timeLeft) => {
-  const elapsed = (totalHours * 3600) - timeLeft;
-  const elapsedHours = elapsed / 3600;
+export const getBodyMode = (totalHours, timeLeft, timeMultiplier = 3600) => {
+  // Calculate elapsed time in seconds
+  const totalSeconds = totalHours * timeMultiplier;
+  const elapsed = totalSeconds - timeLeft;
+  // Convert elapsed seconds back to "units" (seconds in test mode, hours in production)
+  const elapsedInUnits = elapsed / timeMultiplier;
 
-  if (elapsedHours < 4) return 0;   // Digesting
-  if (elapsedHours < 12) return 1;  // Getting ready
-  if (elapsedHours < 18) return 2;  // Fat burning
-  if (elapsedHours < 24) return 3;  // Cell renewal
+  if (elapsedInUnits < 4) return 0;   // Digesting
+  if (elapsedInUnits < 12) return 1;  // Getting ready
+  if (elapsedInUnits < 18) return 2;  // Fat burning
+  if (elapsedInUnits < 24) return 3;  // Cell renewal
   return 4; // Deep healing (24+)
 };
 

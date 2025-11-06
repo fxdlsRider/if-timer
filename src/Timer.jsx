@@ -58,6 +58,7 @@ export default function Timer() {
     showCompletionSummary,
     TEST_MODE,
     TIME_UNIT,
+    TIME_MULTIPLIER,
     startTimer,
     cancelTimer,
     continueFasting,
@@ -109,6 +110,11 @@ export default function Timer() {
     handleStateLoaded
   );
 
+  // Wrap calculateBodyMode to include TIME_MULTIPLIER
+  const calculateBodyModeWithMultiplier = useCallback((hours, timeLeft) => {
+    return calculateBodyMode(hours, timeLeft, TIME_MULTIPLIER);
+  }, [TIME_MULTIPLIER]);
+
   // Calculate handle position and progress
   const handleX = angle * (Math.PI / 180);
   const handleY = angle * (Math.PI / 180);
@@ -150,7 +156,7 @@ export default function Timer() {
             bodyModes={BODY_MODES}
             onLevelClick={handleLevelClick}
             calculateFastingLevel={calculateFastingLevel}
-            calculateBodyMode={calculateBodyMode}
+            calculateBodyMode={calculateBodyModeWithMultiplier}
           />
         );
       case 'stats':
