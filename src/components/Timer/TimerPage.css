@@ -1,0 +1,106 @@
+/* TimerPage.css - Responsive Layout Styles */
+
+/* Desktop: Full padding */
+.timer-page-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 40px 200px;
+  box-sizing: border-box;
+}
+
+/* Tablet (iPad and similar) - Reduce side padding */
+@media (max-width: 1280px) {
+  .timer-page-wrapper {
+    padding: 40px 80px;
+  }
+}
+
+/* iPad Portrait & smaller tablets */
+@media (max-width: 1024px) {
+  .timer-page-wrapper {
+    padding: 40px 40px;
+  }
+}
+
+/* Mobile landscape */
+@media (max-width: 768px) {
+  .timer-page-wrapper {
+    padding: 30px 20px;
+  }
+}
+
+/* Mobile portrait */
+@media (max-width: 480px) {
+  .timer-page-wrapper {
+    padding: 20px 16px;
+  }
+}
+
+/* Container grid */
+.timer-page-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 40px;
+  max-width: 1400px;
+  width: 100%;
+  align-items: start;
+}
+
+/* Tablet - reduce gap */
+@media (max-width: 1024px) {
+  .timer-page-container {
+    gap: 30px;
+  }
+}
+
+/* Mobile - stack layout */
+@media (max-width: 768px) {
+  .timer-page-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
+/* Column positioning */
+.dashboard-column {
+  justify-self: start;
+}
+
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 320px;
+  justify-self: center;
+}
+
+.status-column {
+  justify-self: end;
+}
+
+/* Mobile - all columns full width */
+@media (max-width: 768px) {
+  .dashboard-column,
+  .timer-section,
+  .status-column {
+    justify-self: center;
+  }
+
+  .timer-section {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+/* Test mode banner */
+.test-mode-banner {
+  background: #FF6B6B;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  fontSize: 12px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-align: center;
+}
