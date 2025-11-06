@@ -27,45 +27,64 @@ export default function StatusPanel({
   calculateBodyMode
 }) {
   const styles = {
-    infoSection: {
-      marginTop: '40px'
+    container: {
+      width: '300px',
+      background: 'var(--color-background-secondary, #F8FAFC)',
+      borderRadius: '16px',
+      padding: '24px',
+      border: '1px solid var(--color-border, #E2E8F0)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
     },
-    infoTitle: {
-      fontSize: '13px',
+    header: {
+      textAlign: 'center',
+      borderBottom: '2px solid var(--color-border, #E2E8F0)',
+      paddingBottom: '16px'
+    },
+    title: {
+      fontSize: '18px',
       fontWeight: '600',
-      color: 'var(--color-text-secondary, #999)',
-      letterSpacing: '1px',
+      color: 'var(--color-text, #0F172A)',
+      marginBottom: '4px',
+      letterSpacing: '0.5px'
+    },
+    subtitle: {
+      fontSize: '13px',
+      color: 'var(--color-text-secondary, #64748B)',
       textTransform: 'uppercase',
-      marginBottom: '16px',
-      position: 'relative',
-      paddingBottom: '12px'
+      letterSpacing: '1px'
     },
-    infoTitleLine: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: '1px',
-      background: 'linear-gradient(to right, #e0e0e0 0%, transparent 100%)'
-    },
-    infoList: {
+    levelsList: {
       listStyle: 'none',
       padding: 0,
-      margin: 0
+      margin: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px'
     },
-    infoItem: {
+    levelItem: {
       fontSize: '14px',
-      padding: '12px 0',
+      padding: '12px 16px',
       cursor: 'pointer',
       transition: 'all 0.2s',
       display: 'flex',
       alignItems: 'center',
-      gap: '12px'
+      justifyContent: 'space-between',
+      gap: '12px',
+      background: 'var(--color-background, #FFFFFF)',
+      borderRadius: '10px',
+      border: '1px solid var(--color-border-subtle, #F1F5F9)'
     },
-    infoHours: {
+    levelHours: {
       fontSize: '12px',
-      color: 'var(--color-text-tertiary, #999)',
+      color: 'var(--color-text-secondary, #64748B)',
+      fontWeight: '500',
       minWidth: '60px'
+    },
+    levelLabel: {
+      flex: 1,
+      fontSize: '14px'
     }
   };
 
@@ -75,13 +94,15 @@ export default function StatusPanel({
     : calculateBodyMode(hours, timeLeft);
 
   return (
-    <div style={styles.infoSection}>
-      <div style={styles.infoTitle}>
-        {!isRunning ? 'Fasting Levels' : 'Body Mode'}
-        <div style={styles.infoTitleLine} />
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.title}>{!isRunning ? 'Fasting Levels' : 'Body Mode'}</div>
+        <div style={styles.subtitle}>Status</div>
       </div>
 
-      <ul style={styles.infoList}>
+      {/* Levels List */}
+      <ul style={styles.levelsList}>
         {items.map((item, index) => {
           const isActive = currentIndex === index;
           const isClickable = !isRunning && item.startHour;
@@ -90,27 +111,37 @@ export default function StatusPanel({
             <li
               key={index}
               style={{
-                ...styles.infoItem,
-                color: isActive ? 'var(--color-text, #333)' : 'var(--color-text-secondary, #999)',
-                fontWeight: isActive ? '500' : 'normal',
-                cursor: isClickable ? 'pointer' : 'default'
+                ...styles.levelItem,
+                cursor: isClickable ? 'pointer' : 'default',
+                background: isActive
+                  ? 'linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(52, 199, 89, 0.1))'
+                  : 'var(--color-background, #FFFFFF)',
+                borderColor: isActive
+                  ? 'var(--color-accent-teal, #4ECDC4)'
+                  : 'var(--color-border-subtle, #F1F5F9)'
               }}
               onClick={() => isClickable && onLevelClick(item.startHour)}
               onMouseEnter={(e) => {
-                if (isClickable) {
-                  e.currentTarget.style.color = 'var(--color-text, #333)';
-                  e.currentTarget.style.fontWeight = '500';
+                if (isClickable && !isActive) {
+                  e.currentTarget.style.background = 'var(--color-background-secondary, #F8FAFC)';
+                  e.currentTarget.style.borderColor = 'var(--color-border, #E2E8F0)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (isClickable && !isActive) {
-                  e.currentTarget.style.color = 'var(--color-text-secondary, #999)';
-                  e.currentTarget.style.fontWeight = 'normal';
+                  e.currentTarget.style.background = 'var(--color-background, #FFFFFF)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-subtle, #F1F5F9)';
                 }
               }}
             >
-              <span style={styles.infoHours}>{item.range}</span>
-              {item.label}
+              <span style={styles.levelHours}>{item.range}</span>
+              <span style={{
+                ...styles.levelLabel,
+                color: isActive ? 'var(--color-text, #0F172A)' : 'var(--color-text-secondary, #64748B)',
+                fontWeight: isActive ? '600' : '500'
+              }}>
+                {item.label}
+              </span>
             </li>
           );
         })}

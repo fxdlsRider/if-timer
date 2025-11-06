@@ -344,7 +344,7 @@ export default function TimerCircle({
           e.target.style.color = '#666';
         }}
       >
-        CANCEL
+        STOP
       </button>
     </>
   );
