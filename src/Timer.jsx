@@ -92,8 +92,7 @@ export default function Timer() {
 
   // Wrapper functions to reset angle on timer actions
   const handleStartTimer = useCallback(() => {
-    setAngle(TIMER_CONSTANTS.DEFAULT_ANGLE);
-    setHours(TIMER_CONSTANTS.DEFAULT_HOURS);
+    // Use the current hours value selected by user, don't reset to default
     startTimer();
   }, [startTimer]);
 
