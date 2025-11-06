@@ -56,7 +56,7 @@ export default function TimerPage({
       width: '100%',
       display: 'flex',
       justifyContent: 'center',
-      padding: '40px 20px',
+      padding: '40px 200px',
       boxSizing: 'border-box'
     },
     container: {
