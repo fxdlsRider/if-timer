@@ -110,10 +110,10 @@ export default function Timer() {
     handleStateLoaded
   );
 
-  // Wrap calculateBodyMode to include TIME_MULTIPLIER
+  // Wrap calculateBodyMode to include TIME_MULTIPLIER and isExtended
   const calculateBodyModeWithMultiplier = useCallback((hours, timeLeft) => {
-    return calculateBodyMode(hours, timeLeft, TIME_MULTIPLIER);
-  }, [TIME_MULTIPLIER]);
+    return calculateBodyMode(hours, timeLeft, TIME_MULTIPLIER, isExtended);
+  }, [TIME_MULTIPLIER, isExtended]);
 
   // Calculate handle position and progress
   const handleX = angle * (Math.PI / 180);
@@ -123,7 +123,7 @@ export default function Timer() {
   const handlePosY = CIRCLE_CONFIG.CENTER_Y - Math.cos(handleY) * radius;
 
   const circumference = 2 * Math.PI * CIRCLE_CONFIG.RADIUS;
-  const progress = isRunning && targetTime ? calculateProgress(hours, timeLeft) : 0;
+  const progress = isRunning && targetTime ? calculateProgress(hours, timeLeft, isExtended) : 0;
   const progressOffset = circumference - (progress / 100) * circumference;
 
   // Render active page based on navigation

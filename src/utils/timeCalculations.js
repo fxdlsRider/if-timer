@@ -42,12 +42,19 @@ export const getTimeLeft = (targetTime, currentTime, isExtended = false, origina
 /**
  * Calculate progress percentage
  * @param {number} totalHours - Total fasting duration (hours)
- * @param {number} timeLeft - Time remaining (seconds)
+ * @param {number} timeLeft - Time remaining (seconds), or elapsed if extended
+ * @param {boolean} isExtended - Extended mode flag
  * @returns {number} Progress percentage (0-100)
  */
-export const getProgress = (totalHours, timeLeft) => {
+export const getProgress = (totalHours, timeLeft, isExtended = false) => {
   const totalSeconds = totalHours * 3600;
-  const elapsed = totalSeconds - timeLeft;
+
+  // In extended mode, timeLeft is additional elapsed time beyond goal
+  // In normal mode, timeLeft is remaining time
+  const elapsed = isExtended
+    ? totalSeconds + timeLeft  // Goal reached + additional time
+    : totalSeconds - timeLeft; // Time that has passed
+
   return (elapsed / totalSeconds) * 100;
 };
 
@@ -68,14 +75,21 @@ export const getFastingLevel = (hours) => {
 /**
  * Calculate body mode based on elapsed time
  * @param {number} totalHours - Total fasting duration (hours in production, seconds in test mode)
- * @param {number} timeLeft - Time remaining (seconds)
+ * @param {number} timeLeft - Time remaining (seconds), or elapsed if extended
  * @param {number} timeMultiplier - Time multiplier (1 for test mode, 3600 for production)
+ * @param {boolean} isExtended - Extended mode flag
  * @returns {number} Body mode index (0-4)
  */
-export const getBodyMode = (totalHours, timeLeft, timeMultiplier = 3600) => {
+export const getBodyMode = (totalHours, timeLeft, timeMultiplier = 3600, isExtended = false) => {
   // Calculate elapsed time in seconds
   const totalSeconds = totalHours * timeMultiplier;
-  const elapsed = totalSeconds - timeLeft;
+
+  // In extended mode, timeLeft is additional elapsed time beyond goal
+  // In normal mode, timeLeft is remaining time
+  const elapsed = isExtended
+    ? totalSeconds + timeLeft  // Goal reached + additional time
+    : totalSeconds - timeLeft; // Time that has passed
+
   // Convert elapsed seconds back to "units" (seconds in test mode, hours in production)
   const elapsedInUnits = elapsed / timeMultiplier;
 

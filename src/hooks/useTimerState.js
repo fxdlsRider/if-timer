@@ -150,6 +150,14 @@ export function useTimerState(hours) {
    * Called when user clicks "Stop Fasting" after completing/extending fast
    */
   const stopFasting = () => {
+    // Update completedFastData with actual completion time (important for extended mode)
+    if (completedFastData) {
+      setCompletedFastData({
+        ...completedFastData,
+        endTime: new Date(), // Set end time to NOW (captures extended time)
+      });
+    }
+
     setShowCelebration(false);
     setIsRunning(false);
     setTargetTime(null);
@@ -158,7 +166,6 @@ export function useTimerState(hours) {
 
     // Show completion summary with "Start Fast" button
     setShowCompletionSummary(true);
-    // Keep completedFastData to display results
   };
 
   /**
