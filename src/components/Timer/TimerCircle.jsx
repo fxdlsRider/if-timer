@@ -140,6 +140,9 @@ export default function TimerCircle({
   // STATE 1: Completion summary (after fast ends)
   if (showCompletionSummary && !isRunning && completedFastData) {
     const totalDuration = completedFastData.duration;
+    // Calculate total time in seconds and format it
+    const totalSeconds = Math.floor((completedFastData.endTime - completedFastData.startTime) / 1000);
+    const formattedTime = formatTime(totalSeconds);
 
     return (
       <>
@@ -169,11 +172,11 @@ export default function TimerCircle({
             <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
               Well done!
             </div>
-            <div style={{ fontSize: '32px', fontWeight: '300', color: 'var(--color-text, #333)', marginBottom: '4px' }}>
-              {totalDuration}
+            <div style={styles.timeDisplay}>
+              {formattedTime}
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>
-              {completedFastData.unit} fasted
+            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginTop: '4px' }}>
+              {totalDuration} {completedFastData.unit} fasted
             </div>
           </div>
         </div>

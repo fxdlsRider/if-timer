@@ -142,6 +142,52 @@ export const BODY_MODES = [
   },
 ];
 
+// ===== FASTING TIPS =====
+// Tips shown during fasting based on current body mode
+
+export const FASTING_TIPS = [
+  {
+    modeId: 'digesting',
+    tips: [
+      '💧 Stay hydrated - drink plenty of water',
+      '🧘 Relax and prepare mentally for your fast',
+      '📱 Set your environment up for success',
+    ]
+  },
+  {
+    modeId: 'getting-ready',
+    tips: [
+      '💪 Hunger is temporary, results are lasting',
+      '☕ Black coffee or tea can help (no calories!)',
+      '🚶 Light activity helps distract from hunger',
+    ]
+  },
+  {
+    modeId: 'fat-burning',
+    tips: [
+      '🔥 You\'re burning fat now - keep going!',
+      '💧 Drink water regularly to stay hydrated',
+      '🧠 Mental clarity often peaks during this phase',
+    ]
+  },
+  {
+    modeId: 'cell-renewal',
+    tips: [
+      '♻️ Autophagy is active - cellular cleanup in progress',
+      '💎 This is where the magic happens',
+      '🧘 Listen to your body, rest if needed',
+    ]
+  },
+  {
+    modeId: 'deep-healing',
+    tips: [
+      '✨ Impressive! Maximum healing benefits active',
+      '👂 Listen carefully to your body signals',
+      '🏆 You\'re in elite territory - well done!',
+    ]
+  },
+];
+
 // ===== PROGRESS COLORS =====
 
 export const PROGRESS_COLORS = {

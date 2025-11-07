@@ -1,5 +1,6 @@
 // components/Levels/StatusPanel.jsx
 import React from 'react';
+import { FASTING_TIPS } from '../../config/constants';
 
 /**
  * StatusPanel Component
@@ -93,6 +94,11 @@ export default function StatusPanel({
     ? calculateFastingLevel(hours)
     : calculateBodyMode(hours, timeLeft);
 
+  // Get tips for current body mode (only when running)
+  const currentTips = isRunning && bodyModes[currentIndex]
+    ? FASTING_TIPS.find(tip => tip.modeId === bodyModes[currentIndex].id)?.tips || []
+    : [];
+
   return (
     <div style={styles.container}>
       {/* Header */}
@@ -146,6 +152,47 @@ export default function StatusPanel({
           );
         })}
       </ul>
+
+      {/* Fasting Tips - Only show when running */}
+      {isRunning && currentTips.length > 0 && (
+        <div style={{
+          marginTop: '20px',
+          padding: '16px',
+          background: 'linear-gradient(135deg, rgba(78, 205, 196, 0.05), rgba(52, 199, 89, 0.05))',
+          borderRadius: '10px',
+          border: '1px solid var(--color-accent-teal, #4ECDC4)',
+        }}>
+          <div style={{
+            fontSize: '13px',
+            fontWeight: '600',
+            color: 'var(--color-accent-teal, #4ECDC4)',
+            marginBottom: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+          }}>
+            💡 Tips for this phase
+          </div>
+          <ul style={{
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            {currentTips.map((tip, index) => (
+              <li key={index} style={{
+                fontSize: '13px',
+                color: 'var(--color-text, #0F172A)',
+                lineHeight: '1.5',
+                paddingLeft: '4px'
+              }}>
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

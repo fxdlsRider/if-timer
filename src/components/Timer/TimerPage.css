@@ -54,8 +54,8 @@
   }
 }
 
-/* Mobile - stack layout */
-@media (max-width: 768px) {
+/* iPad Portrait & Mobile - stack layout */
+@media (max-width: 900px) {
   .timer-page-container {
     grid-template-columns: 1fr;
     gap: 30px;
@@ -79,8 +79,8 @@
   justify-self: end;
 }
 
-/* Mobile - all columns full width */
-@media (max-width: 768px) {
+/* iPad Portrait & Mobile - all columns full width and centered */
+@media (max-width: 900px) {
   .dashboard-column,
   .timer-section,
   .status-column {
