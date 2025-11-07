@@ -198,6 +198,14 @@ export function useTimerState(hours) {
     setOriginalGoalTime(null);
   };
 
+  /**
+   * Clear completed fast data (when user drags ball or selects new level)
+   */
+  const clearCompletedFastData = () => {
+    setCompletedFastData(null);
+    setShowCompletionSummary(false);
+  };
+
   return {
     // State
     isRunning,
@@ -221,5 +229,6 @@ export function useTimerState(hours) {
     continueFasting,
     stopFasting,
     startNewFast,
+    clearCompletedFastData,
   };
 }

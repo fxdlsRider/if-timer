@@ -218,7 +218,7 @@ export default function TimerCircle({
 
   // STATE 2: Pre-run (before starting timer)
   if (!isRunning) {
-    // Calculate completion data if available (for display above ball)
+    // Calculate completion data if available (for display in timer center)
     let completionInfo = null;
     if (completedFastData) {
       const totalDuration = completedFastData.duration;
@@ -238,41 +238,6 @@ export default function TimerCircle({
 
     return (
       <>
-        {/* Completion Summary - shown above ball when available */}
-        {completionInfo && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: '24px',
-            padding: '16px 24px',
-            background: 'linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(78, 205, 196, 0.05))',
-            borderRadius: '12px',
-            border: '1px solid var(--color-accent-green, #34C759)',
-            maxWidth: '320px'
-          }}>
-            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-accent-green, #34C759)', marginBottom: '8px' }}>
-              ✓ Fast Completed
-            </div>
-            <div style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
-              color: 'var(--color-text, #0F172A)',
-              letterSpacing: '1px',
-              marginBottom: '4px'
-            }}>
-              {formatTime(completionInfo.originalGoalSeconds)}
-              {completionInfo.hasExtended && (
-                <span style={{ color: 'var(--color-accent-purple, #A855F7)', marginLeft: '8px' }}>
-                  +{formatTime(completionInfo.extendedSeconds)}
-                </span>
-              )}
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary, #64748B)' }}>
-              {completionInfo.totalDuration} {completedFastData.unit} {completionInfo.hasExtended ? 'goal + extended' : 'fasted'}
-            </div>
-          </div>
-        )}
-
         <div ref={circleRef} style={styles.circleContainer}>
           <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0 }}>
             <circle
@@ -318,9 +283,38 @@ export default function TimerCircle({
             onTouchStart={handlePointerDown}
           />
 
+          {/* Center display: Show completion info OR normal hours */}
           <div style={styles.hoursDisplay}>
-            <div style={styles.hoursNumber}>{hours}</div>
-            <div style={styles.hoursLabel}>{TIME_UNIT}</div>
+            {completionInfo ? (
+              <>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-accent-green, #34C759)', marginBottom: '8px' }}>
+                  Fast Completed
+                </div>
+                <div style={{
+                  fontSize: '20px',
+                  fontWeight: '700',
+                  fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
+                  color: 'var(--color-text, #0F172A)',
+                  letterSpacing: '1px',
+                  marginBottom: '4px'
+                }}>
+                  {formatTime(completionInfo.originalGoalSeconds)}
+                  {completionInfo.hasExtended && (
+                    <span style={{ color: 'var(--color-accent-purple, #A855F7)', marginLeft: '8px' }}>
+                      +{formatTime(completionInfo.extendedSeconds)}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary, #64748B)' }}>
+                  {completionInfo.totalDuration} {completedFastData.unit} {completionInfo.hasExtended ? 'goal + extended' : 'fasted'}
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={styles.hoursNumber}>{hours}</div>
+                <div style={styles.hoursLabel}>{TIME_UNIT}</div>
+              </>
+            )}
           </div>
         </div>
 

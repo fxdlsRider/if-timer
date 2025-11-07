@@ -63,16 +63,19 @@ export default function Timer() {
     cancelTimer,
     continueFasting,
     stopFasting,
+    clearCompletedFastData,
   } = timerState;
 
   // Custom Hook - Drag handling (controlled component pattern)
+  // Pass clearCompletedFastData to clear "Fast Completed" when user interacts
   const { isDragging, handlePointerDown, handleLevelClick } = useDragHandle(
     circleRef,
     isRunning,
     angle,
     setAngle,
     hours,
-    setHours
+    setHours,
+    clearCompletedFastData
   );
 
   // Stabilize timerState object to prevent re-renders

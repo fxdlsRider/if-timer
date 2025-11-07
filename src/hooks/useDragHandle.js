@@ -17,9 +17,10 @@ import { TIMER_CONSTANTS } from '../config/constants';
  * @param {function} setAngle - Setter for angle (from parent)
  * @param {number} hours - Current hours value (controlled from parent)
  * @param {function} setHours - Setter for hours (from parent)
+ * @param {function} onInteraction - Optional callback when user interacts with timer (drags or clicks level)
  * @returns {object} Drag state and handlers
  */
-export function useDragHandle(circleRef, isRunning, angle, setAngle, hours, setHours) {
+export function useDragHandle(circleRef, isRunning, angle, setAngle, hours, setHours, onInteraction = null) {
   const [isDragging, setIsDragging] = useState(false);
 
   /**
@@ -67,9 +68,13 @@ export function useDragHandle(circleRef, isRunning, angle, setAngle, hours, setH
   const handlePointerDown = useCallback((e) => {
     if (isRunning) return;
     e.preventDefault();
+
+    // Notify parent that user is interacting (clears completion data)
+    if (onInteraction) onInteraction();
+
     setIsDragging(true);
     updateAngleFromEvent(e);
-  }, [isRunning, updateAngleFromEvent]);
+  }, [isRunning, updateAngleFromEvent, onInteraction]);
 
   /**
    * Handle pointer move (while dragging)
@@ -93,6 +98,9 @@ export function useDragHandle(circleRef, isRunning, angle, setAngle, hours, setH
   const handleLevelClick = useCallback((targetHours) => {
     if (isRunning) return;
 
+    // Notify parent that user is interacting (clears completion data)
+    if (onInteraction) onInteraction();
+
     const hourRange = TIMER_CONSTANTS.HOUR_RANGE;
     const normalizedHours = Math.max(
       TIMER_CONSTANTS.MIN_HOURS,
@@ -103,7 +111,7 @@ export function useDragHandle(circleRef, isRunning, angle, setAngle, hours, setH
     // Update via parent setters
     setHours(normalizedHours);
     setAngle(newAngle);
-  }, [isRunning, setHours, setAngle]);
+  }, [isRunning, setHours, setAngle, onInteraction]);
 
   // Add global event listeners when dragging
   useEffect(() => {
