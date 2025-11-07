@@ -218,8 +218,61 @@ export default function TimerCircle({
 
   // STATE 2: Pre-run (before starting timer)
   if (!isRunning) {
+    // Calculate completion data if available (for display above ball)
+    let completionInfo = null;
+    if (completedFastData) {
+      const totalDuration = completedFastData.duration;
+      const totalSeconds = Math.floor((new Date(completedFastData.endTime).getTime() - new Date(completedFastData.startTime).getTime()) / 1000);
+      const originalGoalSeconds = totalDuration * (completedFastData.unit === 'seconds' ? 1 : 3600);
+      const extendedSeconds = totalSeconds - originalGoalSeconds;
+      const hasExtended = extendedSeconds > 60;
+
+      completionInfo = {
+        totalSeconds,
+        originalGoalSeconds,
+        extendedSeconds,
+        hasExtended,
+        totalDuration
+      };
+    }
+
     return (
       <>
+        {/* Completion Summary - shown above ball when available */}
+        {completionInfo && (
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '24px',
+            padding: '16px 24px',
+            background: 'linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(78, 205, 196, 0.05))',
+            borderRadius: '12px',
+            border: '1px solid var(--color-accent-green, #34C759)',
+            maxWidth: '320px'
+          }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-accent-green, #34C759)', marginBottom: '8px' }}>
+              ✓ Fast Completed
+            </div>
+            <div style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
+              color: 'var(--color-text, #0F172A)',
+              letterSpacing: '1px',
+              marginBottom: '4px'
+            }}>
+              {formatTime(completionInfo.originalGoalSeconds)}
+              {completionInfo.hasExtended && (
+                <span style={{ color: 'var(--color-accent-purple, #A855F7)', marginLeft: '8px' }}>
+                  +{formatTime(completionInfo.extendedSeconds)}
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary, #64748B)' }}>
+              {completionInfo.totalDuration} {completedFastData.unit} {completionInfo.hasExtended ? 'goal + extended' : 'fasted'}
+            </div>
+          </div>
+        )}
+
         <div ref={circleRef} style={styles.circleContainer}>
           <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0 }}>
             <circle
@@ -273,7 +326,7 @@ export default function TimerCircle({
 
         {/* Fixed container - same height as other states */}
         <div style={styles.contentContainer}>
-          {showNotificationBanner && (
+          {showNotificationBanner && !completionInfo && (
             <div style={{
               background: '#FFF9E6',
               border: '1px solid #FFE066',

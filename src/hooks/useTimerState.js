@@ -124,15 +124,29 @@ export function useTimerState(hours) {
   };
 
   /**
-   * Cancel/stop the timer (before completion)
+   * Cancel/stop the timer
+   * If in extended mode or after completion, preserves the completion data
+   * If canceling before completion, clears everything
    */
   const cancelTimer = () => {
+    // If we have completedFastData (meaning timer completed and possibly extended)
+    // Update endTime to capture the extended time before stopping
+    if (completedFastData) {
+      setCompletedFastData({
+        ...completedFastData,
+        endTime: new Date(), // Capture current time (includes extended time)
+      });
+    }
+    // If no completedFastData, user is canceling before completion - clear everything
+    else {
+      setCompletedFastData(null);
+    }
+
     setIsRunning(false);
     setTargetTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
     setShowCompletionSummary(false);
-    setCompletedFastData(null);
     notificationShownRef.current = false;
   };
 
@@ -146,11 +160,12 @@ export function useTimerState(hours) {
   };
 
   /**
-   * Stop fasting and show completion summary
+   * Stop fasting and show ball with completion summary
    * Called when user clicks "Stop Fasting" after completing/extending fast
    */
   const stopFasting = () => {
     // Update completedFastData with actual completion time (important for extended mode)
+    // This preserves the extended time for display
     if (completedFastData) {
       setCompletedFastData({
         ...completedFastData,
@@ -164,8 +179,10 @@ export function useTimerState(hours) {
     setIsExtended(false);
     setOriginalGoalTime(null);
 
-    // Show completion summary with "Start Fast" button
-    setShowCompletionSummary(true);
+    // Keep showCompletionSummary false so ball is visible
+    // completedFastData persists and will show above ball
+    setShowCompletionSummary(false);
+    // completedFastData will be cleared when user starts a new timer
   };
 
   /**
