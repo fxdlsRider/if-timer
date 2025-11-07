@@ -140,9 +140,13 @@ export default function TimerCircle({
   // STATE 1: Completion summary (after fast ends)
   if (showCompletionSummary && !isRunning && completedFastData) {
     const totalDuration = completedFastData.duration;
-    // Calculate total time in seconds and format it
-    const totalSeconds = Math.floor((completedFastData.endTime - completedFastData.startTime) / 1000);
-    const formattedTime = formatTime(totalSeconds);
+    // Calculate actual total time in seconds (works for both normal and extended)
+    const totalSeconds = Math.floor((Date.now() - new Date(completedFastData.startTime).getTime()) / 1000);
+
+    // Check if there was extended time
+    const originalGoalSeconds = totalDuration * (completedFastData.unit === 'seconds' ? 1 : 3600);
+    const extendedSeconds = totalSeconds - originalGoalSeconds;
+    const hasExtended = extendedSeconds > 60; // More than 1 minute extended
 
     return (
       <>
@@ -173,10 +177,22 @@ export default function TimerCircle({
               Well done!
             </div>
             <div style={styles.timeDisplay}>
-              {formattedTime}
+              {formatTime(originalGoalSeconds)}
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginTop: '4px' }}>
-              {totalDuration} {completedFastData.unit} fasted
+            {hasExtended && (
+              <div style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
+                color: 'var(--color-accent-purple, #A855F7)',
+                marginTop: '4px',
+                letterSpacing: '2px'
+              }}>
+                +{formatTime(extendedSeconds)}
+              </div>
+            )}
+            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginTop: '8px' }}>
+              {totalDuration} {completedFastData.unit} {hasExtended ? 'goal reached' : 'fasted'}
             </div>
           </div>
         </div>

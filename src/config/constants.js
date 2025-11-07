@@ -16,7 +16,7 @@ export const TIMER_CONSTANTS = {
 };
 
 export const TEST_MODE = {
-  ENABLED: false, // Change to false for production!
+  ENABLED: true, // Change to false for production!
   TIME_MULTIPLIER: 1, // 1 second = 1 unit in test mode
   TIME_UNIT: 'seconds',
 };
@@ -144,46 +144,47 @@ export const BODY_MODES = [
 
 // ===== FASTING TIPS =====
 // Tips shown during fasting based on current body mode
+// Each tip: 1 sentence, 10-15 words, scientifically accurate
 
 export const FASTING_TIPS = [
   {
     modeId: 'digesting',
     tips: [
-      '💧 Stay hydrated - drink plenty of water',
-      '🧘 Relax and prepare mentally for your fast',
-      '📱 Set your environment up for success',
+      'Your body processes the last meal and absorbs remaining nutrients.',
+      'Blood sugar stabilizes as insulin levels begin to drop gradually.',
+      'Drink water regularly to support your digestion and metabolism.',
     ]
   },
   {
     modeId: 'getting-ready',
     tips: [
-      '💪 Hunger is temporary, results are lasting',
-      '☕ Black coffee or tea can help (no calories!)',
-      '🚶 Light activity helps distract from hunger',
+      'Your body transitions from glucose to fat as primary fuel source.',
+      'Insulin levels drop significantly, triggering the start of fat breakdown.',
+      'Light hunger is normal - your body adapts to ketone production.',
     ]
   },
   {
     modeId: 'fat-burning',
     tips: [
-      '🔥 You\'re burning fat now - keep going!',
-      '💧 Drink water regularly to stay hydrated',
-      '🧠 Mental clarity often peaks during this phase',
+      'Ketone production increases as your body burns stored fat for energy.',
+      'Mental clarity improves due to increased brain-derived neurotrophic factor production.',
+      'Stay hydrated - fat metabolism produces water as a byproduct.',
     ]
   },
   {
     modeId: 'cell-renewal',
     tips: [
-      '♻️ Autophagy is active - cellular cleanup in progress',
-      '💎 This is where the magic happens',
-      '🧘 Listen to your body, rest if needed',
+      'Autophagy activates: cells begin cleaning damaged proteins and organelles.',
+      'Growth hormone levels peak, supporting muscle preservation during fasting.',
+      'Your immune system regenerates by removing old immune cells.',
     ]
   },
   {
     modeId: 'deep-healing',
     tips: [
-      '✨ Impressive! Maximum healing benefits active',
-      '👂 Listen carefully to your body signals',
-      '🏆 You\'re in elite territory - well done!',
+      'Maximum autophagy: stem cell regeneration and deep cellular repair active.',
+      'Inflammation markers significantly reduced throughout your entire body system.',
+      'Listen carefully to your body - break fast if you feel unwell.',
     ]
   },
 ];

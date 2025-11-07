@@ -94,10 +94,13 @@ export default function StatusPanel({
     ? calculateFastingLevel(hours)
     : calculateBodyMode(hours, timeLeft);
 
-  // Get tips for current body mode (only when running)
-  const currentTips = isRunning && bodyModes[currentIndex]
-    ? FASTING_TIPS.find(tip => tip.modeId === bodyModes[currentIndex].id)?.tips || []
-    : [];
+  // Get ONE random tip for current body mode (only when running)
+  const [randomTipIndex] = React.useState(() => Math.floor(Math.random() * 3));
+  const currentTip = React.useMemo(() => {
+    if (!isRunning || !bodyModes[currentIndex]) return null;
+    const tipsForMode = FASTING_TIPS.find(tip => tip.modeId === bodyModes[currentIndex].id)?.tips || [];
+    return tipsForMode[randomTipIndex] || null;
+  }, [isRunning, currentIndex, randomTipIndex, bodyModes]);
 
   return (
     <div style={styles.container}>
@@ -153,8 +156,8 @@ export default function StatusPanel({
         })}
       </ul>
 
-      {/* Fasting Tips - Only show when running */}
-      {isRunning && currentTips.length > 0 && (
+      {/* Fasting Tip - Only show when running */}
+      {isRunning && currentTip && (
         <div style={{
           marginTop: '20px',
           padding: '16px',
@@ -166,31 +169,19 @@ export default function StatusPanel({
             fontSize: '13px',
             fontWeight: '600',
             color: 'var(--color-accent-teal, #4ECDC4)',
-            marginBottom: '12px',
+            marginBottom: '8px',
             textTransform: 'uppercase',
             letterSpacing: '1px'
           }}>
-            💡 Tips for this phase
+            💡 Tip
           </div>
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
+          <div style={{
+            fontSize: '13px',
+            color: 'var(--color-text, #0F172A)',
+            lineHeight: '1.6',
           }}>
-            {currentTips.map((tip, index) => (
-              <li key={index} style={{
-                fontSize: '13px',
-                color: 'var(--color-text, #0F172A)',
-                lineHeight: '1.5',
-                paddingLeft: '4px'
-              }}>
-                {tip}
-              </li>
-            ))}
-          </ul>
+            {currentTip}
+          </div>
         </div>
       )}
     </div>
