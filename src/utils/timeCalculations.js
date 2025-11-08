@@ -41,21 +41,24 @@ export const getTimeLeft = (targetTime, currentTime, isExtended = false, origina
 
 /**
  * Calculate progress percentage
- * @param {number} totalHours - Total fasting duration (hours)
+ * @param {number} totalHours - Total fasting duration (hours in production, seconds in test mode)
  * @param {number} timeLeft - Time remaining (seconds), or elapsed if extended
  * @param {boolean} isExtended - Extended mode flag
+ * @param {number} timeMultiplier - Time multiplier (1 for test mode, 3600 for production)
  * @returns {number} Progress percentage (0-100)
  */
-export const getProgress = (totalHours, timeLeft, isExtended = false) => {
-  const totalSeconds = totalHours * 3600;
+export const getProgress = (totalHours, timeLeft, isExtended = false, timeMultiplier = 3600) => {
+  // In extended mode, goal already reached - keep circle at 100%
+  if (isExtended) return 100;
 
-  // In extended mode, timeLeft is additional elapsed time beyond goal
-  // In normal mode, timeLeft is remaining time
-  const elapsed = isExtended
-    ? totalSeconds + timeLeft  // Goal reached + additional time
-    : totalSeconds - timeLeft; // Time that has passed
+  // Normal mode: calculate progress based on elapsed time
+  const totalSeconds = totalHours * timeMultiplier;
+  const elapsed = totalSeconds - timeLeft; // Time that has passed
+  const progress = (elapsed / totalSeconds) * 100;
 
-  return (elapsed / totalSeconds) * 100;
+  // Clip to 0-100% to prevent negative values or overflow
+  // (can happen if timeLeft is misinterpreted during state transitions)
+  return Math.max(0, Math.min(100, progress));
 };
 
 /**
