@@ -57,135 +57,175 @@ export default function Leaderboard({ onSignUp }) {
     return `${hours}h ${minutes}m`;
   };
 
+  // Badge mapping based on rank (not hours)
+  const getBadgeByRank = (rank) => {
+    const badges = {
+      1: '🔥',
+      2: '💪',
+      3: '⚡',
+      4: '✨',
+      5: '👤',
+      6: '🎯'
+    };
+    return badges[rank] || '👤';
+  };
+
   const styles = {
     container: {
       width: '300px',
-      background: 'var(--color-background-secondary, #F8FAFC)',
-      borderRadius: '16px',
-      padding: '24px',
-      border: '1px solid var(--color-border, #E2E8F0)',
+      background: '#fff',
+      borderRadius: '20px',
+      padding: '40px',
+      border: 'none',
+      boxShadow: '0 2px 20px rgba(0, 0, 0, 0.08)',
       display: 'flex',
       flexDirection: 'column',
-      gap: '20px'
+      gap: '0'
     },
     header: {
       textAlign: 'center',
-      borderBottom: '2px solid var(--color-border, #E2E8F0)',
-      paddingBottom: '16px'
+      borderBottom: 'none',
+      paddingBottom: '0',
+      marginBottom: '30px'
     },
     title: {
-      fontSize: '18px',
+      fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: '28px',
       fontWeight: '600',
-      color: 'var(--color-text, #0F172A)',
-      marginBottom: '4px',
-      letterSpacing: '0.5px'
+      color: '#2d3436',
+      marginBottom: '8px',
+      letterSpacing: '0'
     },
     subtitle: {
-      fontSize: '13px',
-      color: 'var(--color-text-secondary, #64748B)',
+      fontSize: '12px',
+      color: '#b2bec3',
       textTransform: 'uppercase',
-      letterSpacing: '1px'
+      letterSpacing: '2px',
+      fontWeight: '400'
     },
     leaderboardList: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '8px',
+      gap: '10px',
       maxHeight: '480px',
-      overflowY: 'auto'
+      overflowY: 'auto',
+      marginBottom: '0'
     },
     leaderboardItem: {
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
-      padding: '12px',
-      background: 'var(--color-background, #FFFFFF)',
-      borderRadius: '10px',
-      border: '1px solid var(--color-border-subtle, #F1F5F9)',
-      transition: 'all 0.2s'
+      gap: '15px',
+      padding: '15px',
+      background: '#f8f9fa',
+      borderRadius: '12px',
+      border: 'none',
+      transition: 'all 0.3s ease',
+      cursor: 'default'
     },
     rank: {
-      fontSize: '16px',
+      fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: '20px',
       fontWeight: '700',
-      color: 'var(--color-text-tertiary, #94A3B8)',
-      minWidth: '24px',
+      color: '#636e72',
+      minWidth: '30px',
       textAlign: 'center'
     },
-    rankTop: {
-      fontSize: '18px',
-      fontWeight: '700',
-      background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text'
+    rankGold: {
+      color: '#ffd32a',
+      fontSize: '24px'
+    },
+    rankSilver: {
+      color: '#b2bec3',
+      fontSize: '22px'
+    },
+    rankBronze: {
+      color: '#cd7f32',
+      fontSize: '22px'
     },
     userInfo: {
       flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      gap: '4px'
+      gap: '3px'
     },
     userName: {
-      fontSize: '14px',
+      fontSize: '15px',
       fontWeight: '600',
-      color: 'var(--color-text, #0F172A)'
+      color: '#2d3436',
+      margin: 0
     },
     userLevel: {
       fontSize: '12px',
-      color: 'var(--color-text-secondary, #64748B)'
+      color: '#636e72',
+      margin: 0
     },
     userTime: {
-      fontSize: '14px',
-      fontWeight: '600',
-      color: 'var(--color-accent-teal, #4ECDC4)',
+      fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: '18px',
+      fontWeight: '700',
+      color: '#0984e3',
       minWidth: '70px',
       textAlign: 'right'
+    },
+    userTimeGold: {
+      color: '#ffd32a'
     },
     badge: {
       fontSize: '20px'
     },
     footer: {
-      borderTop: '2px solid var(--color-border, #E2E8F0)',
-      paddingTop: '16px',
+      textAlign: 'center',
+      marginTop: '20px',
+      paddingTop: '20px',
+      borderTop: '1px solid #e1e8ed',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px',
+      gap: '15px',
       alignItems: 'center'
     },
     totalCount: {
       fontSize: '14px',
-      color: 'var(--color-text-secondary, #64748B)',
-      textAlign: 'center'
+      color: '#636e72',
+      textAlign: 'center',
+      margin: 0
     },
     totalNumber: {
-      fontSize: '24px',
+      fontSize: 'inherit',
       fontWeight: '700',
-      color: 'var(--color-accent-teal, #4ECDC4)',
+      color: '#0984e3',
       marginRight: '4px'
     },
     ctaButton: {
       width: '100%',
-      padding: '14px 24px',
-      fontSize: '15px',
-      fontWeight: '600',
-      color: '#FFFFFF',
-      background: 'linear-gradient(135deg, #4ECDC4, #34C759)',
+      padding: '12px 30px',
+      fontSize: '14px',
+      fontWeight: '700',
+      color: '#fff',
+      background: 'linear-gradient(135deg, #0984e3, #74b9ff)',
       border: 'none',
-      borderRadius: '10px',
+      borderRadius: '25px',
       cursor: 'pointer',
-      transition: 'all 0.2s',
-      textAlign: 'center',
-      boxShadow: '0 4px 12px rgba(78, 205, 196, 0.3)'
+      transition: 'all 0.3s ease',
+      textAlign: 'center'
     },
     loading: {
       textAlign: 'center',
       padding: '40px 20px',
       fontSize: '14px',
-      color: 'var(--color-text-secondary, #64748B)'
+      color: '#636e72'
     }
   };
 
   const getRankStyle = (rank) => {
-    return rank <= 3 ? { ...styles.rank, ...styles.rankTop } : styles.rank;
+    if (rank === 1) return { ...styles.rank, ...styles.rankGold };
+    if (rank === 2) return { ...styles.rank, ...styles.rankSilver };
+    if (rank === 3) return { ...styles.rank, ...styles.rankBronze };
+    return styles.rank;
+  };
+
+  const getTimeStyle = (rank) => {
+    if (rank === 1) return { ...styles.userTime, ...styles.userTimeGold };
+    return styles.userTime;
   };
 
   if (isLoading) {
@@ -200,56 +240,59 @@ export default function Leaderboard({ onSignUp }) {
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <div style={styles.title}>Top Fasters</div>
+        <div style={styles.title}>🏆 Top Fasters</div>
         <div style={styles.subtitle}>Right Now</div>
       </div>
 
       {/* Leaderboard List */}
       <div style={styles.leaderboardList}>
-        {leaderboardData.map((user, index) => (
-          <div
-            key={user.id}
-            style={styles.leaderboardItem}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--color-background-secondary, #F8FAFC)';
-              e.currentTarget.style.borderColor = 'var(--color-border, #E2E8F0)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--color-background, #FFFFFF)';
-              e.currentTarget.style.borderColor = 'var(--color-border-subtle, #F1F5F9)';
-            }}
-          >
-            <span style={getRankStyle(index + 1)}>
-              {index + 1}
-            </span>
-            <span style={styles.badge}>{user.badge}</span>
-            <div style={styles.userInfo}>
-              <div style={styles.userName}>{user.name}</div>
-              <div style={styles.userLevel}>{user.level} Fast</div>
+        {leaderboardData.map((user, index) => {
+          const rank = index + 1;
+          return (
+            <div
+              key={user.id}
+              style={styles.leaderboardItem}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#e9ecef';
+                e.currentTarget.style.transform = 'translateX(5px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f8f9fa';
+                e.currentTarget.style.transform = 'translateX(0)';
+              }}
+            >
+              <span style={getRankStyle(rank)}>
+                {rank}
+              </span>
+              <span style={styles.badge}>{getBadgeByRank(rank)}</span>
+              <div style={styles.userInfo}>
+                <div style={styles.userName}>{user.name}</div>
+                <div style={styles.userLevel}>{user.level} Fast</div>
+              </div>
+              <div style={getTimeStyle(rank)}>
+                {formatTime(user.hours, user.minutes)}
+              </div>
             </div>
-            <div style={styles.userTime}>
-              {formatTime(user.hours, user.minutes)}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer */}
       <div style={styles.footer}>
-        <div style={styles.totalCount}>
-          <span style={styles.totalNumber}>{totalUsers}</span>
+        <p style={styles.totalCount}>
+          <strong style={styles.totalNumber}>{totalUsers}</strong>
           people fasting now
-        </div>
+        </p>
         <button
           style={styles.ctaButton}
           onClick={onSignUp}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 6px 16px rgba(78, 205, 196, 0.4)';
+            e.currentTarget.style.boxShadow = '0 5px 20px rgba(9, 132, 227, 0.4)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(78, 205, 196, 0.3)';
+            e.currentTarget.style.boxShadow = 'none';
           }}
         >
           Sign Up to Compete
