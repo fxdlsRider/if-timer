@@ -1,4 +1,24 @@
-# Getting Started with Create React App
+# IF Timer - Intermittent Fasting Timer
+
+A progressive web app for intermittent fasting with cloud sync, extended mode, and premium features.
+
+**Project Status:** ~86% Complete | **Phase:** 2 (PWA + Premium Features)
+
+---
+
+## 🚀 For New Claude Sessions
+
+**START HERE:** Read [`ONBOARDING.md`](./ONBOARDING.md) first!
+
+Quick checklist:
+1. Read `ONBOARDING.md` (60 seconds)
+2. Read `docs/conventions.md` (MANDATORY!)
+3. Read `docs/progress.md` (Current status)
+4. Ask user: "Was soll ich als nächstes machen?"
+
+---
+
+## 🏃 Quick Start
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
