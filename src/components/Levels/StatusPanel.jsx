@@ -26,6 +26,16 @@ export default function StatusPanel({
   calculateFastingLevel,
   calculateBodyMode
 }) {
+  // Color mapping for body modes
+  const getBodyModeColor = (bodyModeId) => {
+    const colorMap = {
+      'fat-burning': '#00b894',
+      'cell-renewal': '#fdcb6e',
+      'deep-healing': '#a29bfe'
+    };
+    return colorMap[bodyModeId] || null;
+  };
+
   const styles = {
     container: {
       width: '300px',
@@ -74,7 +84,18 @@ export default function StatusPanel({
       gap: '12px',
       background: 'var(--color-background, #FFFFFF)',
       borderRadius: '10px',
-      border: '1px solid var(--color-border-subtle, #F1F5F9)'
+      border: '1px solid var(--color-border-subtle, #F1F5F9)',
+      position: 'relative',
+      overflow: 'hidden'
+    },
+    colorBar: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      width: '4px',
+      borderTopLeftRadius: '10px',
+      borderBottomLeftRadius: '10px'
     },
     levelHours: {
       fontSize: '12px',
@@ -106,6 +127,7 @@ export default function StatusPanel({
         {items.map((item, index) => {
           const isActive = currentIndex === index;
           const isClickable = !isRunning && item.startHour;
+          const barColor = isRunning ? getBodyModeColor(item.id) : null;
 
           return (
             <li
@@ -134,6 +156,11 @@ export default function StatusPanel({
                 }
               }}
             >
+              {/* Colored bar for body modes */}
+              {barColor && (
+                <div style={{ ...styles.colorBar, background: barColor }} />
+              )}
+
               <span style={styles.levelHours}>{item.range}</span>
               <span style={{
                 ...styles.levelLabel,
