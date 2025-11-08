@@ -83,42 +83,51 @@ export default function StatusPanel({
     levelsList: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '10px'
+      gap: '0'
     },
     levelItem: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '12px 15px',
+      padding: '18px 20px',
+      marginBottom: '12px',
       background: '#f8f9fa',
       borderRadius: '12px',
-      border: 'none',
+      border: '2px solid transparent',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
       position: 'relative'
     },
+    levelItemPopular: {
+      background: 'rgba(9, 132, 227, 0.1)',
+      borderColor: '#0984e3'
+    },
     levelTime: {
-      fontSize: '13px',
-      fontWeight: '600',
+      fontSize: '16px',
+      fontWeight: '700',
       color: '#636e72',
-      minWidth: '60px'
+      minWidth: '70px'
     },
     levelName: {
       flex: 1,
-      fontSize: '15px',
-      fontWeight: '600',
+      fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: '20px',
+      fontWeight: '700',
       color: '#2d3436',
-      marginLeft: '10px'
+      marginLeft: '15px'
+    },
+    levelNamePopular: {
+      color: '#0984e3'
     },
     popularBadge: {
-      fontSize: '10px',
+      fontSize: '12px',
       background: '#0984e3',
       color: '#fff',
-      padding: '3px 8px',
+      padding: '4px 12px',
       borderRadius: '12px',
-      fontWeight: '700',
+      fontWeight: '600',
       textTransform: 'uppercase',
-      letterSpacing: '0.5px'
+      letterSpacing: '1px'
     },
     bodyStatesSection: {
       borderTop: '1px solid #e1e8ed',
@@ -186,23 +195,33 @@ export default function StatusPanel({
         {fastingLevelsData.map((level, index) => (
           <div
             key={index}
-            style={styles.levelItem}
+            style={{
+              ...styles.levelItem,
+              ...(level.popular ? styles.levelItemPopular : {})
+            }}
             onClick={() => !isRunning && onLevelClick && onLevelClick(level.value)}
             onMouseEnter={(e) => {
               if (!isRunning) {
                 e.currentTarget.style.background = '#e9ecef';
-                e.currentTarget.style.transform = 'translateX(3px)';
+                e.currentTarget.style.borderColor = '#0984e3';
+                e.currentTarget.style.transform = 'translateX(5px)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isRunning) {
-                e.currentTarget.style.background = '#f8f9fa';
+                e.currentTarget.style.background = level.popular ? 'rgba(9, 132, 227, 0.1)' : '#f8f9fa';
+                e.currentTarget.style.borderColor = level.popular ? '#0984e3' : 'transparent';
                 e.currentTarget.style.transform = 'translateX(0)';
               }
             }}
           >
             <span style={styles.levelTime}>{level.time}</span>
-            <span style={styles.levelName}>{level.name}</span>
+            <span style={{
+              ...styles.levelName,
+              ...(level.popular ? styles.levelNamePopular : {})
+            }}>
+              {level.name}
+            </span>
             {level.popular && (
               <span style={styles.popularBadge}>Popular</span>
             )}
