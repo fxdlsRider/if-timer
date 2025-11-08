@@ -29,9 +29,11 @@ export default function StatusPanel({
   // Color mapping for body modes
   const getBodyModeColor = (bodyModeId) => {
     const colorMap = {
-      'fat-burning': '#00b894',
-      'cell-renewal': '#fdcb6e',
-      'deep-healing': '#a29bfe'
+      'digesting': '#74b9ff',        // Blue
+      'getting-ready': '#ffeaa7',    // Yellow
+      'fat-burning': '#00b894',      // Green
+      'cell-renewal': '#fdcb6e',     // Orange-Yellow
+      'deep-healing': '#a29bfe'      // Purple
     };
     return colorMap[bodyModeId] || null;
   };
