@@ -47,7 +47,11 @@ export default function TimerPage({
   progressOffset,
 
   // Status panel
+  fastingLevels,
+  bodyModes,
   onLevelClick,
+  calculateFastingLevel,
+  calculateBodyMode,
 
   // Stats (dummy data for now)
   streakDays = 12,
@@ -108,12 +112,17 @@ export default function TimerPage({
         />
         </div>
 
-        {/* Status Panel (Fasting Levels + Body States) - Right aligned */}
+        {/* Status Panel (Fasting Levels / Body States) - Right aligned */}
         <div className="status-column">
           <StatusPanel
             isRunning={isRunning}
             hours={hours}
+            timeLeft={timeLeft}
+            fastingLevels={fastingLevels}
+            bodyModes={bodyModes}
             onLevelClick={onLevelClick}
+            calculateFastingLevel={calculateFastingLevel}
+            calculateBodyMode={calculateBodyMode}
           />
         </div>
       </div>

@@ -4,245 +4,148 @@ import React from 'react';
 /**
  * StatusPanel Component
  *
- * Shows Fasting Levels and Body States
- * Always displays both sections for all users
+ * Shows either Fasting Levels (when not running) or Body Modes (when running)
+ * Allows clicking on levels to quick-select fasting duration
  *
  * @param {boolean} isRunning - Whether timer is currently running
  * @param {number} hours - Current hours value
  * @param {number} timeLeft - Time left in seconds
+ * @param {array} fastingLevels - Array of fasting level objects
+ * @param {array} bodyModes - Array of body mode objects
  * @param {function} onLevelClick - Handler for level click (quick select)
+ * @param {function} calculateFastingLevel - Function to calculate current fasting level
+ * @param {function} calculateBodyMode - Function to calculate current body mode
  */
 export default function StatusPanel({
   isRunning,
   hours,
-  onLevelClick
+  timeLeft,
+  fastingLevels,
+  bodyModes,
+  onLevelClick,
+  calculateFastingLevel,
+  calculateBodyMode
 }) {
-  const fastingLevelsData = [
-    { time: '14-16h', name: 'Gentle', popular: false, value: 14 },
-    { time: '16-18h', name: 'Classic', popular: true, value: 16 },
-    { time: '18-20h', name: 'Intensive', popular: false, value: 18 },
-    { time: '20-24h', name: 'Warrior', popular: false, value: 20 },
-    { time: '24-36h', name: 'Monk', popular: false, value: 24 },
-    { time: '36+h', name: 'Extended', popular: false, value: 36 }
-  ];
-
-  const bodyStatesData = [
-    {
-      title: 'Fat Burning',
-      time: '8-16 hours',
-      description: 'Your body uses fat reserves as energy',
-      color: '#00b894'
-    },
-    {
-      title: 'Cell Renewal',
-      time: '16-24 hours',
-      description: 'Autophagy begins - cells repair themselves',
-      color: '#fdcb6e'
-    },
-    {
-      title: 'Deep Healing',
-      time: '24+ hours',
-      description: 'Maximum autophagy and stem cell activation',
-      color: '#a29bfe'
-    }
-  ];
-
   const styles = {
     container: {
       width: '300px',
-      background: '#fff',
-      borderRadius: '20px',
-      padding: '40px',
-      border: 'none',
-      boxShadow: '0 2px 20px rgba(0, 0, 0, 0.08)',
+      background: 'var(--color-background-secondary, #F8FAFC)',
+      borderRadius: '16px',
+      padding: '24px',
+      border: '1px solid var(--color-border, #E2E8F0)',
       display: 'flex',
       flexDirection: 'column',
-      gap: '30px'
+      gap: '20px'
     },
     header: {
       textAlign: 'center',
-      borderBottom: 'none',
-      paddingBottom: '0',
-      marginBottom: '0'
+      borderBottom: '2px solid var(--color-border, #E2E8F0)',
+      paddingBottom: '16px'
     },
     title: {
-      fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: '28px',
+      fontSize: '18px',
       fontWeight: '600',
-      color: '#2d3436',
-      marginBottom: '8px',
-      letterSpacing: '0'
+      color: 'var(--color-text, #0F172A)',
+      marginBottom: '4px',
+      letterSpacing: '0.5px'
     },
     subtitle: {
-      fontSize: '12px',
-      color: '#b2bec3',
-      textTransform: 'uppercase',
-      letterSpacing: '2px',
-      fontWeight: '400'
-    },
-    levelsList: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0'
-    },
-    levelItem: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '18px 20px',
-      marginBottom: '12px',
-      background: '#f8f9fa',
-      borderRadius: '12px',
-      border: '2px solid transparent',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      position: 'relative'
-    },
-    levelItemPopular: {
-      background: 'rgba(9, 132, 227, 0.1)',
-      borderColor: '#0984e3'
-    },
-    levelTime: {
-      fontSize: '16px',
-      fontWeight: '700',
-      color: '#636e72',
-      minWidth: '70px'
-    },
-    levelName: {
-      flex: 1,
-      fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: '20px',
-      fontWeight: '700',
-      color: '#2d3436',
-      marginLeft: '15px'
-    },
-    levelNamePopular: {
-      color: '#0984e3'
-    },
-    popularBadge: {
-      fontSize: '12px',
-      background: '#0984e3',
-      color: '#fff',
-      padding: '4px 12px',
-      borderRadius: '12px',
-      fontWeight: '600',
+      fontSize: '13px',
+      color: 'var(--color-text-secondary, #64748B)',
       textTransform: 'uppercase',
       letterSpacing: '1px'
     },
-    bodyStatesSection: {
-      borderTop: '1px solid #e1e8ed',
-      paddingTop: '20px'
-    },
-    bodyStatesTitle: {
-      fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      fontSize: '18px',
-      fontWeight: '600',
-      color: '#2d3436',
-      marginBottom: '15px',
-      textAlign: 'center'
-    },
-    bodyStatesList: {
+    levelsList: {
+      listStyle: 'none',
+      padding: 0,
+      margin: 0,
       display: 'flex',
       flexDirection: 'column',
-      gap: '15px'
+      gap: '8px'
     },
-    bodyStateItem: {
-      padding: '15px',
-      background: '#f8f9fa',
-      borderRadius: '12px',
-      border: 'none',
-      position: 'relative',
-      paddingLeft: '20px'
-    },
-    bodyStateBar: {
-      position: 'absolute',
-      left: '0',
-      top: '0',
-      bottom: '0',
-      width: '4px',
-      borderTopLeftRadius: '12px',
-      borderBottomLeftRadius: '12px'
-    },
-    bodyStateTitle: {
+    levelItem: {
       fontSize: '14px',
-      fontWeight: '700',
-      color: '#2d3436',
-      marginBottom: '4px'
+      padding: '12px 16px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '12px',
+      background: 'var(--color-background, #FFFFFF)',
+      borderRadius: '10px',
+      border: '1px solid var(--color-border-subtle, #F1F5F9)'
     },
-    bodyStateTime: {
+    levelHours: {
       fontSize: '12px',
-      color: '#636e72',
-      marginBottom: '6px',
-      fontWeight: '600'
+      color: 'var(--color-text-secondary, #64748B)',
+      fontWeight: '500',
+      minWidth: '60px'
     },
-    bodyStateDescription: {
-      fontSize: '12px',
-      color: '#636e72',
-      lineHeight: '1.4'
+    levelLabel: {
+      flex: 1,
+      fontSize: '14px'
     }
   };
+
+  const items = !isRunning ? fastingLevels : bodyModes;
+  const currentIndex = !isRunning
+    ? calculateFastingLevel(hours)
+    : calculateBodyMode(hours, timeLeft);
 
   return (
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <div style={styles.title}>⏱️ Fasting Levels</div>
-        <div style={styles.subtitle}>Choose Your Challenge</div>
+        <div style={styles.title}>{!isRunning ? 'Fasting Levels' : 'Body Mode'}</div>
+        <div style={styles.subtitle}>Status</div>
       </div>
 
-      {/* Fasting Levels */}
-      <div style={styles.levelsList}>
-        {fastingLevelsData.map((level, index) => (
-          <div
-            key={index}
-            style={{
-              ...styles.levelItem,
-              ...(level.popular ? styles.levelItemPopular : {})
-            }}
-            onClick={() => !isRunning && onLevelClick && onLevelClick(level.value)}
-            onMouseEnter={(e) => {
-              if (!isRunning) {
-                e.currentTarget.style.background = '#e9ecef';
-                e.currentTarget.style.borderColor = '#0984e3';
-                e.currentTarget.style.transform = 'translateX(5px)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isRunning) {
-                e.currentTarget.style.background = level.popular ? 'rgba(9, 132, 227, 0.1)' : '#f8f9fa';
-                e.currentTarget.style.borderColor = level.popular ? '#0984e3' : 'transparent';
-                e.currentTarget.style.transform = 'translateX(0)';
-              }
-            }}
-          >
-            <span style={styles.levelTime}>{level.time}</span>
-            <span style={{
-              ...styles.levelName,
-              ...(level.popular ? styles.levelNamePopular : {})
-            }}>
-              {level.name}
-            </span>
-            {level.popular && (
-              <span style={styles.popularBadge}>Popular</span>
-            )}
-          </div>
-        ))}
-      </div>
+      {/* Levels List */}
+      <ul style={styles.levelsList}>
+        {items.map((item, index) => {
+          const isActive = currentIndex === index;
+          const isClickable = !isRunning && item.startHour;
 
-      {/* Body States Section */}
-      <div style={styles.bodyStatesSection}>
-        <h3 style={styles.bodyStatesTitle}>Body States</h3>
-        <div style={styles.bodyStatesList}>
-          {bodyStatesData.map((state, index) => (
-            <div key={index} style={styles.bodyStateItem}>
-              <div style={{ ...styles.bodyStateBar, background: state.color }} />
-              <div style={styles.bodyStateTitle}>{state.title}</div>
-              <div style={styles.bodyStateTime}>{state.time}</div>
-              <div style={styles.bodyStateDescription}>{state.description}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+          return (
+            <li
+              key={index}
+              style={{
+                ...styles.levelItem,
+                cursor: isClickable ? 'pointer' : 'default',
+                background: isActive
+                  ? 'linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(52, 199, 89, 0.1))'
+                  : 'var(--color-background, #FFFFFF)',
+                borderColor: isActive
+                  ? 'var(--color-accent-teal, #4ECDC4)'
+                  : 'var(--color-border-subtle, #F1F5F9)'
+              }}
+              onClick={() => isClickable && onLevelClick(item.startHour)}
+              onMouseEnter={(e) => {
+                if (isClickable && !isActive) {
+                  e.currentTarget.style.background = 'var(--color-background-secondary, #F8FAFC)';
+                  e.currentTarget.style.borderColor = 'var(--color-border, #E2E8F0)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isClickable && !isActive) {
+                  e.currentTarget.style.background = 'var(--color-background, #FFFFFF)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-subtle, #F1F5F9)';
+                }
+              }}
+            >
+              <span style={styles.levelHours}>{item.range}</span>
+              <span style={{
+                ...styles.levelLabel,
+                color: isActive ? 'var(--color-text, #0F172A)' : 'var(--color-text-secondary, #64748B)',
+                fontWeight: isActive ? '600' : '500'
+              }}>
+                {item.label}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
