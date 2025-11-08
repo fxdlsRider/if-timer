@@ -54,6 +54,46 @@
   }
 }
 
+/* Responsive Layout - Stack to single column below 1200px */
+@media (max-width: 1200px) {
+  .timer-page-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  /* Reorder: Timer first, then Leaderboard/Dashboard, then StatusPanel */
+  .timer-section {
+    order: 1;
+  }
+
+  .dashboard-column {
+    order: 2;
+  }
+
+  .status-column {
+    order: 3;
+  }
+
+  /* Center all columns when stacked */
+  .dashboard-column,
+  .timer-section,
+  .status-column {
+    justify-self: center;
+  }
+
+  .timer-section {
+    min-width: auto;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .dashboard-column,
+  .status-column {
+    width: 100%;
+    max-width: 380px;
+  }
+}
+
 /* Mobile - stack layout */
 @media (max-width: 768px) {
   .timer-page-container {
