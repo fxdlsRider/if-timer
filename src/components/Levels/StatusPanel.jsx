@@ -5,8 +5,10 @@ import React from 'react';
  * StatusPanel Component
  *
  * Shows either Fasting Levels (when not running) or Body Modes (when running)
+ * For non-authenticated users: Shows BOTH Fasting Levels AND Body States
  * Allows clicking on levels to quick-select fasting duration
  *
+ * @param {object} user - Current user (null if not authenticated)
  * @param {boolean} isRunning - Whether timer is currently running
  * @param {number} hours - Current hours value
  * @param {number} timeLeft - Time left in seconds
@@ -17,6 +19,7 @@ import React from 'react';
  * @param {function} calculateBodyMode - Function to calculate current body mode
  */
 export default function StatusPanel({
+  user,
   isRunning,
   hours,
   timeLeft,
@@ -93,19 +96,19 @@ export default function StatusPanel({
     ? calculateFastingLevel(hours)
     : calculateBodyMode(hours, timeLeft);
 
-  return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.title}>{!isRunning ? 'Fasting Levels' : 'Body Mode'}</div>
-        <div style={styles.subtitle}>Status</div>
-      </div>
+  // For non-authenticated users, show both Fasting Levels AND Body States
+  const showBoth = !user;
 
-      {/* Levels List */}
+  const renderLevelsList = (itemsList, title, currentIdx, allowClick = false) => (
+    <>
+      <div style={styles.header}>
+        <div style={styles.title}>{title}</div>
+        {!showBoth && <div style={styles.subtitle}>Status</div>}
+      </div>
       <ul style={styles.levelsList}>
-        {items.map((item, index) => {
-          const isActive = currentIndex === index;
-          const isClickable = !isRunning && item.startHour;
+        {itemsList.map((item, index) => {
+          const isActive = currentIdx === index;
+          const isClickable = allowClick && item.startHour;
 
           return (
             <li
@@ -146,6 +149,29 @@ export default function StatusPanel({
           );
         })}
       </ul>
+    </>
+  );
+
+  if (showBoth) {
+    // Non-authenticated users: Show BOTH Fasting Levels AND Body States
+    return (
+      <div style={styles.container}>
+        {/* Fasting Levels */}
+        {renderLevelsList(fastingLevels, 'Fasting Levels', calculateFastingLevel(hours), !isRunning)}
+
+        {/* Divider */}
+        <div style={{ borderTop: '2px solid var(--color-border, #E2E8F0)', margin: '8px 0' }} />
+
+        {/* Body States */}
+        {renderLevelsList(bodyModes, 'Body States', calculateBodyMode(hours, timeLeft), false)}
+      </div>
+    );
+  }
+
+  // Authenticated users: Show either Fasting Levels OR Body Modes (original behavior)
+  return (
+    <div style={styles.container}>
+      {renderLevelsList(items, !isRunning ? 'Fasting Levels' : 'Body Mode', currentIndex, !isRunning)}
     </div>
   );
 }

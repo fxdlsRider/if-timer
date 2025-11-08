@@ -132,6 +132,8 @@ export default function Timer() {
       case 'timer':
         return (
           <TimerPage
+            user={user}
+            onSignUp={() => setShowLogin(true)}
             isRunning={isRunning}
             isExtended={isExtended}
             showCompletionSummary={showCompletionSummary}
