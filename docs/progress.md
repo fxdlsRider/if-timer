@@ -76,12 +76,44 @@ Applied exact mockup styles to Leaderboard and StatusPanel components for pixel-
    - Shadow: `0 2px 20px rgba(0, 0, 0, 0.08)`
    - Gap: 10px between items
 
+#### **Responsive Layout Implementation** 📱
+
+**Breakpoint: 1200px**
+- **Desktop (>1200px):** 3-column grid layout (Dashboard/Leaderboard | Timer | StatusPanel)
+- **Tablet/Mobile (<1200px):** Single column stack with reordered elements:
+  1. Timer (order: 1) - Always visible first
+  2. Leaderboard/Dashboard (order: 2) - Context for user
+  3. StatusPanel (order: 3) - Fasting Levels + Body States
+
+**CSS Grid Order:**
+```css
+@media (max-width: 1200px) {
+  .timer-page-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .timer-section { order: 1; }
+  .dashboard-column { order: 2; }
+  .status-column { order: 3; }
+}
+```
+
+**Max-Width Constraints:**
+- Timer section: `max-width: 500px`
+- Dashboard/StatusPanel columns: `max-width: 380px`
+- All columns centered: `justify-self: center`
+
 **Files Modified:**
 - `src/components/Levels/StatusPanel.jsx` - Complete rewrite (238 lines)
 - `src/components/Leaderboard/Leaderboard.jsx` - Exact mockup styles (304 lines)
 - `src/components/Timer/TimerPage.jsx` - Updated StatusPanel props
+- `src/components/Timer/TimerPage.css` - Responsive layout (<1200px)
 
-**Commit:** `6596d2e - style: Apply exact mockup styles to Fasting Levels in StatusPanel`
+**Commits:**
+- `6596d2e` - style: Apply exact mockup styles to Fasting Levels in StatusPanel
+- `725aafb` - docs: Session 9.1 update
+- `ca484f3` - feat: Add responsive layout for screens below 1200px
 
 ---
 
