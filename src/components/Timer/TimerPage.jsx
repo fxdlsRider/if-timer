@@ -115,7 +115,6 @@ export default function TimerPage({
         {/* Status Panel (Fasting Levels / Body States) - Right aligned */}
         <div className="status-column">
           <StatusPanel
-            user={user}
             isRunning={isRunning}
             hours={hours}
             timeLeft={timeLeft}

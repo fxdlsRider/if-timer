@@ -48,23 +48,22 @@ This session implemented a real-time leaderboard for non-authenticated users and
    - Opens login modal on click
    - Gradient background with hover effects
 
-#### **Enhanced StatusPanel for Non-Authenticated Users**
+#### **StatusPanel Behavior (Same for all users)**
 
-**Old Behavior (Authenticated Users):**
-- Shows Fasting Levels when timer not running
-- Shows Body Modes when timer is running
+**Behavior:**
+- **Main Page (Timer NOT running):** Shows Fasting Levels only
+  - Displays 6 levels: Gentle (14-16h) to Extended (36+h)
+  - Click on level to quick-select fasting duration
+  - Shows current selection based on hours
 
-**New Behavior (Non-Authenticated Users):**
-- **Always shows BOTH:**
-  - Fasting Levels (top section)
-  - Body States (bottom section, separated by divider)
-- Allows users to see what they'll unlock by signing up
-- Preview of the full experience
+- **During Fasting (Timer IS running):** Shows Body States
+  - Displays 5 body modes based on elapsed time
+  - Auto-highlights current mode
+  - Shows physiological state of body
 
 **Implementation:**
-- Conditional rendering based on `user` prop
-- Authenticated users: Original behavior (toggle between levels/modes)
-- Non-authenticated users: Both sections visible simultaneously
+- Same behavior for authenticated and non-authenticated users
+- Toggle between Fasting Levels / Body Modes based on `isRunning` state
 
 #### **Conditional Layout Based on Auth Status**
 
@@ -77,8 +76,9 @@ This session implemented a real-time leaderboard for non-authenticated users and
   - Timer (unchanged, always visible)
 
 - **Right Column:**
-  - Authenticated: StatusPanel (toggles between Fasting Levels / Body Modes)
-  - Non-authenticated: StatusPanel (shows BOTH simultaneously)
+  - StatusPanel (same for all users)
+  - Timer NOT running: Fasting Levels
+  - Timer IS running: Body States
 
 #### **New Service: leaderboardService.js**
 
@@ -115,8 +115,8 @@ getActiveFastersCount()
 - `src/services/leaderboardService.js` - 196 lines
 
 **Files Modified:**
-- `src/components/Timer/TimerPage.jsx` - Added user/onSignUp props, conditional rendering
-- `src/components/Levels/StatusPanel.jsx` - Enhanced for dual display mode
+- `src/components/Timer/TimerPage.jsx` - Added user/onSignUp props, conditional Leaderboard/Dashboard rendering
+- `src/components/Levels/StatusPanel.jsx` - Unchanged behavior (toggle between Fasting Levels / Body States)
 - `src/Timer.jsx` - Pass user and onSignUp to TimerPage
 
 **Lines Added/Modified:**
@@ -142,10 +142,10 @@ getActiveFastersCount()
    - Reason: Privacy protection, GDPR compliance
    - Alternative: Could add opt-in public profiles later
 
-3. **StatusPanel Dual Mode:**
-   - Decision: Non-authenticated users see both Fasting Levels AND Body States
-   - Reason: Preview full experience, encourage sign-ups
-   - Impact: Slightly taller right column for non-authenticated users
+3. **StatusPanel Behavior:**
+   - Decision: Same behavior for all users (authenticated and non-authenticated)
+   - Reason: Consistent UX, Body States only relevant during active fasting
+   - Impact: Clean, predictable UI for everyone
 
 4. **Real-time Updates:**
    - Decision: Both interval (30s) AND Supabase Realtime
@@ -1355,7 +1355,6 @@ Throughout Phase 1.2-1.3, we fixed critical infinite loop bugs:
   - [x] Real-time leaderboard for non-authenticated users
   - [x] Supabase leaderboardService created
   - [x] Conditional layout (Leaderboard vs Dashboard)
-  - [x] Enhanced StatusPanel (dual display mode)
   - [x] Privacy-preserving username anonymization
   - [x] Real-time updates via Supabase Realtime
 
@@ -1396,7 +1395,7 @@ Throughout Phase 1.2-1.3, we fixed critical infinite loop bugs:
 - 10 UI bugs fixed (gradient, buttons, drag-ball, etc.)
 - Layout-shift bug completely resolved with CSS Grid
 - Real-time leaderboard with privacy protection
-- Enhanced StatusPanel for non-authenticated users
+- Conditional layout based on authentication status
 - Comprehensive documentation written
 - Production-ready, stable, social-enabled codebase
 
