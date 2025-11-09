@@ -5,6 +5,7 @@ import StatusPanel from '../Levels/StatusPanel';
 import StreakDisplay from '../Shared/StreakDisplay';
 import StatsDisplay from '../Shared/StatsDisplay';
 import DashboardPanel from '../Dashboard/DashboardPanel';
+import Leaderboard from '../Leaderboard/Leaderboard';
 import './TimerPage.css';
 
 /**
@@ -12,10 +13,15 @@ import './TimerPage.css';
  *
  * Main timer interface page
  * Displays timer circle, streak, stats, and fasting levels
+ * Shows Leaderboard for non-authenticated users, Dashboard for authenticated users
  *
  * @param {object} timerProps - All timer-related props
  */
 export default function TimerPage({
+  // Auth
+  user,
+  onSignUp,
+
   // Timer state
   isRunning,
   isExtended,
@@ -55,9 +61,13 @@ export default function TimerPage({
   return (
     <div className="timer-page-wrapper">
       <div className="timer-page-container">
-        {/* Dashboard Panel (Left) */}
+        {/* Left Column: Leaderboard (not logged in) OR Dashboard (logged in) */}
         <div className="dashboard-column">
-          <DashboardPanel />
+          {user ? (
+            <DashboardPanel />
+          ) : (
+            <Leaderboard onSignUp={onSignUp} />
+          )}
         </div>
 
         {/* Timer Section (Center) */}
@@ -102,7 +112,7 @@ export default function TimerPage({
         />
         </div>
 
-        {/* Status Panel (Fasting Levels) - Right aligned */}
+        {/* Status Panel (Fasting Levels / Body States) - Right aligned */}
         <div className="status-column">
           <StatusPanel
             isRunning={isRunning}
