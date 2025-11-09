@@ -26,7 +26,6 @@ export async function fetchLeaderboard(limit = 10) {
         target_time,
         is_running,
         is_extended,
-        original_goal_time,
         updated_at
       `)
       .eq('is_running', true)
@@ -48,9 +47,6 @@ export async function fetchLeaderboard(limit = 10) {
     // Calculate elapsed time for each active fast
     const usersWithElapsed = activeTimers.map((timer) => {
       const targetTime = new Date(timer.target_time);
-      const originalGoalTime = timer.original_goal_time
-        ? new Date(timer.original_goal_time)
-        : targetTime;
 
       // Calculate how long they've been fasting
       const totalDurationSeconds = timer.hours * 3600;
