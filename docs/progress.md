@@ -5,6 +5,138 @@
 
 ---
 
+## 📅 2025-11-09 - Design Revert + Colored Body States ✅ (Session 9.2)
+
+### 🔄 Design Revert to Old Version
+
+**User Request:**
+User preferred the old design over Session 9.1's mockup styling. Reverted to original design while keeping responsive layout improvements.
+
+**What Was Reverted:**
+
+1. **StatusPanel.jsx** - Restored original behavior:
+   - **OLD (Session 9.1):** Always show BOTH Fasting Levels AND Body States
+   - **RESTORED:** Toggle behavior - Show Fasting Levels OR Body States based on `isRunning`
+   - **Main Page:** Only Fasting Levels visible (right side)
+   - **Timer Running:** Only Body States visible (right side)
+   - CSS Variables restored (no hardcoded colors)
+   - All props restored: `fastingLevels, bodyModes, calculateFastingLevel, calculateBodyMode, timeLeft`
+
+2. **Leaderboard.jsx** - Restored original styling:
+   - CSS Variables instead of hardcoded mockup colors
+   - Gradient for top 3 ranks (gold/orange gradient)
+   - Old typography and spacing
+
+3. **TimerPage.jsx** - Restored original props:
+   - Full prop list passed to StatusPanel
+   - No changes to responsive layout (kept from Session 9.1)
+
+**Files Modified:**
+- `src/components/Levels/StatusPanel.jsx` - Reverted to toggle behavior with CSS variables
+- `src/components/Leaderboard/Leaderboard.jsx` - Reverted to old design
+- `src/components/Timer/TimerPage.jsx` - Restored StatusPanel props
+
+**Commit:**
+- `3f52b73` - revert: Restore old design (toggle Body States, CSS variables)
+
+---
+
+### 🎨 Colored Bars for Body States
+
+**User Request:**
+Keep one feature from the new design - colored bars at the start of Body States items.
+
+**Implementation:**
+
+**Color Mapping:**
+- **Digesting (0-4h):** Blue `#74b9ff` 🔵
+- **Getting ready (4-12h):** Yellow `#ffeaa7` 🟡
+- **Fat burning (12-18h):** Green `#00b894` 🟢
+- **Cell renewal (18-24h):** Orange-Yellow `#fdcb6e` 🟠
+- **Deep healing (24+h):** Purple `#a29bfe` 🟣
+
+**Styling:**
+- 4px wide colored bar
+- Positioned absolutely on left edge
+- Border-radius on left side matches item radius
+- Only visible when timer is running (Body Mode)
+- NOT visible on main page (Fasting Levels)
+
+**Code Changes:**
+```javascript
+// Added color mapping function
+const getBodyModeColor = (bodyModeId) => {
+  const colorMap = {
+    'digesting': '#74b9ff',
+    'getting-ready': '#ffeaa7',
+    'fat-burning': '#00b894',
+    'cell-renewal': '#fdcb6e',
+    'deep-healing': '#a29bfe'
+  };
+  return colorMap[bodyModeId] || null;
+};
+
+// Added colored bar element (conditionally rendered)
+{barColor && (
+  <div style={{ ...styles.colorBar, background: barColor }} />
+)}
+```
+
+**Files Modified:**
+- `src/components/Levels/StatusPanel.jsx` - Added colored bars for Body States
+
+**Commits:**
+- `6dd6b1c` - feat: Add colored bars to Body States
+- `18c79f1` - feat: Add colored bars for all Body States
+
+---
+
+### 🐛 ESLint Fix
+
+**Issue:**
+Unused variable `originalGoalTime` in `leaderboardService.js` line 51.
+
+**Fix:**
+- Removed unused `originalGoalTime` variable from function
+- Removed `original_goal_time` field from Supabase query (not needed)
+
+**Files Modified:**
+- `src/services/leaderboardService.js` - Cleaned up unused code
+
+**Commit:**
+- `af03fce` - fix: Remove unused originalGoalTime variable in leaderboardService
+
+---
+
+### 📊 Session Summary
+
+**What We Accomplished:**
+1. ✅ Reverted design changes from Session 9.1 to old version
+2. ✅ Restored toggle behavior (Fasting Levels on main, Body States when running)
+3. ✅ Added colored bars for all 5 Body States
+4. ✅ Fixed ESLint warning (unused variable)
+5. ✅ Maintained responsive layout from Session 9.1
+
+**Key Decisions:**
+- User prefers old design with CSS variables over hardcoded mockup styles
+- Body States should ONLY appear when timer is running
+- Colored bars add visual distinction without changing core design
+- Responsive layout (1200px breakpoint) is valuable and kept
+
+**Files Changed:**
+- `src/components/Levels/StatusPanel.jsx`
+- `src/components/Leaderboard/Leaderboard.jsx`
+- `src/components/Timer/TimerPage.jsx`
+- `src/services/leaderboardService.js`
+- `docs/progress.md`
+
+**Deployment:**
+- All changes merged to main via PR
+- Vercel deployment successful
+- ESLint errors resolved
+
+---
+
 ## 📅 2025-11-08 - Leaderboard & Enhanced StatusPanel ✅ (Session 9)
 
 ### 🎨 LATEST UPDATE - Pixel-Perfect Mockup Styling (Session 9.1)
