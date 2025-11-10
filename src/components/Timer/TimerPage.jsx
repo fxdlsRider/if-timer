@@ -2,8 +2,6 @@
 import React from 'react';
 import TimerCircle from './TimerCircle';
 import StatusPanel from '../Levels/StatusPanel';
-import StreakDisplay from '../Shared/StreakDisplay';
-import StatsDisplay from '../Shared/StatsDisplay';
 import DashboardPanel from '../Dashboard/DashboardPanel';
 import Leaderboard from '../Leaderboard/Leaderboard';
 import './TimerPage.css';
@@ -31,6 +29,7 @@ export default function TimerPage({
   angle,
   timeLeft,
   progress,
+  startTime,
   TIME_UNIT,
   TEST_MODE,
 
@@ -42,6 +41,8 @@ export default function TimerPage({
   getProgressColor,
   onStartTimer,
   onCancelTimer,
+  onChangeGoal,
+  onChangeStartTime,
   handlePosition,
   circumference,
   progressOffset,
@@ -51,12 +52,7 @@ export default function TimerPage({
   bodyModes,
   onLevelClick,
   calculateFastingLevel,
-  calculateBodyMode,
-
-  // Stats (dummy data for now)
-  streakDays = 12,
-  totalHours = 247,
-  goalHours = 16
+  calculateBodyMode
 }) {
   return (
     <div className="timer-page-wrapper">
@@ -79,9 +75,6 @@ export default function TimerPage({
           </div>
         )}
 
-        {/* Streak Display */}
-        <StreakDisplay streakDays={streakDays} />
-
         {/* Timer Circle */}
         <TimerCircle
           isRunning={isRunning}
@@ -92,6 +85,7 @@ export default function TimerPage({
           angle={angle}
           timeLeft={timeLeft}
           progress={progress}
+          startTime={startTime}
           TIME_UNIT={TIME_UNIT}
           circleRef={circleRef}
           isDragging={isDragging}
@@ -100,15 +94,12 @@ export default function TimerPage({
           getProgressColor={getProgressColor}
           onStartTimer={onStartTimer}
           onCancelTimer={onCancelTimer}
+          onChangeGoal={onChangeGoal}
+          onChangeStartTime={onChangeStartTime}
+          fastingLevels={fastingLevels}
           handlePosition={handlePosition}
           circumference={circumference}
           progressOffset={progressOffset}
-        />
-
-        {/* Stats Display */}
-        <StatsDisplay
-          totalHours={totalHours}
-          goalHours={goalHours}
         />
         </div>
 

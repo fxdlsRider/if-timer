@@ -1,4 +1,9 @@
-/* Theme CSS Variables - updated by ThemeContext */
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme CSS Variables - kept for backwards compatibility with inline styles */
 :root {
   --color-background: #FFFFFF;
   --color-background-secondary: #F8FAFC;

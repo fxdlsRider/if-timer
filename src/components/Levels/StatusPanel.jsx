@@ -108,6 +108,25 @@ export default function StatusPanel({
     levelLabel: {
       flex: 1,
       fontSize: '14px'
+    },
+    levelContent: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '2px',
+      paddingLeft: '8px'
+    },
+    levelDescription: {
+      fontSize: '11px',
+      color: 'var(--color-text-tertiary, #94A3B8)',
+      lineHeight: '1.3'
+    },
+    levelTip: {
+      fontSize: '11px',
+      color: 'var(--color-accent-teal, #4ECDC4)',
+      lineHeight: '1.4',
+      marginTop: '4px',
+      fontStyle: 'italic'
     }
   };
 
@@ -164,13 +183,25 @@ export default function StatusPanel({
               )}
 
               <span style={styles.levelHours}>{item.range}</span>
-              <span style={{
-                ...styles.levelLabel,
-                color: isActive ? 'var(--color-text, #0F172A)' : 'var(--color-text-secondary, #64748B)',
-                fontWeight: isActive ? '600' : '500'
-              }}>
-                {item.label}
-              </span>
+              <div style={styles.levelContent}>
+                <span style={{
+                  ...styles.levelLabel,
+                  color: isActive ? 'var(--color-text, #0F172A)' : 'var(--color-text-secondary, #64748B)',
+                  fontWeight: isActive ? '600' : '500'
+                }}>
+                  {item.label}
+                </span>
+                {item.description && (
+                  <span style={styles.levelDescription}>
+                    {item.description}
+                  </span>
+                )}
+                {item.tip && isActive && isRunning && (
+                  <span style={styles.levelTip}>
+                    💡 {item.tip}
+                  </span>
+                )}
+              </div>
             </li>
           );
         })}

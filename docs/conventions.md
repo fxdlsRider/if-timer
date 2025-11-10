@@ -1,6 +1,6 @@
 # IF Timer - Coding Conventions & Standards
 
-**Last Updated:** 2025-10-30
+**Last Updated:** 2025-11-09
 **Purpose:** Define project standards for consistent development
 
 ---
@@ -301,10 +301,64 @@ function Timer() {
 
 ---
 
+## 🎨 Styling Standards (Tailwind CSS)
+
+**Current Approach:** Tailwind CSS v3 + CSS Variables
+
+### **1. Use Tailwind Utility Classes for New Components**
+```jsx
+// ✅ Good - Tailwind utilities
+function Button({ children }) {
+  return (
+    <button className="bg-accent-teal hover:bg-accent-teal/80 text-white px-4 py-2 rounded-lg">
+      {children}
+    </button>
+  );
+}
+
+// ❌ Bad - Inline styles in new components
+function Button({ children }) {
+  return (
+    <button style={{ background: '#4ECDC4', padding: '8px 16px' }}>
+      {children}
+    </button>
+  );
+}
+```
+
+### **2. Custom Theme Colors (tailwind.config.js)**
+- All colors defined in `tailwind.config.js`
+- Access via `className="bg-accent-teal"` or `text-text-secondary`
+- CSS Variables maintained for backwards compatibility with existing inline styles
+
+### **3. Responsive Design**
+```jsx
+// Use Tailwind responsive utilities
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  {/* Stacks on mobile, 3 columns on desktop */}
+</div>
+```
+
+### **4. Dark Mode Support**
+```jsx
+// Tailwind dark mode (class strategy)
+<div className="bg-background dark:bg-gray-900 text-text dark:text-gray-100">
+  {/* Automatically adapts to theme */}
+</div>
+```
+
+### **5. Existing Components**
+- Components with inline styles can stay as-is (Phase 1 components)
+- Gradually migrate when touching those files
+- CSS Variables still work (`var(--color-text)`)
+
+---
+
 ## 🚫 What NOT to Do
 
-1. ❌ **No inline styles** (except temporary)
-   - Use CSS modules or styled-components later
+1. ❌ **No new inline styles**
+   - Use Tailwind utilities for all new components
+   - Existing inline styles are OK (backwards compatibility)
 
 2. ❌ **No business logic in components**
    - Extract to hooks
@@ -318,7 +372,10 @@ function Timer() {
 5. ❌ **No files > 300 lines**
    - Split into smaller modules
 
-6. ❌ **No emojis** (unless user requests)
+6. ❌ **No hardcoded colors**
+   - Use Tailwind theme colors (bg-accent-teal, text-text-secondary, etc.)
+
+7. ❌ **No emojis** (unless user requests)
 
 ---
 
@@ -326,6 +383,9 @@ function Timer() {
 
 Before committing:
 - [ ] Correct folder structure used
+- [ ] Tailwind utilities used (no inline styles)
+- [ ] No hardcoded colors (use theme)
+- [ ] Responsive design tested (mobile + desktop)
 - [ ] No magic numbers
 - [ ] Component < 200 lines
 - [ ] Business logic in hooks/utils
@@ -344,7 +404,7 @@ Before committing:
 
 ---
 
-**Last Updated:** 2025-10-30
+**Last Updated:** 2025-11-09 (Tailwind CSS v3 added)
 
 **IMPORTANT:** These conventions are MANDATORY for all development.
 Read this file at the start of every session!

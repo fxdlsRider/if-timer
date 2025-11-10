@@ -10,6 +10,13 @@ import { useDragHandle } from './hooks/useDragHandle';
 // Components
 import NavigationHeader from './components/Navigation/NavigationHeader';
 import TimerPage from './components/Timer/TimerPage';
+import TrainingPage from './components/Training/TrainingPage';
+import ModesPage from './components/Modes/ModesPage';
+import HubPage from './components/Hub/HubPage';
+import GraphViewPage from './components/GraphView/GraphViewPage';
+import ResourcesPage from './components/Resources/ResourcesPage';
+import AboutPage from './components/About/AboutPage';
+import SupportPage from './components/Support/SupportPage';
 import StatsPage from './components/Stats/StatsPage';
 import LearnPage from './components/Learn/LearnPage';
 import ProfilePage from './components/Profile/ProfilePage';
@@ -51,6 +58,7 @@ export default function Timer() {
   const {
     isRunning,
     targetTime,
+    startTime,
     timeLeft,
     isExtended,
     showCelebration,
@@ -61,6 +69,8 @@ export default function Timer() {
     TIME_MULTIPLIER,
     startTimer,
     cancelTimer,
+    changeGoal,
+    changeStartTime,
     continueFasting,
     stopFasting,
   } = timerState;
@@ -142,6 +152,7 @@ export default function Timer() {
             angle={angle}
             timeLeft={timeLeft}
             progress={progress}
+            startTime={startTime}
             TIME_UNIT={TIME_UNIT}
             TEST_MODE={TEST_MODE}
             circleRef={circleRef}
@@ -151,6 +162,12 @@ export default function Timer() {
             getProgressColor={getProgressColor}
             onStartTimer={handleStartTimer}
             onCancelTimer={handleCancelTimer}
+            onChangeGoal={(newHours) => {
+              changeGoal(newHours);
+              setHours(newHours);
+              setAngle(TIMER_CONSTANTS.DEFAULT_ANGLE + ((newHours - TIMER_CONSTANTS.DEFAULT_HOURS) / 34) * 360);
+            }}
+            onChangeStartTime={changeStartTime}
             handlePosition={{ x: handlePosX, y: handlePosY }}
             circumference={circumference}
             progressOffset={progressOffset}
@@ -161,6 +178,20 @@ export default function Timer() {
             calculateBodyMode={calculateBodyModeWithMultiplier}
           />
         );
+      case 'training':
+        return <TrainingPage />;
+      case 'modes':
+        return <ModesPage />;
+      case 'hub':
+        return <HubPage user={user} onSignIn={() => setShowLogin(true)} />;
+      case 'graph-view':
+        return <GraphViewPage />;
+      case 'resources':
+        return <ResourcesPage />;
+      case 'about':
+        return <AboutPage />;
+      case 'support':
+        return <SupportPage />;
       case 'stats':
         return <StatsPage />;
       case 'learn':

@@ -15,7 +15,6 @@ import {
 // Utils
 import {
   getTimeLeft,
-  calculateTargetTime,
 } from '../utils/timeCalculations';
 
 // Config
@@ -42,6 +41,7 @@ export function useTimerState(hours) {
   // Timer state
   const [isRunning, setIsRunning] = useState(false);
   const [targetTime, setTargetTime] = useState(null);
+  const [startTime, setStartTime] = useState(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Extended mode state
@@ -98,8 +98,9 @@ export function useTimerState(hours) {
 
   /**
    * Start the timer
+   * @param {Date} customStartTime - Optional custom start time (default: now)
    */
-  const startTimer = () => {
+  const startTimer = (customStartTime = null) => {
     // Reset extended mode FIRST before calculating new target
     setIsExtended(false);
     setOriginalGoalTime(null);
@@ -115,8 +116,12 @@ export function useTimerState(hours) {
     // Initialize AudioContext
     initializeAudioContext();
 
-    // Calculate target time
-    const target = calculateTargetTime(hours, TIME_MULTIPLIER);
+    // Set start time (either custom or now)
+    const start = customStartTime || new Date();
+    setStartTime(start);
+
+    // Calculate target time from start time
+    const target = start.getTime() + (hours * TIME_MULTIPLIER * 1000);
 
     setTargetTime(target);
     setIsRunning(true);
@@ -129,11 +134,44 @@ export function useTimerState(hours) {
   const cancelTimer = () => {
     setIsRunning(false);
     setTargetTime(null);
+    setStartTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
     setShowCompletionSummary(false);
     setCompletedFastData(null);
     notificationShownRef.current = false;
+  };
+
+  /**
+   * Change fasting goal during active fast
+   * @param {number} newHours - New goal in hours
+   */
+  const changeGoal = (newHours) => {
+    if (!isRunning || !startTime) return;
+
+    // Calculate new target based on original start time
+    const newTarget = startTime.getTime() + (newHours * TIME_MULTIPLIER * 1000);
+    setTargetTime(newTarget);
+
+    // Reset extended mode if changing goal
+    if (isExtended) {
+      setIsExtended(false);
+      setOriginalGoalTime(null);
+    }
+  };
+
+  /**
+   * Change start time during active fast
+   * @param {Date} newStartTime - New start time
+   */
+  const changeStartTime = (newStartTime) => {
+    if (!isRunning) return;
+
+    setStartTime(newStartTime);
+
+    // Recalculate target time based on new start and current hours
+    const newTarget = newStartTime.getTime() + (hours * TIME_MULTIPLIER * 1000);
+    setTargetTime(newTarget);
   };
 
   /**
@@ -178,6 +216,7 @@ export function useTimerState(hours) {
     // State
     isRunning,
     targetTime,
+    startTime,
     currentTime,
     timeLeft,
     isExtended,
@@ -194,6 +233,8 @@ export function useTimerState(hours) {
     // Actions
     startTimer,
     cancelTimer,
+    changeGoal,
+    changeStartTime,
     continueFasting,
     stopFasting,
     startNewFast,

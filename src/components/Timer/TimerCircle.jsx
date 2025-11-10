@@ -1,6 +1,9 @@
 // components/Timer/TimerCircle.jsx
 import React, { useState, useEffect } from 'react';
 import { hasUserRespondedToPermission } from '../../services/notificationService';
+import StopFastingModal from './StopFastingModal';
+import FastingInfo from './FastingInfo';
+import ChangeGoalModal from './ChangeGoalModal';
 
 /**
  * TimerCircle Component
@@ -22,6 +25,7 @@ export default function TimerCircle({
   angle,
   timeLeft,
   progress,
+  startTime,
   TIME_UNIT,
   circleRef,
   isDragging,
@@ -30,6 +34,9 @@ export default function TimerCircle({
   getProgressColor,
   onStartTimer,
   onCancelTimer,
+  onChangeGoal,
+  onChangeStartTime,
+  fastingLevels,
   handlePosition,
   circumference,
   progressOffset
@@ -44,6 +51,12 @@ export default function TimerCircle({
     return !hasUserRespondedToPermission();
   });
 
+  // State for stop fasting confirmation modal
+  const [showStopModal, setShowStopModal] = useState(false);
+
+  // State for change goal modal
+  const [showChangeGoalModal, setShowChangeGoalModal] = useState(false);
+
   // Hide banner when timer starts (permission will be requested)
   useEffect(() => {
     if (isRunning && showNotificationBanner) {
@@ -51,6 +64,53 @@ export default function TimerCircle({
       localStorage.setItem('notificationBannerDismissed', 'true');
     }
   }, [isRunning, showNotificationBanner]);
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape' && showStopModal) {
+        setShowStopModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showStopModal]);
+
+  // Calculate elapsed time for modal
+  const getElapsedTime = () => {
+    if (!isRunning) return '';
+    const totalSeconds = hours * 3600 - timeLeft;
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    if (h > 0) {
+      return `${h}h ${m}m`;
+    }
+    return `${m}m`;
+  };
+
+  // Handlers for stop confirmation
+  const handleStopClick = () => {
+    setShowStopModal(true);
+  };
+
+  const handleConfirmStop = () => {
+    setShowStopModal(false);
+    onCancelTimer();
+  };
+
+  const handleCancelStop = () => {
+    setShowStopModal(false);
+  };
+
+  // Handlers for goal change
+  const handleGoalClick = () => {
+    setShowChangeGoalModal(true);
+  };
+
+  const handleGoalChange = (newHours) => {
+    onChangeGoal(newHours);
+    setShowChangeGoalModal(false);
+  };
 
   const styles = {
     circleContainer: {
@@ -346,13 +406,23 @@ export default function TimerCircle({
 
       {/* Fixed container - same height as other states */}
       <div style={styles.contentContainer}>
-        <div style={styles.statusText}>
-          {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : `${hours} ${TIME_UNIT} FAST`)}
-        </div>
+        {startTime ? (
+          <FastingInfo
+            startTime={startTime}
+            hours={hours}
+            onStartTimeChange={onChangeStartTime}
+            onGoalClick={handleGoalClick}
+            isExtended={isExtended}
+          />
+        ) : (
+          <div style={styles.statusText}>
+            {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : '')}
+          </div>
+        )}
       </div>
 
       <button
-        onClick={onCancelTimer}
+        onClick={handleStopClick}
         style={{ ...styles.button, ...styles.cancelButton }}
         onMouseEnter={(e) => {
           e.target.style.borderColor = '#999';
@@ -365,6 +435,23 @@ export default function TimerCircle({
       >
         STOP
       </button>
+
+      {/* Stop Fasting Confirmation Modal */}
+      <StopFastingModal
+        isOpen={showStopModal}
+        onConfirm={handleConfirmStop}
+        onCancel={handleCancelStop}
+        currentDuration={getElapsedTime()}
+      />
+
+      {/* Change Goal Modal */}
+      <ChangeGoalModal
+        isOpen={showChangeGoalModal}
+        currentHours={hours}
+        onConfirm={handleGoalChange}
+        onCancel={() => setShowChangeGoalModal(false)}
+        fastingLevels={fastingLevels}
+      />
     </>
   );
 }

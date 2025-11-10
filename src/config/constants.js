@@ -111,6 +111,7 @@ export const BODY_MODES = [
     label: 'Digesting',
     description: 'Your body is processing food and absorbing nutrients',
     icon: '🍽️',
+    tip: 'Stay hydrated and rest. Your body is working hard to digest.',
   },
   {
     id: 'getting-ready',
@@ -118,6 +119,7 @@ export const BODY_MODES = [
     label: 'Getting ready',
     description: 'Transitioning to fat-burning mode',
     icon: '🔄',
+    tip: 'Drink water or herbal tea. Light activity helps the transition.',
   },
   {
     id: 'fat-burning',
@@ -125,6 +127,7 @@ export const BODY_MODES = [
     label: 'Fat burning',
     description: 'Your body is burning stored fat for energy',
     icon: '🔥',
+    tip: 'Perfect time for exercise! Your body is using fat for fuel.',
   },
   {
     id: 'cell-renewal',
@@ -132,6 +135,7 @@ export const BODY_MODES = [
     label: 'Cell renewal',
     description: 'Autophagy begins - cellular cleanup and repair',
     icon: '♻️',
+    tip: 'Meditation and rest support cellular repair. Stay calm and hydrated.',
   },
   {
     id: 'deep-healing',
@@ -139,6 +143,7 @@ export const BODY_MODES = [
     label: 'Deep healing',
     description: 'Maximum autophagy and cellular regeneration',
     icon: '✨',
+    tip: 'Deep rest and mindfulness. Your body is in maximum healing mode.',
   },
 ];
 
