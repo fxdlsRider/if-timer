@@ -7,10 +7,21 @@ const IFTimerWithThemeWrapper = () => {
   const { theme } = useTheme();
   const colors = getThemeColors(theme === 'dark');
 
+  // Apply dark mode class to html element for Tailwind
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
+
   // Apply theme colors as CSS variables
   useEffect(() => {
     const root = document.documentElement;
-    
+
     root.style.setProperty('--color-background', colors.background);
     root.style.setProperty('--color-background-secondary', colors.backgroundSecondary);
     root.style.setProperty('--color-text', colors.text);
