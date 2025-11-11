@@ -63,7 +63,7 @@ export default function StopFastingModal({ isOpen, onConfirm, onCancel, currentD
           {/* Keep Fasting - Primary Action */}
           <button
             onClick={onCancel}
-            className="px-4 py-3 bg-accent-teal text-white rounded-lg font-medium hover:bg-accent-teal/90 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-teal focus:ring-offset-2"
+            className="px-4 py-3 bg-accent-teal text-white rounded-lg font-medium hover:bg-accent-teal/90 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-teal focus:ring-offset-2 shadow-xl border-2 border-black/15"
           >
             Keep Fasting
           </button>
@@ -71,7 +71,7 @@ export default function StopFastingModal({ isOpen, onConfirm, onCancel, currentD
           {/* Stop - Destructive Action */}
           <button
             onClick={onConfirm}
-            className="px-4 py-3 bg-transparent text-accent-red border-2 border-accent-red rounded-lg font-medium hover:bg-accent-red hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent-red focus:ring-offset-2"
+            className="px-4 py-3 bg-transparent text-accent-red border-2 border-accent-red rounded-lg font-medium hover:bg-accent-red hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent-red focus:ring-offset-2 shadow-xl"
           >
             Stop Fast
           </button>

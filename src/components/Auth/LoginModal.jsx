@@ -89,10 +89,11 @@ export default function LoginModal({ onClose }) {
       fontSize: '16px',
       background: '#333',
       color: 'white',
-      border: 'none',
+      border: '1px solid rgba(0, 0, 0, 0.2)',
       borderRadius: '8px',
       cursor: 'pointer',
-      marginBottom: '12px'
+      marginBottom: '12px',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
     },
     cancel: {
       background: 'transparent',

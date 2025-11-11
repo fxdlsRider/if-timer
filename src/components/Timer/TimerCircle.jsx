@@ -41,6 +41,30 @@ export default function TimerCircle({
   circumference,
   progressOffset
 }) {
+  // Motivational quotes - 15 powerful movie quotes
+  const motivationalQuotes = [
+    { text: "Do. Or do not. There is no try.", author: "Yoda" },
+    { text: "Why do we fall? So we can learn to pick ourselves up.", author: "Batman Begins" },
+    { text: "It's not who I am underneath, but what I do that defines me.", author: "Batman" },
+    { text: "The only thing standing between you and your goal is the story you keep telling yourself.", author: "Wolf of Wall Street" },
+    { text: "Life's simple. You make choices and you don't look back.", author: "Fast & Furious" },
+    { text: "Every man dies, not every man really lives.", author: "Braveheart" },
+    { text: "Great men are not born great, they grow great.", author: "The Godfather" },
+    { text: "The brave may not live forever, but the cautious do not live at all.", author: "The Princess Diaries" },
+    { text: "You mustn't be afraid to dream a little bigger.", author: "Inception" },
+    { text: "Get busy living, or get busy dying.", author: "Shawshank Redemption" },
+    { text: "I'm not in this world to live up to your expectations.", author: "Bruce Lee" },
+    { text: "The hardest choices require the strongest wills.", author: "Thanos, Infinity War" },
+    { text: "Don't let anyone ever make you feel like you don't deserve what you want.", author: "10 Things I Hate About You" },
+    { text: "Life moves pretty fast. If you don't stop and look around once in a while, you could miss it.", author: "Ferris Bueller" },
+    { text: "Carpe diem. Seize the day.", author: "Dead Poets Society" }
+  ];
+
+  // Random quote on component mount - stays consistent during session
+  const [randomQuote] = useState(() => {
+    const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+    return motivationalQuotes[randomIndex];
+  });
   // State to track if notification banner should be shown
   const [showNotificationBanner, setShowNotificationBanner] = useState(() => {
     // Check localStorage first (persists across sessions)
@@ -125,6 +149,7 @@ export default function TimerCircle({
       height: '20px',
       background: '#d32f2f',
       borderRadius: '50%',
+      border: '1px solid #666',
       boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
       transition: isDragging ? 'none' : '0s',
       zIndex: 10
@@ -163,7 +188,8 @@ export default function TimerCircle({
     startButton: {
       background: '#4ECDC4',
       color: 'white',
-      boxShadow: '0 2px 12px rgba(78, 205, 196, 0.3)'
+      border: '2px solid rgba(0, 0, 0, 0.15)',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
     },
     cancelButton: {
       background: 'transparent',
@@ -197,102 +223,63 @@ export default function TimerCircle({
     }
   };
 
-  // STATE 1: Completion summary (after fast ends)
-  if (showCompletionSummary && !isRunning && completedFastData) {
-    const totalDuration = completedFastData.duration;
-
+  // STATE 1: Pre-run (before starting timer)
+  if (!isRunning && !showCompletionSummary) {
     return (
       <>
-        <div style={styles.circleContainer}>
-          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-            <circle
-              cx="112"
-              cy="112"
-              r="96"
-              fill="none"
-              stroke="#e0e0e0"
-              strokeWidth="6"
-            />
-            <circle
-              cx="112"
-              cy="112"
-              r="96"
-              fill="none"
-              stroke="#34C759"
-              strokeWidth="6"
-              strokeDasharray={`${2 * Math.PI * 96} 0`}
-              strokeLinecap="round"
-            />
-          </svg>
-
-          <div style={styles.hoursDisplay}>
-            <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
-              Well done!
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: '300', color: 'var(--color-text, #333)', marginBottom: '4px' }}>
-              {totalDuration}
-            </div>
-            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>
-              {completedFastData.unit} fasted
-            </div>
-          </div>
+        {/* Motivational Quote */}
+        <div style={{ textAlign: 'center', marginBottom: '20px', minHeight: '60px' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
+            "{randomQuote.text}"
+          </p>
+          <p style={{ fontSize: '12px', color: '#999' }}>
+            — {randomQuote.author}
+          </p>
         </div>
 
-        {/* Fixed container - same height as other states */}
-        <div style={styles.contentContainer}>
-          <div style={styles.statusText}>
-            FASTING COMPLETE
-          </div>
-        </div>
-
-        <button
-          onClick={onStartTimer}
-          style={{ ...styles.button, ...styles.startButton }}
-          onMouseEnter={(e) => e.target.style.background = '#3DBDB5'}
-          onMouseLeave={(e) => e.target.style.background = '#4ECDC4'}
-        >
-          START
-        </button>
-      </>
-    );
-  }
-
-  // STATE 2: Pre-run (before starting timer)
-  if (!isRunning) {
-    return (
-      <>
         <div ref={circleRef} style={styles.circleContainer}>
           <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0 }}>
+            {/* Background circle */}
             <circle
               cx="112"
               cy="112"
               r="96"
               fill="none"
               stroke="#e0e0e0"
-              strokeWidth="6"
+              strokeWidth="18"
             />
 
             <g transform="rotate(-90 112 112)">
-              <defs>
-                <linearGradient id="trailGradient" x1="0%" y1="100%" x2="100%" y2="0%" gradientTransform="rotate(0)">
-                  <stop offset="0%" stopColor="#34C759" />
-                  <stop offset="33%" stopColor="#FFE66D" />
-                  <stop offset="66%" stopColor="#FF6B6B" />
-                  <stop offset="100%" stopColor="#A855F7" />
-                </linearGradient>
-              </defs>
+              {/* Thick teal progress trail */}
               <circle
                 cx="112"
                 cy="112"
                 r="96"
                 fill="none"
-                stroke="url(#trailGradient)"
-                strokeWidth="6"
+                stroke="#4ECDC4"
+                strokeWidth="18"
                 strokeDasharray={`${(angle / 360) * (2 * Math.PI * 96)} ${2 * Math.PI * 96}`}
-                strokeLinecap="round"
+                strokeLinecap="butt"
                 style={{ transition: 'stroke-dasharray 0.3s ease' }}
               />
             </g>
+
+            {/* Frame circles */}
+            <circle cx="112" cy="112" r="105" fill="none" stroke="#999" strokeWidth="2" opacity="0.6" />
+            <circle cx="112" cy="112" r="87" fill="none" stroke="#999" strokeWidth="2" opacity="0.6" />
+          </svg>
+
+          {/* 12 o'clock marker line - on top */}
+          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+            <line
+              x1="112"
+              y1="7"
+              x2="112"
+              y2="32"
+              stroke="#333"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
 
           <div
@@ -344,99 +331,121 @@ export default function TimerCircle({
     );
   }
 
-  // STATE 3: Running (timer active)
-  return (
-    <>
-      <div style={styles.circleContainer}>
-        <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-          <defs>
-            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#34C759" />
-              <stop offset="33%" stopColor="#FFE66D" />
-              <stop offset="66%" stopColor="#FF6B6B" />
-              <stop offset="100%" stopColor="#A855F7" />
-            </linearGradient>
-          </defs>
+  // STATE 2: Running (timer active)
+  if (isRunning) {
+    return (
+      <>
+        {/* Motivational Quote */}
+        <div style={{ textAlign: 'center', marginBottom: '20px', minHeight: '60px' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
+            "{randomQuote.text}"
+          </p>
+          <p style={{ fontSize: '12px', color: '#999' }}>
+            — {randomQuote.author}
+          </p>
+        </div>
 
-          <circle
-            cx="112"
-            cy="112"
-            r="96"
-            fill="none"
-            stroke="#e0e0e0"
-            strokeWidth="6"
-          />
-          <circle
-            cx="112"
-            cy="112"
-            r="96"
-            fill="none"
-            stroke="url(#progressGradient)"
-            strokeWidth="6"
-            strokeDasharray={circumference}
-            strokeDashoffset={progressOffset}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s linear' }}
-          />
-        </svg>
+        <div style={styles.circleContainer}>
+          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
+            {/* Background circle */}
+            <circle
+              cx="112"
+              cy="112"
+              r="96"
+              fill="none"
+              stroke="#e0e0e0"
+              strokeWidth="18"
+            />
+            {/* Thick teal progress circle */}
+            <circle
+              cx="112"
+              cy="112"
+              r="96"
+              fill="none"
+              stroke="#4ECDC4"
+              strokeWidth="18"
+              strokeDasharray={circumference}
+              strokeDashoffset={progressOffset}
+              strokeLinecap="butt"
+              style={{ transition: 'stroke-dashoffset 1s linear' }}
+            />
+            {/* Frame circles */}
+            <circle cx="112" cy="112" r="105" fill="none" stroke="#999" strokeWidth="2" opacity="0.6" />
+            <circle cx="112" cy="112" r="87" fill="none" stroke="#999" strokeWidth="2" opacity="0.6" />
+          </svg>
 
-        <div style={styles.hoursDisplay}>
-          {isExtended ? (
-            <>
-              <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
-                Well done!
-              </div>
-              <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
-                {hours} {TIME_UNIT} fasted
-              </div>
+          {/* 12 o'clock marker line - on top */}
+          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+            <line
+              x1="112"
+              y1="7"
+              x2="112"
+              y2="32"
+              stroke="#333"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+
+          <div style={styles.hoursDisplay}>
+            {isExtended ? (
+              <>
+                <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
+                  Well done!
+                </div>
+                <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
+                  {hours} {TIME_UNIT} fasted
+                </div>
+                <div style={styles.timeDisplay}>
+                  +{formatTime(Math.abs(timeLeft))}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
+                  additional time
+                </div>
+              </>
+            ) : (
               <div style={styles.timeDisplay}>
-                +{formatTime(Math.abs(timeLeft))}
+                {formatTime(timeLeft)}
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
-                additional time
-              </div>
-            </>
+            )}
+          </div>
+        </div>
+
+        {/* Fixed container - same height as other states */}
+        <div style={styles.contentContainer}>
+          {startTime ? (
+            <div style={{ marginTop: '-10px' }}>
+              <FastingInfo
+                startTime={startTime}
+                hours={hours}
+                onStartTimeChange={onChangeStartTime}
+                onGoalClick={handleGoalClick}
+                isExtended={isExtended}
+              />
+            </div>
           ) : (
-            <div style={styles.timeDisplay}>
-              {formatTime(timeLeft)}
+            <div style={styles.statusText}>
+              {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : '')}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Fixed container - same height as other states */}
-      <div style={styles.contentContainer}>
-        {startTime ? (
-          <FastingInfo
-            startTime={startTime}
-            hours={hours}
-            onStartTimeChange={onChangeStartTime}
-            onGoalClick={handleGoalClick}
-            isExtended={isExtended}
-          />
-        ) : (
-          <div style={styles.statusText}>
-            {isExtended ? 'EXTENDED MODE' : (timeLeft === 0 ? 'COMPLETE!' : '')}
-          </div>
-        )}
-      </div>
+        <button
+          onClick={handleStopClick}
+          style={{ ...styles.button, ...styles.cancelButton }}
+          onMouseEnter={(e) => {
+            e.target.style.borderColor = '#999';
+            e.target.style.color = '#333';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.borderColor = '#ddd';
+            e.target.style.color = '#666';
+          }}
+        >
+          STOP
+        </button>
 
-      <button
-        onClick={handleStopClick}
-        style={{ ...styles.button, ...styles.cancelButton }}
-        onMouseEnter={(e) => {
-          e.target.style.borderColor = '#999';
-          e.target.style.color = '#333';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.borderColor = '#ddd';
-          e.target.style.color = '#666';
-        }}
-      >
-        STOP
-      </button>
-
-      {/* Stop Fasting Confirmation Modal */}
+      {/* Stop Fasting Modal */}
       <StopFastingModal
         isOpen={showStopModal}
         onConfirm={handleConfirmStop}
@@ -452,6 +461,94 @@ export default function TimerCircle({
         onCancel={() => setShowChangeGoalModal(false)}
         fastingLevels={fastingLevels}
       />
-    </>
-  );
+      </>
+    );
+  }
+
+  // STATE 3: Complete (after fast ends)
+  if (showCompletionSummary && completedFastData) {
+    const totalDuration = completedFastData.duration;
+
+    return (
+      <>
+        {/* Motivational Quote */}
+        <div style={{ textAlign: 'center', marginBottom: '20px', minHeight: '60px' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
+            "{randomQuote.text}"
+          </p>
+          <p style={{ fontSize: '12px', color: '#999' }}>
+            — {randomQuote.author}
+          </p>
+        </div>
+
+        <div style={styles.circleContainer}>
+          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
+            <defs>
+              <filter id="completeShadow">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
+              </filter>
+            </defs>
+            {/* Thick teal completion circle - only stroke, no fill */}
+            <circle
+              cx="112"
+              cy="112"
+              r="96"
+              fill="none"
+              stroke="#4ECDC4"
+              strokeWidth="18"
+              strokeLinecap="butt"
+              filter="url(#completeShadow)"
+            />
+            {/* Frame circles */}
+            <circle cx="112" cy="112" r="105" fill="none" stroke="#999" strokeWidth="2" opacity="0.6" />
+            <circle cx="112" cy="112" r="87" fill="none" stroke="#999" strokeWidth="2" opacity="0.6" />
+          </svg>
+
+          {/* 12 o'clock marker line - on top */}
+          <svg width="224" height="224" style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+            <line
+              x1="112"
+              y1="7"
+              x2="112"
+              y2="32"
+              stroke="#333"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+
+          <div style={styles.hoursDisplay}>
+            <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
+              Well done!
+            </div>
+            <div style={{ fontSize: '32px', fontWeight: '300', color: 'var(--color-text, #333)', marginBottom: '4px' }}>
+              {totalDuration}
+            </div>
+            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>
+              {completedFastData.unit} fasted
+            </div>
+          </div>
+        </div>
+
+        {/* Fixed container - same height as other states */}
+        <div style={styles.contentContainer}>
+          <div style={styles.statusText}>
+            FASTING COMPLETE
+          </div>
+        </div>
+
+        <button
+          onClick={onStartTimer}
+          style={{ ...styles.button, ...styles.startButton }}
+          onMouseEnter={(e) => e.target.style.background = '#3DBDB5'}
+          onMouseLeave={(e) => e.target.style.background = '#4ECDC4'}
+        >
+          START
+        </button>
+      </>
+    );
+  }
+
+  // Fallback (should never reach here)
+  return null;
 }

@@ -527,9 +527,11 @@ export default function IFTimerFinal() {
 
   const getProgress = () => {
     if (!isRunning || !targetTime) return 0;
-    const totalSeconds = hours * 3600;
+    const totalSeconds = hours * TIME_MULTIPLIER;
     const elapsed = totalSeconds - timeLeft;
-    return (elapsed / totalSeconds) * 100;
+    const progress = (elapsed / totalSeconds) * 100;
+    console.log('DEBUG Progress:', { totalSeconds, timeLeft, elapsed, progress, hours, TIME_MULTIPLIER });
+    return progress;
   };
 
   const getFastingLevel = () => {
@@ -586,7 +588,9 @@ export default function IFTimerFinal() {
   const handlePosY = 140 - Math.cos(handleY) * radius;
 
   const circumference = 2 * Math.PI * 120;
-  const progressOffset = circumference - (getProgress() / 100) * circumference;
+  const progress = getProgress();
+  const progressOffset = circumference - (progress / 100) * circumference;
+  console.log('Circle Render:', { circumference, progress, progressOffset, isRunning, timeLeft, hours });
 
   const styles = {
     container: {

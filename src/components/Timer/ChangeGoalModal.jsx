@@ -91,7 +91,7 @@ export default function ChangeGoalModal({ isOpen, currentHours, onConfirm, onCan
           </button>
           <button
             onClick={handleConfirm}
-            className="px-4 py-3 bg-accent-teal text-white rounded-lg font-medium hover:bg-accent-teal/90 transition-colors"
+            className="px-4 py-3 bg-accent-teal text-white rounded-lg font-medium hover:bg-accent-teal/90 transition-colors shadow-xl border border-accent-teal/30"
           >
             Change Goal
           </button>
