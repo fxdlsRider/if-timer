@@ -120,10 +120,10 @@ export default function Timer() {
     handleStateLoaded
   );
 
-  // Wrap calculateBodyMode to include TIME_MULTIPLIER
+  // Wrap calculateBodyMode to include TIME_MULTIPLIER and isExtended
   const calculateBodyModeWithMultiplier = useCallback((hours, timeLeft) => {
-    return calculateBodyMode(hours, timeLeft, TIME_MULTIPLIER);
-  }, [TIME_MULTIPLIER]);
+    return calculateBodyMode(hours, timeLeft, TIME_MULTIPLIER, isExtended);
+  }, [TIME_MULTIPLIER, isExtended]);
 
   // Calculate handle position and progress
   const handleX = angle * (Math.PI / 180);

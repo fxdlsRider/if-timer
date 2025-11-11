@@ -68,22 +68,32 @@ export const getFastingLevel = (hours) => {
 /**
  * Calculate body mode based on elapsed time
  * @param {number} totalHours - Total fasting duration (hours in production, seconds in test mode)
- * @param {number} timeLeft - Time remaining (seconds)
+ * @param {number} timeLeft - Time remaining (seconds) - In extended mode, this is time BEYOND goal (positive)
  * @param {number} timeMultiplier - Time multiplier (1 for test mode, 3600 for production)
+ * @param {boolean} isExtended - Whether in extended mode (past original goal)
  * @returns {number} Body mode index (0-4)
  */
-export const getBodyMode = (totalHours, timeLeft, timeMultiplier = 3600) => {
-  // Calculate elapsed time in seconds
-  const totalSeconds = totalHours * timeMultiplier;
-  const elapsed = totalSeconds - timeLeft;
-  // Convert elapsed seconds back to "units" (seconds in test mode, hours in production)
-  const elapsedInUnits = elapsed / timeMultiplier;
+export const getBodyMode = (totalHours, timeLeft, timeMultiplier = 3600, isExtended = false) => {
+  let elapsedInUnits;
 
+  if (isExtended) {
+    // In extended mode: timeLeft is actually time BEYOND the goal
+    // So total elapsed = original goal + additional time
+    const additionalTimeInUnits = timeLeft / timeMultiplier;
+    elapsedInUnits = totalHours + additionalTimeInUnits;
+  } else {
+    // Normal mode: calculate elapsed time from remaining time
+    const totalSeconds = totalHours * timeMultiplier;
+    const elapsed = totalSeconds - timeLeft;
+    elapsedInUnits = elapsed / timeMultiplier;
+  }
+
+  // Cap at Deep Healing (24+ hours) and never go backwards
   if (elapsedInUnits < 4) return 0;   // Digesting
   if (elapsedInUnits < 12) return 1;  // Getting ready
   if (elapsedInUnits < 18) return 2;  // Fat burning
   if (elapsedInUnits < 24) return 3;  // Cell renewal
-  return 4; // Deep healing (24+)
+  return 4; // Deep healing (24+) - stays here in extended mode
 };
 
 /**
