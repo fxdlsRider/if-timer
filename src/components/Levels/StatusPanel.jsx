@@ -126,7 +126,7 @@ export default function StatusPanel({
       color: 'var(--color-accent-teal, #4ECDC4)',
       lineHeight: '1.4',
       marginTop: '4px',
-      fontStyle: 'italic'
+      fontWeight: '600'
     }
   };
 
@@ -198,7 +198,7 @@ export default function StatusPanel({
                 )}
                 {item.tip && isActive && isRunning && (
                   <span style={styles.levelTip}>
-                    💡 {item.tip}
+                    {item.tip}
                   </span>
                 )}
               </div>
