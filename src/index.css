@@ -5,6 +5,7 @@
 
 /* Theme CSS Variables - kept for backwards compatibility with inline styles */
 :root {
+  /* Light Mode (default) */
   --color-background: #FFFFFF;
   --color-background-secondary: #F8FAFC;
   --color-text: #0F172A;
@@ -13,6 +14,25 @@
   --color-border: #E2E8F0;
   --color-border-subtle: #F1F5F9;
   --color-ring-background: #F1F5F9;
+  --color-accent-teal: #4ECDC4;
+  --color-accent-red: #FF6B6B;
+  --color-accent-green: #34C759;
+  --color-accent-orange: #FF9500;
+  --color-accent-yellow: #FFE66D;
+  --color-accent-purple: #A855F7;
+}
+
+/* Dark Mode Variables */
+.dark {
+  --color-background: #0F172A;
+  --color-background-secondary: #1E293B;
+  --color-text: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-tertiary: #94A3B8;
+  --color-border: #334155;
+  --color-border-subtle: #1E293B;
+  --color-ring-background: #1E293B;
+  /* Accent colors stay the same */
   --color-accent-teal: #4ECDC4;
   --color-accent-red: #FF6B6B;
   --color-accent-green: #34C759;

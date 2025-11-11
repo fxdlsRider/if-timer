@@ -51,13 +51,13 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
   };
 
   return (
-    <header className="w-full bg-background sticky top-0 z-50">
+    <header className="w-full bg-background dark:bg-background-dark sticky top-0 z-50 border-b border-transparent dark:border-border-dark">
       <div className="max-w-container mx-auto px-6 lg:px-10 h-16 flex items-center justify-center relative">
 
         {/* Logo - Left (absolute positioned) */}
         <button
           onClick={handleLogoClick}
-          className="absolute left-6 lg:left-10 text-xl font-semibold text-text hover:text-accent-teal transition-colors"
+          className="absolute left-6 lg:left-10 text-xl font-semibold text-text dark:text-text-dark hover:text-accent-teal transition-colors"
         >
           IF-Timer
         </button>
@@ -73,8 +73,8 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
                 className={`
                   relative py-5 px-2 text-sm font-normal transition-all duration-200
                   ${isActive
-                    ? 'text-text font-medium'
-                    : 'text-text-secondary hover:text-text hover:scale-105'
+                    ? 'text-text dark:text-text-dark font-medium'
+                    : 'text-text-secondary dark:text-text-dark-secondary hover:text-text dark:hover:text-text-dark hover:scale-105'
                   }
                 `}
               >
@@ -90,7 +90,7 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-text hover:text-accent-teal transition-colors"
+          className="md:hidden p-2 text-text dark:text-text-dark hover:text-accent-teal transition-colors"
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? (
@@ -109,7 +109,7 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <nav className="md:hidden bg-background">
+        <nav className="md:hidden bg-background dark:bg-background-dark-secondary border-t border-border dark:border-border-dark">
           <div className="px-6 py-4 space-y-1">
             {menuItems.map((item) => {
               const isActive = activeTab === item.id;
@@ -121,12 +121,12 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
                     w-full text-left px-4 py-3 rounded-lg transition-colors
                     ${isActive
                       ? 'bg-accent-teal/10 text-accent-teal font-medium'
-                      : 'text-text-secondary hover:bg-background-secondary hover:text-text'
+                      : 'text-text-secondary dark:text-text-dark-secondary hover:bg-background-secondary dark:hover:bg-background-dark hover:text-text dark:hover:text-text-dark'
                     }
                   `}
                 >
                   <div className="font-medium">{item.label}</div>
-                  <div className="text-xs text-text-tertiary mt-0.5">{item.description}</div>
+                  <div className="text-xs text-text-tertiary dark:text-text-dark-tertiary mt-0.5">{item.description}</div>
                 </button>
               );
             })}

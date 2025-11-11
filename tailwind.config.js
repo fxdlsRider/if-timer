@@ -11,18 +11,34 @@ module.exports = {
         background: {
           DEFAULT: '#FFFFFF',
           secondary: '#F8FAFC',
+          dark: {
+            DEFAULT: '#0F172A',
+            secondary: '#1E293B',
+          }
         },
         text: {
           DEFAULT: '#0F172A',
           secondary: '#64748B',
           tertiary: '#94A3B8',
+          dark: {
+            DEFAULT: '#F1F5F9',
+            secondary: '#CBD5E1',
+            tertiary: '#94A3B8',
+          }
         },
         border: {
           DEFAULT: '#E2E8F0',
           subtle: '#F1F5F9',
+          dark: {
+            DEFAULT: '#334155',
+            subtle: '#1E293B',
+          }
         },
         ring: {
           background: '#F1F5F9',
+          dark: {
+            background: '#1E293B',
+          }
         },
         accent: {
           teal: '#4ECDC4',
