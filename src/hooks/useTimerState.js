@@ -132,13 +132,28 @@ export function useTimerState(hours) {
    * Cancel/stop the timer (before completion)
    */
   const cancelTimer = () => {
+    // Calculate actual fasted time before stopping
+    if (isRunning && startTime) {
+      const now = Date.now();
+      const actualFastedMs = now - startTime.getTime();
+      const actualFastedHours = actualFastedMs / (TIME_MULTIPLIER * 1000);
+
+      // Set completion data with actual fasted time
+      const completionData = {
+        duration: actualFastedHours.toFixed(1), // Format to 1 decimal place
+        startTime: startTime,
+        endTime: new Date(now),
+        unit: TIME_UNIT
+      };
+      setCompletedFastData(completionData);
+      setShowCompletionSummary(true);
+    }
+
     setIsRunning(false);
     setTargetTime(null);
     setStartTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
-    setShowCompletionSummary(false);
-    setCompletedFastData(null);
     notificationShownRef.current = false;
   };
 

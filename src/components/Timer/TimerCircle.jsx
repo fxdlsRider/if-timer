@@ -103,7 +103,17 @@ export default function TimerCircle({
   // Calculate elapsed time for modal
   const getElapsedTime = () => {
     if (!isRunning) return '';
-    const totalSeconds = hours * 3600 - timeLeft;
+
+    let totalSeconds;
+    if (isExtended) {
+      // In extended mode: timeLeft is time BEYOND goal
+      // Total elapsed = original goal + additional time
+      totalSeconds = (hours * 3600) + timeLeft;
+    } else {
+      // Normal mode: calculate from remaining time
+      totalSeconds = hours * 3600 - timeLeft;
+    }
+
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     if (h > 0) {
