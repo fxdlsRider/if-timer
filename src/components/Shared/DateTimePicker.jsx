@@ -11,36 +11,33 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
  * @param {function} onChange - Callback when date/time changes
  * @param {function} onSave - Callback when user clicks Save
  * @param {function} onCancel - Callback when user clicks Cancel
+ * @param {number} goalHours - Goal hours for calculating target time
  */
-export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
-  // Use the value prop's date as the "anchor" for the date range
-  // This ensures the picker always shows the correct date
-  const anchorDate = useMemo(() => {
-    const date = value || new Date();
-    console.log('=== DateTimePicker anchorDate calculation ===');
-    console.log('value prop:', value);
-    console.log('date variable:', date);
-    // Set to midnight to avoid time zone issues
-    const anchor = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    console.log('anchorDate (midnight):', anchor);
-    return anchor;
-  }, [value]);
-
-  // Generate date range: 6 months before and 6 months after the anchor date
+export default function DateTimePicker({ value, onChange, onSave, onCancel, goalHours }) {
+  // Generate STATIC date range: 6 months before and 6 months after TODAY (not value prop)
+  // This ensures the array doesn't regenerate when scrolling changes the date
   const dateOptions = useMemo(() => {
     const dates = [];
-    // 6 months = approximately 180 days
-    const anchorYear = anchorDate.getFullYear();
-    const anchorMonth = anchorDate.getMonth();
-    const anchorDay = anchorDate.getDate();
+    const today = new Date();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth();
+    const todayDay = today.getDate();
 
+    console.log('=== Generating STATIC dateOptions ===');
+    console.log('Today:', today);
+
+    // 6 months = approximately 180 days
     for (let i = -180; i <= 180; i++) {
-      // Create date by adding days to anchor date using proper date arithmetic
-      const date = new Date(anchorYear, anchorMonth, anchorDay + i);
+      // Create date by adding days to today using proper date arithmetic
+      const date = new Date(todayYear, todayMonth, todayDay + i);
       dates.push(date);
     }
+
+    console.log('dateOptions generated with', dates.length, 'entries');
+    console.log('Center (today) at index 180:', dates[180]);
+
     return dates;
-  }, [anchorDate]);
+  }, []); // Empty deps - only generate once on mount
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const minutes = Array.from({ length: 60 }, (_, i) => i); // 0, 1, 2, ..., 59
@@ -69,10 +66,12 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
     );
 
     console.log('Found index:', index);
-    console.log('Date at index:', dateOptions[index]);
+    if (index >= 0) {
+      console.log('Date at index:', dateOptions[index]);
+    }
 
-    return index >= 0 ? index : 180; // Default to anchor (index 180) if not found
-  }, [dateOptions, initialValue, anchorDate]);
+    return index >= 0 ? index : 180; // Default to today (index 180) if not found
+  }, [dateOptions, initialValue]);
 
   const initialHourIndex = initialValue.getHours();
   const initialMinuteIndex = initialValue.getMinutes(); // Use exact minute
@@ -83,18 +82,42 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
   const [selectedMinute, setSelectedMinute] = useState(initialMinuteIndex);
   const [selectedDate, setSelectedDate] = useState(initialValue);
 
+  // Live elapsed time
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
   // Refs for scroll containers
   const dateRef = useRef(null);
   const hourRef = useRef(null);
   const minuteRef = useRef(null);
   const isInitialScrollRef = useRef(true); // Flag to prevent handleScroll during initial mount
-  const scrollTimeoutRef = useRef(null); // For debouncing scroll events
+
+  // Separate timeout refs for each column to prevent cross-interference
+  const dateScrollTimeoutRef = useRef(null);
+  const hourScrollTimeoutRef = useRef(null);
+  const minuteScrollTimeoutRef = useRef(null);
+
+  // Update current time every second for live elapsed time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Update date when any component changes
   useEffect(() => {
+    console.log('=== useEffect: Update date triggered ===');
+    console.log('selectedDateIndex:', selectedDateIndex);
+    console.log('selectedHour:', selectedHour);
+    console.log('selectedMinute:', selectedMinute);
+
     const baseDate = dateOptions[selectedDateIndex];
+    console.log('baseDate from dateOptions:', baseDate);
+
     // Create new date using explicit date components to avoid timezone issues
     const actualMinute = minutes[selectedMinute];
+    console.log('actualMinute:', actualMinute);
+
     const newDate = new Date(
       baseDate.getFullYear(),
       baseDate.getMonth(),
@@ -104,6 +127,8 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
       0, // seconds
       0  // milliseconds
     );
+    console.log('newDate created:', newDate);
+
     setSelectedDate(newDate);
     if (onChange) onChange(newDate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,17 +171,25 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleScroll = (ref, itemsCount, setValue) => {
+  const handleScroll = (ref, itemsCount, setValue, columnName, timeoutRef) => {
+    console.log(`=== handleScroll called for ${columnName} ===`);
+    console.log('isInitialScrollRef.current:', isInitialScrollRef.current);
+
     // Ignore scroll events during initial mount
-    if (isInitialScrollRef.current) return;
+    if (isInitialScrollRef.current) {
+      console.log(`${columnName}: Ignoring - initial scroll in progress`);
+      return;
+    }
     if (!ref.current) return;
 
     // Debounce scroll events - only update after scrolling stops
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
+    // Use column-specific timeout ref to prevent cross-interference
+    if (timeoutRef.current) {
+      console.log(`${columnName}: Clearing existing timeout`);
+      clearTimeout(timeoutRef.current);
     }
 
-    scrollTimeoutRef.current = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       if (!ref.current) return;
 
       const itemHeight = 40;
@@ -166,7 +199,21 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
       const index = Math.round(centerOffset / itemHeight);
       const clampedIndex = Math.max(0, Math.min(index, itemsCount - 1));
 
+      console.log(`=== ${columnName} scroll calculation ===`);
+      console.log('scrollTop:', scrollTop);
+      console.log('containerHeight:', containerHeight);
+      console.log('centerOffset:', centerOffset);
+      console.log('Calculated index:', index);
+      console.log('Clamped index:', clampedIndex);
+      console.log('Current state before update:', {
+        selectedDateIndex,
+        selectedHour,
+        selectedMinute
+      });
+
       setValue(clampedIndex);
+
+      console.log(`${columnName}: Set value to`, clampedIndex);
     }, 100); // Wait 100ms after scroll stops
   };
 
@@ -186,6 +233,92 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const month = months[date.getMonth()];
     return `${weekday}, ${day} ${month}`;
+  };
+
+  // Check if selected date is in the future
+  const isDateInFuture = selectedDate.getTime() > currentTime;
+
+  // Calculate elapsed time since selected start time
+  const calculateElapsedTime = () => {
+    const elapsedMs = currentTime - selectedDate.getTime();
+
+    // If date is in future, show 00:00
+    if (elapsedMs < 0) {
+      return '00:00';
+    }
+
+    const totalMinutes = Math.floor(elapsedMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  // Calculate target time (start time + goal hours)
+  const calculateTargetTime = () => {
+    if (!goalHours) return null;
+
+    const targetDate = new Date(selectedDate.getTime() + (goalHours * 60 * 60 * 1000));
+    return targetDate;
+  };
+
+  // Format target time display
+  const formatTargetTime = () => {
+    // Don't show anything if date is in the future (fast hasn't started yet)
+    if (isDateInFuture) {
+      return null;
+    }
+
+    const target = calculateTargetTime();
+    if (!target) return null;
+
+    // Check if goal is already reached
+    const targetTime = target.getTime();
+    const isGoalReached = currentTime >= targetTime;
+
+    if (isGoalReached) {
+      // Calculate additional time beyond goal
+      const additionalMs = currentTime - targetTime;
+      const additionalMinutes = Math.floor(additionalMs / 60000);
+      const additionalHours = Math.floor(additionalMinutes / 60);
+      const additionalMins = additionalMinutes % 60;
+
+      return {
+        type: 'completed',
+        text: `Well done! +${additionalHours.toString().padStart(2, '0')}:${additionalMins.toString().padStart(2, '0')}`
+      };
+    }
+
+    // Goal not reached yet - show when it will end
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+
+    const timeStr = target.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+    let dateStr;
+    // Check if target is today
+    if (targetDay.getTime() === today.getTime()) {
+      dateStr = `Today at ${timeStr}`;
+    }
+    // Check if target is tomorrow
+    else if (targetDay.getTime() === tomorrow.getTime()) {
+      dateStr = `Tomorrow at ${timeStr}`;
+    }
+    // Otherwise show weekday and date
+    else {
+      const weekday = weekdays[target.getDay()];
+      const day = target.getDate();
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month = months[target.getMonth()];
+      dateStr = `${weekday}, ${day} ${month} at ${timeStr}`;
+    }
+
+    return {
+      type: 'ongoing',
+      text: `Goal ends: ${dateStr}`
+    };
   };
 
   return (
@@ -214,7 +347,7 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
               ref={dateRef}
               className="flex-[3] overflow-y-scroll scrollbar-hide"
               style={{ scrollSnapType: 'y proximity' }}
-              onScroll={() => handleScroll(dateRef, dateOptions.length, setSelectedDateIndex)}
+              onScroll={() => handleScroll(dateRef, dateOptions.length, setSelectedDateIndex, 'DATE', dateScrollTimeoutRef)}
             >
               <div className="py-14">
                 {dateOptions.map((date, index) => (
@@ -234,7 +367,7 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
               ref={hourRef}
               className="flex-1 overflow-y-scroll scrollbar-hide"
               style={{ scrollSnapType: 'y proximity' }}
-              onScroll={() => handleScroll(hourRef, hours.length, setSelectedHour)}
+              onScroll={() => handleScroll(hourRef, hours.length, setSelectedHour, 'HOUR', hourScrollTimeoutRef)}
             >
               <div className="py-14">
                 {hours.map((hour) => (
@@ -254,7 +387,7 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
               ref={minuteRef}
               className="flex-1 overflow-y-scroll scrollbar-hide"
               style={{ scrollSnapType: 'y proximity' }}
-              onScroll={() => handleScroll(minuteRef, minutes.length, setSelectedMinute)}
+              onScroll={() => handleScroll(minuteRef, minutes.length, setSelectedMinute, 'MINUTE', minuteScrollTimeoutRef)}
             >
               <div className="py-14">
                 {minutes.map((minute, index) => (
@@ -271,11 +404,28 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
           </div>
         </div>
 
-        {/* Selected preview */}
-        <div className="text-center mb-3 p-2 bg-background-secondary dark:bg-background-dark-secondary rounded-lg">
-          <p className="text-xs text-text-secondary dark:text-text-dark-secondary">
-            {formatDateDisplay(dateOptions[selectedDateIndex])} at {selectedHour.toString().padStart(2, '0')}:{minutes[selectedMinute].toString().padStart(2, '0')}
+        {/* Elapsed time preview */}
+        <div className="text-center mb-3 p-3 bg-background-secondary dark:bg-background-dark-secondary rounded-lg">
+          <p className="text-xs text-text-secondary dark:text-text-dark-secondary mb-1">
+            Elapsed time
           </p>
+          <p className="text-2xl font-bold text-accent-teal">
+            {calculateElapsedTime()}
+          </p>
+          {goalHours && (() => {
+            const targetInfo = formatTargetTime();
+            if (!targetInfo) return null;
+
+            return (
+              <p className={`text-xs mt-1 ${
+                targetInfo.type === 'completed'
+                  ? 'text-accent-teal font-semibold'
+                  : 'text-text-secondary dark:text-text-dark-secondary'
+              }`}>
+                {targetInfo.text}
+              </p>
+            );
+          })()}
         </div>
 
         {/* Buttons */}
@@ -288,7 +438,12 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel }) {
           </button>
           <button
             onClick={() => onSave(selectedDate)}
-            className="flex-1 px-3 py-2 text-sm bg-accent-teal hover:bg-accent-teal/90 text-white font-semibold rounded-lg transition-colors"
+            disabled={isDateInFuture}
+            className={`flex-1 px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${
+              isDateInFuture
+                ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
+                : 'bg-accent-teal hover:bg-accent-teal/90 text-white'
+            }`}
           >
             Save
           </button>

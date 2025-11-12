@@ -122,6 +122,7 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
           onChange={setTempStartTime}
           onSave={handleStartTimeSave}
           onCancel={handleStartTimeCancel}
+          goalHours={hours}
         />
       )}
     </>
