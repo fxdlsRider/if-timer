@@ -87,6 +87,10 @@ export default function TimerCircle({
   const [isEditingEndTime, setIsEditingEndTime] = useState(false);
   const [tempEndTime, setTempEndTime] = useState(null);
 
+  // State for editing start time in running state
+  const [isEditingStartTime, setIsEditingStartTime] = useState(false);
+  const [tempStartTime, setTempStartTime] = useState(null);
+
   // Hide banner when timer starts (permission will be requested)
   useEffect(() => {
     if (isRunning && showNotificationBanner) {
@@ -187,6 +191,30 @@ export default function TimerCircle({
   const handleEndTimeCancel = () => {
     setIsEditingEndTime(false);
     setTempEndTime(null);
+  };
+
+  // Handlers for start time editing in running state
+  const handleStartTimeEdit = () => {
+    if (startTime) {
+      setTempStartTime(startTime);
+      setIsEditingStartTime(true);
+    }
+  };
+
+  const handleStartTimeSave = (newStartTime) => {
+    if (!newStartTime) return;
+
+    // Call parent callback to update start time
+    if (onChangeStartTime) {
+      onChangeStartTime(newStartTime);
+    }
+
+    setIsEditingStartTime(false);
+  };
+
+  const handleStartTimeCancel = () => {
+    setIsEditingStartTime(false);
+    setTempStartTime(null);
   };
 
   // Format time for display in buttons

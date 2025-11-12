@@ -1,5 +1,6 @@
 // components/Timer/FastingInfo.jsx
 import React, { useState } from 'react';
+import DateTimePicker from '../Shared/DateTimePicker';
 
 /**
  * FastingInfo Component
@@ -16,7 +17,7 @@ import React, { useState } from 'react';
  */
 export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoalClick, isExtended }) {
   const [isEditingStartTime, setIsEditingStartTime] = useState(false);
-  const [tempStartTime, setTempStartTime] = useState('');
+  const [tempStartTime, setTempStartTime] = useState(null);
 
   const formatStartTime = (date) => {
     if (!date) return '';
@@ -31,21 +32,20 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
   };
 
   const handleStartTimeEdit = () => {
-    const dateStr = startTime.toISOString().slice(0, 16);
-    setTempStartTime(dateStr);
+    setTempStartTime(startTime);
     setIsEditingStartTime(true);
   };
 
-  const handleStartTimeSave = () => {
-    if (tempStartTime) {
-      onStartTimeChange(new Date(tempStartTime));
+  const handleStartTimeSave = (newStartTime) => {
+    if (newStartTime) {
+      onStartTimeChange(newStartTime);
     }
     setIsEditingStartTime(false);
   };
 
   const handleStartTimeCancel = () => {
     setIsEditingStartTime(false);
-    setTempStartTime('');
+    setTempStartTime(null);
   };
 
   if (isExtended) {
@@ -77,85 +77,50 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-      {isEditingStartTime ? (
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input
-            type="datetime-local"
-            value={tempStartTime}
-            onChange={(e) => setTempStartTime(e.target.value)}
-            style={{
-              padding: '6px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '20px',
-              fontSize: '12px',
-              outline: 'none'
-            }}
-          />
-          <button
-            onClick={handleStartTimeSave}
-            style={{
-              padding: '6px 12px',
-              background: '#4ECDC4',
-              color: 'white',
-              border: 'none',
-              borderRadius: '20px',
-              fontSize: '12px',
-              cursor: 'pointer'
-            }}
-          >
-            Save
-          </button>
-          <button
-            onClick={handleStartTimeCancel}
-            style={{
-              padding: '6px 12px',
-              background: 'transparent',
-              color: '#999',
-              border: '1px solid #ddd',
-              borderRadius: '20px',
-              fontSize: '12px',
-              cursor: 'pointer'
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* Started Button */}
-          <button
-            onClick={handleStartTimeEdit}
-            style={buttonStyle}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#999';
-              e.currentTarget.style.color = '#333';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#ddd';
-              e.currentTarget.style.color = '#666';
-            }}
-          >
-            {formatStartTime(startTime)}
-          </button>
+    <>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        {/* Started Button */}
+        <button
+          onClick={handleStartTimeEdit}
+          style={buttonStyle}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#999';
+            e.currentTarget.style.color = '#333';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#ddd';
+            e.currentTarget.style.color = '#666';
+          }}
+        >
+          {formatStartTime(startTime)}
+        </button>
 
-          {/* Goal Button */}
-          <button
-            onClick={onGoalClick}
-            style={buttonStyle}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#999';
-              e.currentTarget.style.color = '#333';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#ddd';
-              e.currentTarget.style.color = '#666';
-            }}
-          >
-            Goal: {hours}h
-          </button>
-        </>
+        {/* Goal Button */}
+        <button
+          onClick={onGoalClick}
+          style={buttonStyle}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#999';
+            e.currentTarget.style.color = '#333';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#ddd';
+            e.currentTarget.style.color = '#666';
+          }}
+        >
+          Goal: {hours}h
+        </button>
+      </div>
+
+      {/* DateTimePicker Modal */}
+      {isEditingStartTime && tempStartTime && (
+        <DateTimePicker
+          value={tempStartTime}
+          onChange={setTempStartTime}
+          onSave={handleStartTimeSave}
+          onCancel={handleStartTimeCancel}
+        />
       )}
-    </div>
+    </>
   );
 }
