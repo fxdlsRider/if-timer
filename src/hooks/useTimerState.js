@@ -184,9 +184,11 @@ export function useTimerState(hours) {
   const changeStartTime = (newStartTime) => {
     if (!isRunning) return;
 
+    // Update start time
     setStartTime(newStartTime);
 
-    // Recalculate target time based on new start and current hours
+    // Recalculate target time based on new start time + duration
+    // This ensures the remaining time is correctly displayed
     const newTarget = newStartTime.getTime() + (hours * TIME_MULTIPLIER * 1000);
     setTargetTime(newTarget);
   };
