@@ -43,6 +43,7 @@ export default function TimerPage({
   onCancelTimer,
   onChangeGoal,
   onChangeStartTime,
+  onCompletedDataChange,
   handlePosition,
   circumference,
   progressOffset,
@@ -96,6 +97,7 @@ export default function TimerPage({
           onCancelTimer={onCancelTimer}
           onChangeGoal={onChangeGoal}
           onChangeStartTime={onChangeStartTime}
+          onCompletedDataChange={onCompletedDataChange}
           fastingLevels={fastingLevels}
           handlePosition={handlePosition}
           circumference={circumference}

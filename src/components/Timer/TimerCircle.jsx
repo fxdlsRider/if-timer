@@ -4,6 +4,7 @@ import { hasUserRespondedToPermission } from '../../services/notificationService
 import StopFastingModal from './StopFastingModal';
 import FastingInfo from './FastingInfo';
 import ChangeGoalModal from './ChangeGoalModal';
+import DateTimePicker from '../Shared/DateTimePicker';
 
 /**
  * TimerCircle Component
@@ -36,6 +37,7 @@ export default function TimerCircle({
   onCancelTimer,
   onChangeGoal,
   onChangeStartTime,
+  onCompletedDataChange,
   fastingLevels,
   handlePosition,
   circumference,
@@ -80,6 +82,10 @@ export default function TimerCircle({
 
   // State for change goal modal
   const [showChangeGoalModal, setShowChangeGoalModal] = useState(false);
+
+  // State for editing end time in completion screen
+  const [isEditingEndTime, setIsEditingEndTime] = useState(false);
+  const [tempEndTime, setTempEndTime] = useState(null);
 
   // Hide banner when timer starts (permission will be requested)
   useEffect(() => {
@@ -144,6 +150,58 @@ export default function TimerCircle({
   const handleGoalChange = (newHours) => {
     onChangeGoal(newHours);
     setShowChangeGoalModal(false);
+  };
+
+  // Handlers for end time editing in completion screen
+  const handleEndTimeEdit = () => {
+    if (completedFastData && completedFastData.endTime) {
+      setTempEndTime(completedFastData.endTime);
+      setIsEditingEndTime(true);
+    }
+  };
+
+  const handleEndTimeSave = (newEndTime) => {
+    if (!newEndTime || !completedFastData) return;
+
+    const startTime = completedFastData.startTime;
+
+    // Calculate new duration
+    const durationMs = newEndTime.getTime() - startTime.getTime();
+    const durationUnits = durationMs / (completedFastData.unit === 'seconds' ? 1000 : 3600000);
+
+    // Update completed data
+    const updatedData = {
+      ...completedFastData,
+      endTime: newEndTime,
+      duration: durationUnits.toFixed(1)
+    };
+
+    // Call parent callback to update state
+    if (onCompletedDataChange) {
+      onCompletedDataChange(updatedData);
+    }
+
+    setIsEditingEndTime(false);
+  };
+
+  const handleEndTimeCancel = () => {
+    setIsEditingEndTime(false);
+    setTempEndTime(null);
+  };
+
+  // Format time for display in buttons
+  const formatDateTime = (date) => {
+    if (!date) return '';
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    return `${day}.${month}`;
   };
 
   const styles = {
@@ -531,19 +589,66 @@ export default function TimerCircle({
             <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
               Well done!
             </div>
-            <div style={{ fontSize: '32px', fontWeight: '300', color: 'var(--color-text, #333)', marginBottom: '4px' }}>
-              {totalDuration}
+            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
+              {completedFastData.originalGoal} {completedFastData.unit} fasted
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>
-              {completedFastData.unit} fasted
+            <div style={styles.timeDisplay}>
+              +{formatTime(Math.round((parseFloat(totalDuration) - completedFastData.originalGoal) * (completedFastData.unit === 'hours' ? 3600 : 1)))}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
+              additional time
             </div>
           </div>
         </div>
 
         {/* Fixed container - same height as other states */}
         <div style={styles.contentContainer}>
-          <div style={styles.statusText}>
-            FASTING COMPLETE
+          {/* Started / Stopped buttons */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '-5px' }}>
+            {/* Started button - non-editable display */}
+            <button
+              style={{
+                padding: '8px 16px',
+                fontSize: '13px',
+                color: '#666',
+                border: '1px solid #ddd',
+                borderRadius: '20px',
+                background: 'transparent',
+                cursor: 'default',
+                transition: 'all 0.2s',
+                fontWeight: '400',
+                minWidth: '140px'
+              }}
+            >
+              Started: {formatDateTime(completedFastData.startTime)} {formatDate(completedFastData.startTime)}
+            </button>
+
+            {/* Stopped button - editable */}
+            <button
+              onClick={handleEndTimeEdit}
+              style={{
+                padding: '8px 16px',
+                fontSize: '13px',
+                color: '#666',
+                border: '1px solid #ddd',
+                borderRadius: '20px',
+                background: 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontWeight: '400',
+                minWidth: '140px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = '#999';
+                e.target.style.color = '#333';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = '#ddd';
+                e.target.style.color = '#666';
+              }}
+            >
+              Stopped: {formatDateTime(completedFastData.endTime)} {formatDate(completedFastData.endTime)}
+            </button>
           </div>
         </div>
 
@@ -555,6 +660,16 @@ export default function TimerCircle({
         >
           START
         </button>
+
+        {/* DateTimePicker Modal */}
+        {isEditingEndTime && tempEndTime && (
+          <DateTimePicker
+            value={tempEndTime}
+            onChange={setTempEndTime}
+            onSave={handleEndTimeSave}
+            onCancel={handleEndTimeCancel}
+          />
+        )}
       </>
     );
   }

@@ -73,6 +73,7 @@ export default function Timer() {
     changeStartTime,
     continueFasting,
     stopFasting,
+    updateCompletedFastData,
   } = timerState;
 
   // Custom Hook - Drag handling (controlled component pattern)
@@ -168,6 +169,7 @@ export default function Timer() {
               setAngle(TIMER_CONSTANTS.DEFAULT_ANGLE + ((newHours - TIMER_CONSTANTS.DEFAULT_HOURS) / 34) * 360);
             }}
             onChangeStartTime={changeStartTime}
+            onCompletedDataChange={updateCompletedFastData}
             handlePosition={{ x: handlePosX, y: handlePosY }}
             circumference={circumference}
             progressOffset={progressOffset}

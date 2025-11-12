@@ -65,3 +65,15 @@ code {
 * {
   box-sizing: border-box;
 }
+
+/* Hide scrollbars for scroll pickers */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+}

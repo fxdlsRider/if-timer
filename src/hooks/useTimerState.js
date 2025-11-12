@@ -79,6 +79,7 @@ export function useTimerState(hours) {
       // Save completion data for celebration screen
       const completionData = {
         duration: hours,
+        originalGoal: hours, // Store original goal for State 3 display
         startTime: new Date(targetTime - (hours * TIME_MULTIPLIER * 1000)),
         endTime: new Date(targetTime),
         unit: TIME_UNIT
@@ -141,6 +142,7 @@ export function useTimerState(hours) {
       // Set completion data with actual fasted time
       const completionData = {
         duration: actualFastedHours.toFixed(1), // Format to 1 decimal place
+        originalGoal: hours, // Store original goal for State 3 display
         startTime: startTime,
         endTime: new Date(now),
         unit: TIME_UNIT
@@ -227,6 +229,14 @@ export function useTimerState(hours) {
     setOriginalGoalTime(null);
   };
 
+  /**
+   * Update completed fast data (for editing end time in completion screen)
+   * @param {object} updatedData - New completion data
+   */
+  const updateCompletedFastData = (updatedData) => {
+    setCompletedFastData(updatedData);
+  };
+
   return {
     // State
     isRunning,
@@ -253,5 +263,6 @@ export function useTimerState(hours) {
     continueFasting,
     stopFasting,
     startNewFast,
+    updateCompletedFastData,
   };
 }
