@@ -1,5 +1,6 @@
 // components/Dashboard/DashboardPanel.jsx
 import React from 'react';
+import { useAuth } from '../../AuthContext';
 
 /**
  * DashboardPanel Component
@@ -10,9 +11,11 @@ import React from 'react';
  * @param {object} userData - User profile data (name, weight, height, etc.)
  */
 export default function DashboardPanel({ userData = {} }) {
+  const { user } = useAuth();
+
   // Dummy data for testing
   const profile = {
-    name: userData.name || 'Max Mustermann',
+    name: userData.name || user?.email || 'User',
     age: userData.age || 32,
     currentWeight: userData.currentWeight || 85.5,
     targetWeight: userData.targetWeight || 75.0,
