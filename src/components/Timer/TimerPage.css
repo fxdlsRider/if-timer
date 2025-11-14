@@ -105,6 +105,9 @@
 /* Column positioning */
 .dashboard-column {
   justify-self: start;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .timer-section {
@@ -117,6 +120,9 @@
 
 .status-column {
   justify-self: end;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Mobile - all columns full width */

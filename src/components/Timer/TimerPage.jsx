@@ -67,8 +67,8 @@ export default function TimerPage({
           )}
         </div>
 
-        {/* Timer Section (Center) */}
-        <div className="timer-section">
+        {/* Timer Section (Center) - Sticky at top */}
+        <div className="timer-section sticky top-4 z-50 scale-100 md:scale-100 max-sm:scale-[0.8]">
         {/* TEST MODE Banner */}
         {TEST_MODE && (
           <div className="test-mode-banner">
