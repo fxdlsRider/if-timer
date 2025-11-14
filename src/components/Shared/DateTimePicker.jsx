@@ -23,18 +23,12 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     const todayMonth = today.getMonth();
     const todayDay = today.getDate();
 
-    console.log('=== Generating STATIC dateOptions ===');
-    console.log('Today:', today);
-
     // 6 months = approximately 180 days
     for (let i = -180; i <= 180; i++) {
       // Create date by adding days to today using proper date arithmetic
       const date = new Date(todayYear, todayMonth, todayDay + i);
       dates.push(date);
     }
-
-    console.log('dateOptions generated with', dates.length, 'entries');
-    console.log('Center (today) at index 180:', dates[180]);
 
     return dates;
   }, []); // Empty deps - only generate once on mount
@@ -54,21 +48,11 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     const targetMonth = initialValue.getMonth();
     const targetYear = initialValue.getFullYear();
 
-    console.log('=== initialDateIndex calculation ===');
-    console.log('initialValue:', initialValue);
-    console.log('Looking for date:', targetYear, targetMonth, targetDay);
-    console.log('dateOptions[180]:', dateOptions[180]);
-
     const index = dateOptions.findIndex(d =>
       d.getDate() === targetDay &&
       d.getMonth() === targetMonth &&
       d.getFullYear() === targetYear
     );
-
-    console.log('Found index:', index);
-    if (index >= 0) {
-      console.log('Date at index:', dateOptions[index]);
-    }
 
     return index >= 0 ? index : 180; // Default to today (index 180) if not found
   }, [dateOptions, initialValue]);
@@ -106,28 +90,13 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
 
   // Update date when any component changes
   useEffect(() => {
-    console.log('=== useEffect: Update date triggered ===');
-    console.log('selectedDateIndex:', selectedDateIndex);
-    console.log('selectedHour:', selectedHour);
-    console.log('selectedMinute:', selectedMinute);
-
     const baseDate = dateOptions[selectedDateIndex];
-    console.log('baseDate from dateOptions:', baseDate);
-
-    // Create new date using explicit date components to avoid timezone issues
     const actualMinute = minutes[selectedMinute];
-    console.log('actualMinute:', actualMinute);
 
-    const newDate = new Date(
-      baseDate.getFullYear(),
-      baseDate.getMonth(),
-      baseDate.getDate(),
-      selectedHour,
-      actualMinute, // minutes
-      0, // seconds
-      0  // milliseconds
-    );
-    console.log('newDate created:', newDate);
+    // Create date by copying base date and then setting time
+    // This avoids DST issues with the Date constructor
+    const newDate = new Date(baseDate);
+    newDate.setHours(selectedHour, actualMinute, 0, 0);
 
     setSelectedDate(newDate);
     if (onChange) onChange(newDate);
@@ -151,11 +120,6 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
       }
     };
 
-    console.log('=== Initial scroll mount ===');
-    console.log('selectedDateIndex:', selectedDateIndex);
-    console.log('selectedHour:', selectedHour);
-    console.log('selectedMinute:', selectedMinute);
-
     // Small delay to ensure DOM is ready
     setTimeout(() => {
       scrollToCenter(dateRef, selectedDateIndex);
@@ -165,19 +129,14 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
       // After initial scroll, allow handleScroll to work
       setTimeout(() => {
         isInitialScrollRef.current = false;
-        console.log('Initial scroll flag disabled');
       }, 50);
     }, 10);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleScroll = (ref, itemsCount, setValue, columnName, timeoutRef) => {
-    console.log(`=== handleScroll called for ${columnName} ===`);
-    console.log('isInitialScrollRef.current:', isInitialScrollRef.current);
-
     // Ignore scroll events during initial mount
     if (isInitialScrollRef.current) {
-      console.log(`${columnName}: Ignoring - initial scroll in progress`);
       return;
     }
     if (!ref.current) return;
@@ -185,7 +144,6 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     // Debounce scroll events - only update after scrolling stops
     // Use column-specific timeout ref to prevent cross-interference
     if (timeoutRef.current) {
-      console.log(`${columnName}: Clearing existing timeout`);
       clearTimeout(timeoutRef.current);
     }
 
@@ -195,25 +153,23 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
       const itemHeight = 40;
       const scrollTop = ref.current.scrollTop;
       const containerHeight = ref.current.clientHeight;
-      const centerOffset = scrollTop + (containerHeight / 2);
-      const index = Math.round(centerOffset / itemHeight);
+      const paddingTop = 56; // py-14 = 3.5rem = 56px
+
+      // Calculate which item is centered in the viewport
+      // The center of the viewport relative to the content
+      const viewportCenter = scrollTop + (containerHeight / 2);
+      // Account for padding and calculate item index
+      const index = Math.round((viewportCenter - paddingTop - (itemHeight / 2)) / itemHeight);
       const clampedIndex = Math.max(0, Math.min(index, itemsCount - 1));
 
-      console.log(`=== ${columnName} scroll calculation ===`);
-      console.log('scrollTop:', scrollTop);
-      console.log('containerHeight:', containerHeight);
-      console.log('centerOffset:', centerOffset);
-      console.log('Calculated index:', index);
-      console.log('Clamped index:', clampedIndex);
-      console.log('Current state before update:', {
-        selectedDateIndex,
-        selectedHour,
-        selectedMinute
-      });
+      // Check if value actually changed before setting
+      const currentValue = columnName === 'DATE' ? selectedDateIndex :
+                          columnName === 'HOUR' ? selectedHour :
+                          selectedMinute;
 
-      setValue(clampedIndex);
-
-      console.log(`${columnName}: Set value to`, clampedIndex);
+      if (currentValue !== clampedIndex) {
+        setValue(clampedIndex);
+      }
     }, 100); // Wait 100ms after scroll stops
   };
 
@@ -270,7 +226,9 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     }
 
     const target = calculateTargetTime();
-    if (!target) return null;
+    if (!target) {
+      return null;
+    }
 
     // Check if goal is already reached
     const targetTime = target.getTime();

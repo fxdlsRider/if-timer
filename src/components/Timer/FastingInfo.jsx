@@ -32,9 +32,6 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
   };
 
   const handleStartTimeEdit = () => {
-    console.log('=== FastingInfo handleStartTimeEdit ===');
-    console.log('startTime:', startTime);
-    console.log('Current date:', new Date());
     setTempStartTime(startTime);
     setIsEditingStartTime(true);
   };
