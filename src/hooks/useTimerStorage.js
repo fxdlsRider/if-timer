@@ -50,8 +50,6 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     if (!user) return;
 
     const loadFromSupabase = async () => {
-      console.log('[useTimerStorage] Loading from Supabase for user:', user.id);
-
       const { data, error } = await supabase
         .from('timer_states')
         .select('*')
@@ -59,13 +57,12 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('[useTimerStorage] Error loading from Supabase:', error);
+        console.error('Error loading from Supabase:', error);
         setIsInitialLoad(false);
         return;
       }
 
       if (data) {
-        console.log('[useTimerStorage] Loaded data from Supabase:', data);
         // Convert Supabase data to app state format
         const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
         const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
@@ -79,16 +76,11 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           originalGoalTime: originalGoalMs,
         };
 
-        console.log('[useTimerStorage] Converted state:', loadedState);
-
         if (onStateLoaded) {
           onStateLoaded(loadedState);
         }
-      } else {
-        console.log('[useTimerStorage] No data found in Supabase (first time user)');
       }
 
-      console.log('[useTimerStorage] Setting isInitialLoad to false');
       setIsInitialLoad(false);
     };
 
@@ -141,58 +133,35 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
 
   // Auto-save to Supabase on state changes (if logged in)
   useEffect(() => {
-    console.log('[useTimerStorage] Auto-save effect triggered', {
-      user: user?.id,
-      isInitialLoad,
-      syncing,
-      timerState
-    });
-
-    if (!user) {
-      console.log('[useTimerStorage] No user, skipping save');
-      return;
-    }
+    if (!user) return;
 
     // Skip saving on initial load
-    if (isInitialLoad) {
-      console.log('[useTimerStorage] Initial load, skipping save');
-      return;
-    }
+    if (isInitialLoad) return;
 
     // Skip if already syncing
-    if (syncing) {
-      console.log('[useTimerStorage] Already syncing, skipping save');
-      return;
-    }
+    if (syncing) return;
 
     const saveToSupabase = async () => {
-      console.log('[useTimerStorage] Starting save to Supabase...');
       setSyncing(true);
 
       try {
-        const dataToSave = {
-          user_id: user.id,
-          hours: timerState.hours,
-          angle: timerState.angle,
-          is_running: timerState.isRunning,
-          target_time: timerState.targetTime ? new Date(timerState.targetTime).toISOString() : null,
-          is_extended: timerState.isExtended || false,
-          original_goal_time: timerState.originalGoalTime ? new Date(timerState.originalGoalTime).toISOString() : null
-        };
-
-        console.log('[useTimerStorage] Data to save:', dataToSave);
-
-        const { error, data } = await supabase
+        const { error } = await supabase
           .from('timer_states')
-          .upsert(dataToSave, {
+          .upsert({
+            user_id: user.id,
+            hours: timerState.hours,
+            angle: timerState.angle,
+            is_running: timerState.isRunning,
+            target_time: timerState.targetTime ? new Date(timerState.targetTime).toISOString() : null,
+            is_extended: timerState.isExtended || false,
+            original_goal_time: timerState.originalGoalTime ? new Date(timerState.originalGoalTime).toISOString() : null
+          }, {
             onConflict: 'user_id'
           });
 
         if (error) throw error;
-
-        console.log('[useTimerStorage] Successfully saved to Supabase', data);
       } catch (error) {
-        console.error('[useTimerStorage] Error saving to Supabase:', error);
+        console.error('Error saving to Supabase:', error);
       } finally {
         setSyncing(false);
       }
