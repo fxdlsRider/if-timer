@@ -73,13 +73,15 @@ export default function TimerCircle({
     const dismissed = localStorage.getItem('notificationBannerDismissed');
     if (dismissed === 'true') return false;
 
-    // Only show on macOS (not Windows, iOS, Android)
+    // Only show on macOS Desktop (not Windows, iOS, iPad, Android)
     const userAgent = navigator.userAgent.toLowerCase();
-    const isMac = userAgent.includes('mac') && !userAgent.includes('iphone') && !userAgent.includes('ipad');
+    const isIOS = /iphone|ipad|ipod/i.test(userAgent);
+    const isAndroid = /android/i.test(userAgent);
     const isWindows = userAgent.includes('win');
-    const isMobile = /iphone|ipad|android/i.test(userAgent);
+    const isMacDesktop = userAgent.includes('mac') && !isIOS;
 
-    if (isWindows || isMobile || !isMac) return false;
+    // Only show on macOS Desktop
+    if (!isMacDesktop || isWindows || isIOS || isAndroid) return false;
 
     // Check if user has already responded to permission
     return !hasUserRespondedToPermission();
