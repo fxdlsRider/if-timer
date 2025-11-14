@@ -87,10 +87,10 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
           })}
         </nav>
 
-        {/* Mobile Hamburger Button */}
+        {/* Mobile Hamburger Button - Right aligned */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-text dark:text-text-dark hover:text-accent-teal transition-colors"
+          className="md:hidden absolute right-6 p-2 text-text dark:text-text-dark hover:text-accent-teal transition-colors"
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? (

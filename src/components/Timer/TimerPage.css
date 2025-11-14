@@ -61,16 +61,16 @@
     gap: 30px;
   }
 
-  /* Reorder: Timer first, then Leaderboard/Dashboard, then StatusPanel */
+  /* Reorder: Timer first, then StatusPanel (Fasting Levels), then Dashboard/Leaderboard */
   .timer-section {
     order: 1;
   }
 
-  .dashboard-column {
+  .status-column {
     order: 2;
   }
 
-  .status-column {
+  .dashboard-column {
     order: 3;
   }
 
@@ -125,17 +125,27 @@
   overflow-x: hidden;
 }
 
-/* Mobile - all columns full width */
+/* Mobile - all columns centered horizontally and vertically */
 @media (max-width: 768px) {
+  .timer-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
   .dashboard-column,
   .timer-section,
   .status-column {
-    justify-self: center;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .timer-section {
     min-width: auto;
-    width: 100%;
   }
 }
 
