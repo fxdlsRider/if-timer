@@ -1,5 +1,6 @@
 // components/Timer/StopFastingModal.jsx
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * StopFastingModal - Confirmation dialog before stopping fast
@@ -14,7 +15,7 @@ import React from 'react';
 export default function StopFastingModal({ isOpen, onConfirm, onCancel, currentDuration }) {
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop */}
       <div
@@ -84,4 +85,6 @@ export default function StopFastingModal({ isOpen, onConfirm, onCancel, currentD
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

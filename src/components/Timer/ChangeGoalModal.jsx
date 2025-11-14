@@ -1,5 +1,6 @@
 // components/Timer/ChangeGoalModal.jsx
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * ChangeGoalModal - Change fasting goal during active fast
@@ -24,7 +25,7 @@ export default function ChangeGoalModal({ isOpen, currentHours, onConfirm, onCan
     onCancel();
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop */}
       <div
@@ -99,4 +100,6 @@ export default function ChangeGoalModal({ isOpen, currentHours, onConfirm, onCan
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -1,5 +1,6 @@
 // components/Shared/DateTimePicker.jsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * DateTimePicker Component
@@ -12,8 +13,10 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
  * @param {function} onSave - Callback when user clicks Save
  * @param {function} onCancel - Callback when user clicks Cancel
  * @param {number} goalHours - Goal hours for calculating target time
+ * @param {string} title - Custom title for the picker (default: "When did you start your fast?")
+ * @param {Date} minDate - Minimum allowed date/time (for validation)
  */
-export default function DateTimePicker({ value, onChange, onSave, onCancel, goalHours }) {
+export default function DateTimePicker({ value, onChange, onSave, onCancel, goalHours, title, minDate }) {
   // Generate STATIC date range: 6 months before and 6 months after TODAY (not value prop)
   // This ensures the array doesn't regenerate when scrolling changes the date
   const dateOptions = useMemo(() => {
@@ -194,6 +197,12 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
   // Check if selected date is in the future
   const isDateInFuture = selectedDate.getTime() > currentTime;
 
+  // Check if selected date is before minDate (if provided)
+  const isBeforeMinDate = minDate && selectedDate.getTime() < minDate.getTime();
+
+  // Disable save button if date is invalid
+  const isInvalidDate = isDateInFuture || isBeforeMinDate;
+
   // Calculate elapsed time since selected start time
   const calculateElapsedTime = () => {
     const elapsedMs = currentTime - selectedDate.getTime();
@@ -279,13 +288,13 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     };
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-background dark:bg-background-dark rounded-2xl shadow-2xl p-4 w-[85%] max-w-sm">
         {/* Header */}
         <div className="text-center mb-4">
           <h3 className="text-base font-semibold text-text dark:text-text-dark">
-            When did you start your fast?
+            {title || "When did you start your fast?"}
           </h3>
         </div>
 
@@ -396,9 +405,9 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
           </button>
           <button
             onClick={() => onSave(selectedDate)}
-            disabled={isDateInFuture}
+            disabled={isInvalidDate}
             className={`flex-1 px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${
-              isDateInFuture
+              isInvalidDate
                 ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
                 : 'bg-accent-teal hover:bg-accent-teal/90 text-white'
             }`}
@@ -409,4 +418,6 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

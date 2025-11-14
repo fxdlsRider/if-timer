@@ -574,6 +574,7 @@ export default function TimerCircle({
   // STATE 3: Complete (after fast ends)
   if (showCompletionSummary && completedFastData) {
     const totalDuration = completedFastData.duration;
+    const isCancelled = completedFastData.cancelled === true;
 
     return (
       <>
@@ -594,13 +595,13 @@ export default function TimerCircle({
                 <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
               </filter>
             </defs>
-            {/* Thick teal completion circle - only stroke, no fill */}
+            {/* Thick circle - teal for success, red for cancelled */}
             <circle
               cx="112"
               cy="112"
               r="96"
               fill="none"
-              stroke="#4ECDC4"
+              stroke={isCancelled ? "#EF4444" : "#4ECDC4"}
               strokeWidth="18"
               strokeLinecap="butt"
               filter="url(#completeShadow)"
@@ -624,18 +625,34 @@ export default function TimerCircle({
           </svg>
 
           <div style={styles.hoursDisplay}>
-            <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
-              Well done!
-            </div>
-            <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
-              {completedFastData.originalGoal} {completedFastData.unit} fasted
-            </div>
-            <div style={styles.timeDisplay}>
-              +{formatTime(Math.round((parseFloat(totalDuration) - completedFastData.originalGoal) * (completedFastData.unit === 'hours' ? 3600 : 1)))}
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
-              additional time
-            </div>
+            {isCancelled ? (
+              <>
+                <div style={{ fontSize: '18px', fontWeight: '500', color: '#EF4444', marginBottom: '8px' }}>
+                  Cancelled
+                </div>
+                <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
+                  Fasted only {totalDuration} {completedFastData.unit}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)' }}>
+                  Try again!
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
+                  Well done!
+                </div>
+                <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
+                  {completedFastData.originalGoal} {completedFastData.unit} fasted
+                </div>
+                <div style={styles.timeDisplay}>
+                  +{formatTime(Math.round((parseFloat(totalDuration) - completedFastData.originalGoal) * (completedFastData.unit === 'hours' ? 3600 : 1)))}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
+                  additional time
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -706,6 +723,8 @@ export default function TimerCircle({
             onChange={setTempEndTime}
             onSave={handleEndTimeSave}
             onCancel={handleEndTimeCancel}
+            title="When did you stop your fast?"
+            minDate={completedFastData.startTime}
           />
         )}
       </>
