@@ -417,8 +417,33 @@ export default function TimerCircle({
               color: '#666',
               textAlign: 'center',
               lineHeight: '1.5',
-              maxWidth: '320px'
+              maxWidth: '320px',
+              position: 'relative'
             }}>
+              <button
+                onClick={() => {
+                  setShowNotificationBanner(false);
+                  localStorage.setItem('notificationBannerDismissed', 'true');
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  color: '#999',
+                  padding: '0',
+                  width: '20px',
+                  height: '20px',
+                  lineHeight: '20px'
+                }}
+                onMouseEnter={(e) => e.target.style.color = '#333'}
+                onMouseLeave={(e) => e.target.style.color = '#999'}
+              >
+                ×
+              </button>
               🔔 <strong>Get notified</strong> when your fast completes!<br />
               <span style={{ fontSize: '12px' }}>We'll ask for permission when you start</span>
             </div>
