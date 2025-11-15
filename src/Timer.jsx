@@ -54,7 +54,7 @@ export default function Timer() {
   const [hours, setHours] = useState(TIMER_CONSTANTS.DEFAULT_HOURS);
 
   // Custom Hooks - Timer state and logic
-  const timerState = useTimerState(hours);
+  const timerState = useTimerState(hours, user?.id);
   const {
     isRunning,
     targetTime,
@@ -134,7 +134,7 @@ export default function Timer() {
   const handlePosY = CIRCLE_CONFIG.CENTER_Y - Math.cos(handleY) * radius;
 
   const circumference = 2 * Math.PI * CIRCLE_CONFIG.RADIUS;
-  const progress = isRunning && targetTime ? calculateProgress(hours, timeLeft) : 0;
+  const progress = isRunning && targetTime ? calculateProgress(hours, timeLeft, isExtended) : 0;
   const progressOffset = circumference - (progress / 100) * circumference;
 
   // Render active page based on navigation

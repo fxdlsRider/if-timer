@@ -11,6 +11,9 @@ import {
   showCompletionNotification,
   getNotificationPermission,
 } from '../services/notificationService';
+import {
+  saveFast,
+} from '../services/fastsService';
 
 // Utils
 import {
@@ -30,9 +33,10 @@ import {
  * It receives hours from parent to prevent state synchronization bugs
  *
  * @param {number} hours - Current hours value (controlled from parent)
+ * @param {string} userId - User ID for saving fasts
  * @returns {object} Timer state and control functions
  */
-export function useTimerState(hours) {
+export function useTimerState(hours, userId = null) {
   // Test mode configuration
   const TEST_MODE = TEST_MODE_CONFIG.ENABLED;
   const TIME_MULTIPLIER = TEST_MODE ? TEST_MODE_CONFIG.TIME_MULTIPLIER : PRODUCTION_MODE.TIME_MULTIPLIER;
@@ -132,27 +136,31 @@ export function useTimerState(hours) {
   /**
    * Cancel/stop the timer (before completion)
    */
-  const cancelTimer = () => {
+  const cancelTimer = async () => {
     // Calculate actual fasted time before stopping
     if (isRunning && startTime) {
       const now = Date.now();
       const actualFastedMs = now - startTime.getTime();
       const actualFastedHours = actualFastedMs / (TIME_MULTIPLIER * 1000);
 
-      // Check if fast was cancelled (< 1 hour)
-      const wasCancelled = actualFastedHours < 1;
-
-      // Set completion data with actual fasted time
+      // Always mark as cancelled when user manually stops the fast
       const completionData = {
         duration: actualFastedHours.toFixed(1), // Format to 1 decimal place
         originalGoal: hours, // Store original goal for State 3 display
         startTime: startTime,
         endTime: new Date(now),
         unit: TIME_UNIT,
-        cancelled: wasCancelled // Mark as cancelled if < 1 hour
+        cancelled: true // Always mark as cancelled when user stops manually
       };
       setCompletedFastData(completionData);
       setShowCompletionSummary(true);
+
+      // Save fast to database
+      try {
+        await saveFast(userId, completionData);
+      } catch (error) {
+        console.error('Failed to save fast:', error);
+      }
     }
 
     setIsRunning(false);
@@ -210,12 +218,21 @@ export function useTimerState(hours) {
    * Stop fasting and show completion summary
    * Called when user clicks "Stop Fasting" after completing/extending fast
    */
-  const stopFasting = () => {
+  const stopFasting = async () => {
     setShowCelebration(false);
     setIsRunning(false);
     setTargetTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
+
+    // Save fast to database if completedFastData exists
+    if (completedFastData) {
+      try {
+        await saveFast(userId, completedFastData);
+      } catch (error) {
+        console.error('Failed to save fast:', error);
+      }
+    }
 
     // Show completion summary with "Start Fast" button
     setShowCompletionSummary(true);

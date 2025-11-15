@@ -1,34 +1,37 @@
 // components/Dashboard/DashboardPanel.jsx
 import React from 'react';
 import { useAuth } from '../../AuthContext';
+import { useUserDashboard } from '../../hooks/useUserDashboard';
 
 /**
  * DashboardPanel Component
  *
  * Left sidebar with user profile and statistics
  * Tacho-style dashboard design
- *
- * @param {object} userData - User profile data (name, weight, height, etc.)
  */
-export default function DashboardPanel({ userData = {} }) {
+export default function DashboardPanel() {
   const { user } = useAuth();
+  const { dashboardData, loading } = useUserDashboard(user?.id);
 
-  // Dummy data for testing
+  // Build profile object with real data or defaults
   const profile = {
-    name: userData.name || user?.email || 'User',
-    age: userData.age || 32,
-    currentWeight: userData.currentWeight || 85.5,
-    targetWeight: userData.targetWeight || 75.0,
-    height: userData.height || 178,
-    goal: userData.goal || 'Weight Loss & Health',
-    motivation: userData.motivation || 'Feel better, live longer',
-    currentStreak: userData.currentStreak || 12,
-    totalFasts: userData.totalFasts || 47,
-    totalHours: userData.totalHours || 824,
-    longestFast: userData.longestFast || 42
+    name: dashboardData.name || user?.email?.split('@')[0] || 'User',
+    age: dashboardData.age || '-',
+    currentWeight: dashboardData.currentWeight || '-',
+    targetWeight: dashboardData.targetWeight || '-',
+    height: dashboardData.height || '-',
+    goal: dashboardData.goal || '-',
+    motivation: 'Feel better, live longer',
+    currentStreak: dashboardData.currentStreak || 0,
+    totalFasts: dashboardData.totalFasts || 0,
+    totalHours: dashboardData.totalHours || 0,
+    longestFast: dashboardData.longestFast || 0
   };
 
-  const weightToGo = (profile.currentWeight - profile.targetWeight).toFixed(1);
+  const weightToGo =
+    (typeof profile.currentWeight === 'number' && typeof profile.targetWeight === 'number')
+      ? (profile.currentWeight - profile.targetWeight).toFixed(1)
+      : '-';
 
   const styles = {
     container: {
@@ -173,19 +176,19 @@ export default function DashboardPanel({ userData = {} }) {
       <div style={styles.profileSection}>
         <div style={styles.statRow}>
           <span style={styles.statLabel}>Age</span>
-          <span style={styles.statValue}>{profile.age} years</span>
+          <span style={styles.statValue}>{profile.age}{typeof profile.age === 'number' ? ' years' : ''}</span>
         </div>
         <div style={styles.statRow}>
           <span style={styles.statLabel}>Height</span>
-          <span style={styles.statValue}>{profile.height} cm</span>
+          <span style={styles.statValue}>{profile.height}{typeof profile.height === 'number' ? ' cm' : ''}</span>
         </div>
         <div style={styles.statRow}>
           <span style={styles.statLabel}>Current Weight</span>
-          <span style={styles.statValue}>{profile.currentWeight} kg</span>
+          <span style={styles.statValue}>{profile.currentWeight}{typeof profile.currentWeight === 'number' ? ' kg' : ''}</span>
         </div>
         <div style={styles.statRow}>
           <span style={styles.statLabel}>Target Weight</span>
-          <span style={styles.statValue}>{profile.targetWeight} kg</span>
+          <span style={styles.statValue}>{profile.targetWeight}{typeof profile.targetWeight === 'number' ? ' kg' : ''}</span>
         </div>
       </div>
 
