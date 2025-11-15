@@ -39,11 +39,11 @@ export default function DashboardPanel() {
       width: '300px',
       background: 'var(--color-background-secondary, #F8FAFC)',
       borderRadius: '16px',
-      padding: '24px',
+      padding: '20px',
       border: '1px solid var(--color-border, #E2E8F0)',
       display: 'flex',
       flexDirection: 'column',
-      gap: '24px'
+      gap: '16px'
     },
     header: {
       textAlign: 'center',
@@ -66,13 +66,13 @@ export default function DashboardPanel() {
     profileSection: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '12px'
+      gap: '8px'
     },
     statRow: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '10px 0',
+      padding: '7px 0',
       borderBottom: '1px solid var(--color-border-subtle, #F1F5F9)'
     },
     statLabel: {
@@ -193,6 +193,13 @@ export default function DashboardPanel() {
         </div>
       </div>
 
+      {/* Goal */}
+      <div style={styles.motivationBox}>
+        <div style={styles.motivationText}>
+          {profile.goal !== '-' ? `"${profile.goal}"` : '"Set your goal in Hub"'}
+        </div>
+      </div>
+
       {/* Weight Gauge */}
       <div style={styles.gaugeSection}>
         <div style={styles.gaugeTitle}>Weight to Go</div>
@@ -220,13 +227,6 @@ export default function DashboardPanel() {
         <div style={styles.statCard}>
           <div style={styles.statCardValue}>{profile.longestFast}h</div>
           <div style={styles.statCardLabel}>Longest Fast</div>
-        </div>
-      </div>
-
-      {/* Goal */}
-      <div style={styles.motivationBox}>
-        <div style={styles.motivationText}>
-          {profile.goal !== '-' ? `"${profile.goal}"` : '"Set your goal in Hub"'}
         </div>
       </div>
     </div>

@@ -100,15 +100,15 @@ export default function HubPage({ user, onSignIn }) {
   ];
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background-dark p-8">
-      <div className="max-w-[1100px] mx-auto">
+    <div className="min-h-screen bg-background dark:bg-background-dark p-6">
+      <div className="max-w-[880px] mx-auto">
 
         {/* 3 Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* LEFT - Profile */}
-          <div className="bg-background-secondary dark:bg-background-dark-secondary border border-border dark:border-border-dark rounded-2xl p-8 min-h-[600px] flex flex-col">
-            <div className="flex items-center justify-between mb-8">
+          <div className="bg-background-secondary dark:bg-background-dark-secondary border border-border dark:border-border-dark rounded-2xl p-6 min-h-[520px] flex flex-col">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="text-xs uppercase tracking-wider text-text-secondary dark:text-text-dark-secondary font-medium">Profile</h2>
               <button
                 onClick={isEditingProfile ? handleProfileSave : handleProfileEdit}
@@ -145,7 +145,7 @@ export default function HubPage({ user, onSignIn }) {
               </div>
             ) : (
               <>
-                <div className="mb-8">
+                <div className="mb-6">
                   {profileData.name ? (
                     <h3 className="text-2xl font-bold text-text dark:text-text-dark mb-2">{profileData.name}</h3>
                   ) : (
@@ -156,31 +156,31 @@ export default function HubPage({ user, onSignIn }) {
                   )}
                 </div>
 
-                <div className="space-y-4 text-text dark:text-text-dark flex-1">
-                  <div className="flex justify-between items-center py-3 border-b border-border-subtle dark:border-border-dark">
+                <div className="space-y-3 text-text dark:text-text-dark flex-1">
+                  <div className="flex justify-between items-center py-2 border-b border-border-subtle dark:border-border-dark">
                     <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Age</span>
                     <span className="text-lg font-semibold">{profileData.age || '-'} {profileData.age ? 'years' : ''}</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-border-subtle dark:border-border-dark">
+                  <div className="flex justify-between items-center py-2 border-b border-border-subtle dark:border-border-dark">
                     <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Height</span>
                     <span className="text-lg font-semibold">{profileData.height || '-'} {profileData.height ? 'cm' : ''}</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-border-subtle dark:border-border-dark">
+                  <div className="flex justify-between items-center py-2 border-b border-border-subtle dark:border-border-dark">
                     <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Weight</span>
                     <span className="text-lg font-semibold">{profileData.weight || '-'} {profileData.weight ? 'kg' : ''}</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-border-subtle dark:border-border-dark">
+                  <div className="flex justify-between items-center py-2 border-b border-border-subtle dark:border-border-dark">
                     <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Target</span>
                     <span className="text-lg font-semibold">{profileData.targetWeight || '-'} {profileData.targetWeight ? 'kg' : ''}</span>
                   </div>
-                  <div className="flex justify-between items-center py-3">
+                  <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Goal</span>
                     <span className="text-sm font-medium text-right max-w-[200px]">{profileData.goal || '-'}</span>
                   </div>
                 </div>
 
                 {/* Weight to Go */}
-                <div className="mt-auto pt-6 border-t border-border dark:border-border-dark">
+                <div className="mt-auto pt-4 border-t border-border dark:border-border-dark">
                   <div className="flex items-end justify-between">
                     <div>
                       <p className="text-xs text-text-secondary dark:text-text-dark-secondary uppercase tracking-wider mb-1">Weight to go</p>
@@ -199,10 +199,10 @@ export default function HubPage({ user, onSignIn }) {
           </div>
 
           {/* MIDDLE - Statistics */}
-          <div className="bg-background-secondary dark:bg-background-dark-secondary border border-border dark:border-border-dark rounded-2xl p-8 min-h-[600px] flex flex-col">
-            <h2 className="text-xs uppercase tracking-wider text-text-secondary dark:text-text-dark-secondary font-medium mb-8">Statistics</h2>
+          <div className="bg-background-secondary dark:bg-background-dark-secondary border border-border dark:border-border-dark rounded-2xl p-6 min-h-[520px] flex flex-col">
+            <h2 className="text-xs uppercase tracking-wider text-text-secondary dark:text-text-dark-secondary font-medium mb-6">Statistics</h2>
 
-            <div className="space-y-8 flex-1">
+            <div className="space-y-6 flex-1">
               {/* Total Fasts */}
               <div>
                 <p className="text-sm text-text-secondary dark:text-text-dark-secondary mb-2">Total Fasts</p>
@@ -211,14 +211,14 @@ export default function HubPage({ user, onSignIn }) {
               </div>
 
               {/* Current Streak */}
-              <div className="pt-6 border-t border-border-subtle dark:border-border-dark">
+              <div className="pt-4 border-t border-border-subtle dark:border-border-dark">
                 <p className="text-sm text-text-secondary dark:text-text-dark-secondary mb-2">Current Streak</p>
                 <p className="text-6xl font-light text-accent-green mb-1">{statistics.currentStreak}</p>
                 <p className="text-xs text-text-tertiary dark:text-text-dark-tertiary">days in a row</p>
               </div>
 
               {/* Other Stats */}
-              <div className="pt-6 border-t border-border-subtle dark:border-border-dark space-y-3">
+              <div className="pt-4 border-t border-border-subtle dark:border-border-dark space-y-2.5">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Total Hours</span>
                   <span className="text-2xl font-semibold text-text dark:text-text-dark">{statistics.totalHours}h</span>
@@ -236,10 +236,10 @@ export default function HubPage({ user, onSignIn }) {
           </div>
 
           {/* RIGHT - Achievements */}
-          <div className="bg-background-secondary dark:bg-background-dark-secondary border border-border dark:border-border-dark rounded-2xl p-8 min-h-[600px] flex flex-col">
-            <h2 className="text-xs uppercase tracking-wider text-text-secondary dark:text-text-dark-secondary font-medium mb-8">Achievements</h2>
+          <div className="bg-background-secondary dark:bg-background-dark-secondary border border-border dark:border-border-dark rounded-2xl p-6 min-h-[520px] flex flex-col">
+            <h2 className="text-xs uppercase tracking-wider text-text-secondary dark:text-text-dark-secondary font-medium mb-6">Achievements</h2>
 
-            <div className="flex-1 grid grid-cols-2 gap-3 content-start">
+            <div className="flex-1 grid grid-cols-2 gap-2.5 content-start">
               {achievements.map(achievement => (
                 <div
                   key={achievement.id}
@@ -262,7 +262,7 @@ export default function HubPage({ user, onSignIn }) {
             </div>
 
             {/* Bottom Summary */}
-            <div className="mt-6 pt-6 border-t border-border dark:border-border-dark">
+            <div className="mt-4 pt-4 border-t border-border dark:border-border-dark">
               <div className="flex justify-between items-end">
                 <div>
                   <p className="text-xs text-text-secondary dark:text-text-dark-secondary mb-1">Earned</p>
