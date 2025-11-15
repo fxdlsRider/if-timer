@@ -15,6 +15,7 @@ export default function HubPage({ user, onSignIn }) {
   const { statistics, loading } = useFastsData(user?.id);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState({
+    nickname: '',
     name: '',
     age: null,
     height: null,
@@ -36,6 +37,7 @@ export default function HubPage({ user, onSignIn }) {
         const profile = await loadProfile(user.id);
         if (profile) {
           setProfileData({
+            nickname: profile.nickname || '',
             name: profile.name || '',
             age: profile.age || null,
             height: profile.height || null,
@@ -120,10 +122,18 @@ export default function HubPage({ user, onSignIn }) {
               <div className="space-y-4 flex-1">
                 <input
                   type="text"
+                  value={profileData.nickname}
+                  onChange={(e) => handleInputChange('nickname', e.target.value)}
+                  className="w-full px-3 py-2 bg-background dark:bg-background-dark border border-border dark:border-border-dark rounded-lg text-text dark:text-text-dark"
+                  placeholder="Nickname (for TopFasters)"
+                  maxLength="50"
+                />
+                <input
+                  type="text"
                   value={profileData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className="w-full px-3 py-2 bg-background dark:bg-background-dark border border-border dark:border-border-dark rounded-lg text-text dark:text-text-dark"
-                  placeholder="Name"
+                  placeholder="Name (optional)"
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <input type="number" value={profileData.age} onChange={(e) => handleInputChange('age', parseInt(e.target.value))} className="px-3 py-2 bg-background dark:bg-background-dark border border-border dark:border-border-dark rounded-lg text-text dark:text-text-dark" placeholder="Age" />
@@ -135,7 +145,16 @@ export default function HubPage({ user, onSignIn }) {
               </div>
             ) : (
               <>
-                <h3 className="text-4xl font-bold text-text dark:text-text-dark mb-8">{profileData.name || 'Your Name'}</h3>
+                <div className="mb-8">
+                  {profileData.name ? (
+                    <h3 className="text-2xl font-bold text-text dark:text-text-dark mb-2">{profileData.name}</h3>
+                  ) : (
+                    <h3 className="text-2xl font-bold text-text dark:text-text-dark mb-2">Your Profile</h3>
+                  )}
+                  {profileData.nickname && (
+                    <p className="text-sm text-text-secondary dark:text-text-dark-secondary">Nickname: {profileData.nickname}</p>
+                  )}
+                </div>
 
                 <div className="space-y-4 text-text dark:text-text-dark flex-1">
                   <div className="flex justify-between items-center py-3 border-b border-border-subtle dark:border-border-dark">

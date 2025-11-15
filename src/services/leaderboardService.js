@@ -17,7 +17,7 @@ import { supabase } from '../supabaseClient';
  */
 export async function fetchLeaderboard(limit = 10) {
   try {
-    // Query active timer states
+    // Query active timer states with profile data (nickname)
     const { data: activeTimers, error } = await supabase
       .from('timer_states')
       .select(`
@@ -26,7 +26,8 @@ export async function fetchLeaderboard(limit = 10) {
         target_time,
         is_running,
         is_extended,
-        updated_at
+        updated_at,
+        profiles!inner(nickname, name)
       `)
       .eq('is_running', true)
       .not('target_time', 'is', null)
@@ -58,9 +59,12 @@ export async function fetchLeaderboard(limit = 10) {
       const level = getFastingLevelName(elapsedHours);
       const badge = getFastingBadge(elapsedHours);
 
+      // Use nickname if available, fallback to name, then anonymized ID
+      const displayName = timer.profiles?.nickname || timer.profiles?.name || anonymizeUserId(timer.user_id);
+
       return {
         id: timer.user_id,
-        name: anonymizeUserId(timer.user_id),
+        name: displayName,
         level,
         badge,
         hours: elapsedHours,

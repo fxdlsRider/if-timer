@@ -39,6 +39,7 @@ export function useUserDashboard(userId) {
   // Combine profile and statistics
   const dashboardData = {
     // Profile data
+    nickname: profileData?.nickname || '',
     name: profileData?.name || '',
     age: profileData?.age || null,
     height: profileData?.height || null,

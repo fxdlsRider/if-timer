@@ -15,7 +15,7 @@ export default function DashboardPanel() {
 
   // Build profile object with real data or defaults
   const profile = {
-    name: dashboardData.name || user?.email?.split('@')[0] || 'User',
+    name: dashboardData.nickname || dashboardData.name || user?.email?.split('@')[0] || 'User',
     age: dashboardData.age || '-',
     currentWeight: dashboardData.currentWeight || '-',
     targetWeight: dashboardData.targetWeight || '-',

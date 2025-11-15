@@ -57,6 +57,7 @@ export async function saveProfile(userId, profileData) {
       const { data, error } = await supabase
         .from('profiles')
         .update({
+          nickname: profileData.nickname,
           name: profileData.name,
           age: profileData.age,
           height: profileData.height,
@@ -77,6 +78,7 @@ export async function saveProfile(userId, profileData) {
         .insert([
           {
             user_id: userId,
+            nickname: profileData.nickname,
             name: profileData.name,
             age: profileData.age,
             height: profileData.height,
