@@ -122,18 +122,18 @@ export default function HubPage({ user, onSignIn }) {
               <div className="space-y-4 flex-1">
                 <input
                   type="text"
+                  value={profileData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  className="w-full px-3 py-2 bg-background dark:bg-background-dark border border-border dark:border-border-dark rounded-lg text-text dark:text-text-dark"
+                  placeholder="Name"
+                />
+                <input
+                  type="text"
                   value={profileData.nickname}
                   onChange={(e) => handleInputChange('nickname', e.target.value)}
                   className="w-full px-3 py-2 bg-background dark:bg-background-dark border border-border dark:border-border-dark rounded-lg text-text dark:text-text-dark"
                   placeholder="Nickname (for TopFasters)"
                   maxLength="50"
-                />
-                <input
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-3 py-2 bg-background dark:bg-background-dark border border-border dark:border-border-dark rounded-lg text-text dark:text-text-dark"
-                  placeholder="Name (optional)"
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <input type="number" value={profileData.age} onChange={(e) => handleInputChange('age', parseInt(e.target.value))} className="px-3 py-2 bg-background dark:bg-background-dark border border-border dark:border-border-dark rounded-lg text-text dark:text-text-dark" placeholder="Age" />
