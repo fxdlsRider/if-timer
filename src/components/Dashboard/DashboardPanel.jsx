@@ -15,7 +15,8 @@ export default function DashboardPanel() {
 
   // Build profile object with real data or defaults
   const profile = {
-    name: dashboardData.nickname || dashboardData.name || user?.email?.split('@')[0] || 'User',
+    name: dashboardData.name || user?.email?.split('@')[0] || 'User',
+    nickname: dashboardData.nickname || '',
     age: dashboardData.age || '-',
     currentWeight: dashboardData.currentWeight || '-',
     targetWeight: dashboardData.targetWeight || '-',
@@ -169,6 +170,11 @@ export default function DashboardPanel() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.title}>{profile.name}</div>
+        {profile.nickname && (
+          <div style={{ fontSize: '13px', color: 'var(--color-text-secondary, #64748B)', marginTop: '4px' }}>
+            Nickname: {profile.nickname}
+          </div>
+        )}
         <div style={styles.subtitle}>Dashboard</div>
       </div>
 
