@@ -260,6 +260,50 @@ export function useTimerState(hours, userId = null) {
     setCompletedFastData(updatedData);
   };
 
+  /**
+   * Restore timer state from storage (for page reload)
+   * @param {object} savedState - Saved timer state
+   */
+  const restoreTimerState = (savedState) => {
+    console.log('[restoreTimerState] Called with:', savedState);
+
+    if (!savedState) {
+      console.log('[restoreTimerState] No saved state');
+      return;
+    }
+
+    // Restore running timer state
+    if (savedState.isRunning && savedState.targetTime) {
+      console.log('[restoreTimerState] Restoring running timer:', {
+        targetTime: savedState.targetTime,
+        isExtended: savedState.isExtended,
+        hours
+      });
+
+      setIsRunning(true);
+      setTargetTime(savedState.targetTime);
+
+      // Calculate start time from target time and hours
+      const startTimeMs = savedState.targetTime - (hours * TIME_MULTIPLIER * 1000);
+      setStartTime(new Date(startTimeMs));
+
+      // Restore extended mode if applicable
+      if (savedState.isExtended && savedState.originalGoalTime) {
+        setIsExtended(true);
+        setOriginalGoalTime(savedState.originalGoalTime);
+      }
+
+      notificationShownRef.current = false;
+
+      console.log('[restoreTimerState] Timer state restored successfully');
+    } else {
+      console.log('[restoreTimerState] Not restoring - isRunning or targetTime missing:', {
+        isRunning: savedState.isRunning,
+        targetTime: savedState.targetTime
+      });
+    }
+  };
+
   return {
     // State
     isRunning,
@@ -287,5 +331,6 @@ export function useTimerState(hours, userId = null) {
     stopFasting,
     startNewFast,
     updateCompletedFastData,
+    restoreTimerState,
   };
 }
