@@ -170,11 +170,6 @@ export default function DashboardPanel() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.title}>{profile.name}</div>
-        {profile.nickname && (
-          <div style={{ fontSize: '13px', color: 'var(--color-text-secondary, #64748B)', marginTop: '4px' }}>
-            Nickname: {profile.nickname}
-          </div>
-        )}
         <div style={styles.subtitle}>Dashboard</div>
       </div>
 
@@ -229,17 +224,9 @@ export default function DashboardPanel() {
       </div>
 
       {/* Goal */}
-      <div style={styles.profileSection}>
-        <div style={styles.statRow}>
-          <span style={styles.statLabel}>Goal</span>
-          <span style={{ ...styles.statValue, fontSize: '13px' }}>{profile.goal}</span>
-        </div>
-      </div>
-
-      {/* Motivation */}
       <div style={styles.motivationBox}>
         <div style={styles.motivationText}>
-          "{profile.motivation}"
+          {profile.goal !== '-' ? `"${profile.goal}"` : '"Set your goal in Hub"'}
         </div>
       </div>
     </div>
