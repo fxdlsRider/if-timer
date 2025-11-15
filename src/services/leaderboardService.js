@@ -27,7 +27,7 @@ export async function fetchLeaderboard(limit = 10) {
         is_running,
         is_extended,
         updated_at,
-        profiles!inner(nickname, name)
+        profiles(nickname, name)
       `)
       .eq('is_running', true)
       .not('target_time', 'is', null)
