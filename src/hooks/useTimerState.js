@@ -57,7 +57,14 @@ export function useTimerState(hours, userId = null) {
   const [completedFastData, setCompletedFastData] = useState(null);
 
   // Post-fast summary state (after user clicks "Stop Fasting")
+  // IMPORTANT: Always start with false to prevent showing old completion on page load
   const [showCompletionSummary, setShowCompletionSummary] = useState(false);
+
+  // Reset completion summary on mount to prevent iOS bug where modal appears on page load
+  useEffect(() => {
+    setShowCompletionSummary(false);
+    setCompletedFastData(null);
+  }, []);
 
   // Refs
   const notificationShownRef = useRef(false);
@@ -196,6 +203,9 @@ export function useTimerState(hours, userId = null) {
   const changeStartTime = (newStartTime) => {
     if (!isRunning) return;
 
+    // Reset notification flag to prevent duplicate notifications
+    notificationShownRef.current = false;
+
     // Update start time
     setStartTime(newStartTime);
 
@@ -203,6 +213,16 @@ export function useTimerState(hours, userId = null) {
     // This ensures the remaining time is correctly displayed
     const newTarget = newStartTime.getTime() + (hours * TIME_MULTIPLIER * 1000);
     setTargetTime(newTarget);
+
+    // Reset extended mode if active
+    if (isExtended) {
+      setIsExtended(false);
+      setOriginalGoalTime(null);
+    }
+
+    // Clear any celebration/completion state
+    setShowCelebration(false);
+    setCompletedFastData(null);
   };
 
   /**
