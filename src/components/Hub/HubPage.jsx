@@ -231,6 +231,12 @@ export default function HubPage({ user, onSignIn }) {
                   <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Average Fast</span>
                   <span className="text-2xl font-semibold text-text dark:text-text-dark">{statistics.averageFast}h</span>
                 </div>
+                {/* Debug info - remove after testing */}
+                {statistics.totalFasts > 0 && (
+                  <div className="mt-4 p-2 bg-background dark:bg-background-dark rounded text-xs text-text-tertiary dark:text-text-dark-tertiary">
+                    Debug: L+A={(statistics.longestFast + statistics.averageFast).toFixed(1)}h | Total={statistics.totalHours}h | Fasts={statistics.totalFasts}
+                  </div>
+                )}
               </div>
             </div>
           </div>
