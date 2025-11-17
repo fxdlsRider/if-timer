@@ -1,5 +1,49 @@
 # IF-Timer Progress Log
 
+## 2025-01-17: Bug Fix - Duplicate Fasts Prevention
+
+### Issue
+Hub page displayed incorrect "Total Hours" statistic due to duplicate fasts in database. When viewing statistics with 2 fasts of 19h each, the calculations showed:
+- Total Hours: 38h (correct sum)
+- Longest Fast: 19h
+- Average Fast: 19h
+- L+A = 38h (appeared suspicious)
+
+### Root Cause
+User had two identical fasts in the database with the same start_time (2025-11-14T16:05:00) and duration (19h), differing only by 5 seconds in end_time. This was likely caused by double-clicking the save button or rapid successive saves.
+
+### Solution Implemented
+
+**1. Code-Level Duplicate Prevention:**
+- Modified `saveFast()` in `fastsService.js` to check for existing fasts before inserting
+- Checks for duplicates based on: `user_id`, `start_time`, and `duration`
+- Returns existing fast instead of creating duplicate
+- Logs warning when duplicate is detected
+
+**2. Database-Level Protection:**
+- Created migration: `add_unique_constraint_fasts.sql`
+- Adds unique constraint: `UNIQUE (user_id, start_time, duration)`
+- Automatically cleans up any existing duplicates before adding constraint
+- Prevents duplicates at database level even if code checks fail
+
+**3. Cleanup:**
+- Removed duplicate fasts from production database
+- Removed debug logging added during investigation
+
+### Files Modified
+- `src/services/fastsService.js` - Added duplicate detection
+- `database/migrations/add_unique_constraint_fasts.sql` - New migration
+
+### Testing
+- Verified duplicate detection works
+- Confirmed statistics calculate correctly after removing duplicates
+- Tested that attempting to save duplicate fast returns existing record
+
+### Known Issues
+None.
+
+---
+
 ## 2025-11-15: Database Integration - Fasts & Profile Management
 
 ### Overview
