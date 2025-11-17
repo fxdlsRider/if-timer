@@ -26,6 +26,7 @@ export default function StatusPanel({
   calculateFastingLevel,
   calculateBodyMode
 }) {
+  console.log('🔄 StatusPanel rendered', { isRunning, fastingLevels: fastingLevels?.length });
   // Color mapping for body modes
   const getBodyModeColor = (bodyModeId) => {
     const colorMap = {
@@ -163,7 +164,14 @@ export default function StatusPanel({
                   ? 'var(--color-accent-teal, #4ECDC4)'
                   : 'var(--color-border-subtle, #F1F5F9)'
               }}
-              onClick={() => isClickable && onLevelClick(item.startHour)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isClickable) {
+                  console.log('🎯 Level clicked:', item.label, item.startHour);
+                  onLevelClick(item.startHour);
+                }
+              }}
               onMouseEnter={(e) => {
                 if (isClickable && !isActive) {
                   e.currentTarget.style.background = 'var(--color-background-secondary, #F8FAFC)';

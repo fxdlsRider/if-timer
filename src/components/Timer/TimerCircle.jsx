@@ -144,15 +144,18 @@ export default function TimerCircle({
 
   // Handlers for stop confirmation
   const handleStopClick = () => {
+    console.log('🔴 STOP button clicked - opening modal');
     setShowStopModal(true);
   };
 
   const handleConfirmStop = () => {
+    console.log('✅ User confirmed stop - calling onCancelTimer()');
     setShowStopModal(false);
     onCancelTimer();
   };
 
   const handleCancelStop = () => {
+    console.log('❌ User cancelled stop - keeping timer running');
     setShowStopModal(false);
   };
 

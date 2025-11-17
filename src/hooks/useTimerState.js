@@ -42,6 +42,17 @@ export function useTimerState(hours, userId = null) {
   const TIME_MULTIPLIER = TEST_MODE ? TEST_MODE_CONFIG.TIME_MULTIPLIER : PRODUCTION_MODE.TIME_MULTIPLIER;
   const TIME_UNIT = TEST_MODE ? TEST_MODE_CONFIG.TIME_UNIT : PRODUCTION_MODE.TIME_UNIT;
 
+  // Debug: Log test mode status on mount
+  useEffect(() => {
+    console.log('⚙️ Timer Configuration:', {
+      TEST_MODE,
+      TIME_MULTIPLIER,
+      TIME_UNIT,
+      TEST_MODE_CONFIG,
+      PRODUCTION_MODE
+    });
+  }, []);
+
   // Timer state
   const [isRunning, setIsRunning] = useState(false);
   const [targetTime, setTargetTime] = useState(null);
@@ -144,11 +155,15 @@ export function useTimerState(hours, userId = null) {
    * Cancel/stop the timer (before completion)
    */
   const cancelTimer = async () => {
+    console.log('🛑 cancelTimer() called', { isRunning, startTime });
+
     // Calculate actual fasted time before stopping
     if (isRunning && startTime) {
       const now = Date.now();
       const actualFastedMs = now - startTime.getTime();
       const actualFastedHours = actualFastedMs / (TIME_MULTIPLIER * 1000);
+
+      console.log('📊 Cancel timer data:', { actualFastedHours, TIME_MULTIPLIER });
 
       // Always mark as cancelled when user manually stops the fast
       const completionData = {
@@ -170,12 +185,14 @@ export function useTimerState(hours, userId = null) {
       }
     }
 
+    console.log('✅ Stopping timer - setting isRunning to false');
     setIsRunning(false);
     setTargetTime(null);
     setStartTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
     notificationShownRef.current = false;
+    console.log('✅ Timer stopped successfully');
   };
 
   /**
