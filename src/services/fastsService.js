@@ -55,7 +55,6 @@ export async function saveFast(userId, fastData) {
       .single();
 
     if (error) throw error;
-    console.log('✅ Fast saved successfully:', data.id);
     return data;
   } catch (error) {
     console.error('Error saving fast:', error);
@@ -108,16 +107,6 @@ export function calculateStatistics(fasts) {
   const totalHours = fasts.reduce((sum, fast) => sum + parseFloat(fast.duration || 0), 0);
   const longestFast = Math.max(...fasts.map(fast => parseFloat(fast.duration || 0)));
   const averageFast = totalHours / totalFasts;
-
-  // Debug logging
-  console.log('🔍 calculateStatistics DEBUG:');
-  console.log('  Fasts array:', fasts.map(f => ({ duration: f.duration, start: f.start_time, end: f.end_time })));
-  console.log('  Total Fasts:', totalFasts);
-  console.log('  Individual durations:', fasts.map(f => parseFloat(f.duration || 0)));
-  console.log('  Sum (totalHours):', totalHours);
-  console.log('  Max (longestFast):', longestFast);
-  console.log('  Average (totalHours / totalFasts):', averageFast);
-  console.log('  L+A:', longestFast + averageFast);
 
   // Calculate current streak (consecutive days with fasts)
   const sortedFasts = [...fasts].sort((a, b) =>
