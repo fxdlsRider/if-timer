@@ -84,6 +84,16 @@ export function calculateStatistics(fasts) {
   const longestFast = Math.max(...fasts.map(fast => parseFloat(fast.duration || 0)));
   const averageFast = totalHours / totalFasts;
 
+  // Debug logging
+  console.log('🔍 calculateStatistics DEBUG:');
+  console.log('  Fasts array:', fasts.map(f => ({ duration: f.duration, start: f.start_time, end: f.end_time })));
+  console.log('  Total Fasts:', totalFasts);
+  console.log('  Individual durations:', fasts.map(f => parseFloat(f.duration || 0)));
+  console.log('  Sum (totalHours):', totalHours);
+  console.log('  Max (longestFast):', longestFast);
+  console.log('  Average (totalHours / totalFasts):', averageFast);
+  console.log('  L+A:', longestFast + averageFast);
+
   // Calculate current streak (consecutive days with fasts)
   const sortedFasts = [...fasts].sort((a, b) =>
     new Date(b.end_time) - new Date(a.end_time)
