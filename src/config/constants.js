@@ -68,7 +68,7 @@ export const FASTING_LEVELS = [
     endHour: 20,
     color: '#FF9800',
     title: 'INTENSIVE CHAMPION',
-    description: "Most people can't do this. You're not most people.",
+    description: "Most people can't do this. You're not most people. Bro-Mode: ideal for OMAD.",
   },
   {
     id: 'warrior',

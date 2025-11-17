@@ -26,11 +26,10 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
 
   const menuItems = [
     { id: 'timer', label: 'Timer', description: 'Intermittent Fasting Timer' },
+    { id: 'hub', label: 'Hub', description: user ? 'Your Statistics' : 'Sign In / Sign Up' },
     { id: 'training', label: 'Training', description: 'Learn about IF' },
     { id: 'modes', label: 'Modes', description: 'Scientific, Hippie, Pro' },
-    { id: 'hub', label: 'Hub', description: user ? 'Your Statistics' : 'Sign In / Sign Up' },
     { id: 'graph-view', label: 'Graph-View', description: 'Who\'s fasting now' },
-    { id: 'resources', label: 'Resources', description: 'IF Links & Articles' },
     { id: 'about', label: 'About', description: 'About this project' },
     { id: 'support', label: 'Support', description: 'Buy Me a Coffee & Shop' }
   ];
@@ -57,7 +56,7 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
         {/* Logo - Left (absolute positioned) */}
         <button
           onClick={handleLogoClick}
-          className="absolute left-6 lg:left-10 text-xl font-semibold text-text dark:text-text-dark hover:text-accent-teal transition-colors"
+          className="absolute left-6 lg:left-10 text-xl font-semibold text-text dark:text-text-dark hover:text-accent-teal transition-colors z-10"
         >
           IF-Timer
         </button>

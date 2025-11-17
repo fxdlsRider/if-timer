@@ -139,8 +139,8 @@ export function useTimerState(hours) {
       const actualFastedMs = now - startTime.getTime();
       const actualFastedHours = actualFastedMs / (TIME_MULTIPLIER * 1000);
 
-      // Check if fast was cancelled (< 1 hour)
-      const wasCancelled = actualFastedHours < 1;
+      // Check if fast was cancelled (stopped before reaching goal)
+      const wasCancelled = actualFastedHours < hours;
 
       // Set completion data with actual fasted time
       const completionData = {
@@ -149,7 +149,7 @@ export function useTimerState(hours) {
         startTime: startTime,
         endTime: new Date(now),
         unit: TIME_UNIT,
-        cancelled: wasCancelled // Mark as cancelled if < 1 hour
+        cancelled: wasCancelled // Mark as cancelled if stopped before goal
       };
       setCompletedFastData(completionData);
       setShowCompletionSummary(true);
