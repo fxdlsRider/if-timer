@@ -47,7 +47,10 @@ export default function StatusPanel({
       border: '1px solid var(--color-border, #E2E8F0)',
       display: 'flex',
       flexDirection: 'column',
-      gap: '20px'
+      gap: '20px',
+      overflow: 'hidden',
+      msOverflowStyle: 'none',  // IE and Edge
+      scrollbarWidth: 'none'  // Firefox
     },
     header: {
       textAlign: 'center',
@@ -73,7 +76,8 @@ export default function StatusPanel({
       margin: 0,
       display: 'flex',
       flexDirection: 'column',
-      gap: '8px'
+      gap: '8px',
+      overflow: 'hidden'
     },
     levelItem: {
       fontSize: '14px',
@@ -136,7 +140,7 @@ export default function StatusPanel({
     : calculateBodyMode(hours, timeLeft);
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="scrollbar-hide">
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.title}>{!isRunning ? 'Fasting Levels' : 'Body Mode'}</div>

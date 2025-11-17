@@ -1,6 +1,7 @@
 // components/Dashboard/DashboardPanel.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
+import { fetchProfile, calculateWeightToGo } from '../../services/profileService';
 
 /**
  * DashboardPanel Component
@@ -12,23 +13,42 @@ import { useAuth } from '../../AuthContext';
  */
 export default function DashboardPanel({ userData = {} }) {
   const { user } = useAuth();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Dummy data for testing
-  const profile = {
-    name: userData.name || user?.email || 'User',
-    age: userData.age || 32,
-    currentWeight: userData.currentWeight || 85.5,
-    targetWeight: userData.targetWeight || 75.0,
-    height: userData.height || 178,
-    goal: userData.goal || 'Weight Loss & Health',
-    motivation: userData.motivation || 'Feel better, live longer',
-    currentStreak: userData.currentStreak || 12,
-    totalFasts: userData.totalFasts || 47,
-    totalHours: userData.totalHours || 824,
-    longestFast: userData.longestFast || 42
+  // Load profile from Supabase
+  useEffect(() => {
+    if (user?.id) {
+      loadProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
+  const loadProfile = async () => {
+    setLoading(true);
+    const data = await fetchProfile(user.id);
+    setProfile(data);
+    setLoading(false);
   };
 
-  const weightToGo = (profile.currentWeight - profile.targetWeight).toFixed(1);
+  // Use profile data or fallback to dummy data
+  const displayProfile = {
+    name: profile?.name || user?.email?.split('@')[0] || 'User',
+    age: profile?.age || null,
+    currentWeight: profile?.weight || null,
+    targetWeight: profile?.target_weight || null,
+    height: profile?.height || null,
+    goal: profile?.goal || null,
+    nickname: profile?.nickname || null,
+    // Stats - will be replaced with real data later
+    currentStreak: userData.currentStreak || 0,
+    totalFasts: userData.totalFasts || 0,
+    totalHours: userData.totalHours || 0,
+    longestFast: userData.longestFast || 0
+  };
+
+  const weightToGo = calculateWeightToGo(displayProfile.currentWeight, displayProfile.targetWeight);
 
   const styles = {
     container: {
@@ -39,7 +59,10 @@ export default function DashboardPanel({ userData = {} }) {
       border: '1px solid var(--color-border, #E2E8F0)',
       display: 'flex',
       flexDirection: 'column',
-      gap: '24px'
+      gap: '24px',
+      overflow: 'hidden',
+      msOverflowStyle: 'none',  // IE and Edge
+      scrollbarWidth: 'none'  // Firefox
     },
     header: {
       textAlign: 'center',
@@ -62,7 +85,8 @@ export default function DashboardPanel({ userData = {} }) {
     profileSection: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '12px'
+      gap: '12px',
+      overflow: 'hidden'
     },
     statRow: {
       display: 'flex',
@@ -124,7 +148,8 @@ export default function DashboardPanel({ userData = {} }) {
     statsGrid: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
-      gap: '12px'
+      gap: '12px',
+      overflow: 'hidden'
     },
     statCard: {
       background: 'var(--color-background, #FFFFFF)',
@@ -162,32 +187,49 @@ export default function DashboardPanel({ userData = {} }) {
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="scrollbar-hide">
       {/* Header */}
       <div style={styles.header}>
-        <div style={styles.title}>{profile.name}</div>
+        <div style={styles.title}>{displayProfile.name}</div>
         <div style={styles.subtitle}>Dashboard</div>
       </div>
 
       {/* Profile Info */}
       <div style={styles.profileSection}>
-        <div style={styles.statRow}>
-          <span style={styles.statLabel}>Age</span>
-          <span style={styles.statValue}>{profile.age} years</span>
-        </div>
-        <div style={styles.statRow}>
-          <span style={styles.statLabel}>Height</span>
-          <span style={styles.statValue}>{profile.height} cm</span>
-        </div>
-        <div style={styles.statRow}>
-          <span style={styles.statLabel}>Current Weight</span>
-          <span style={styles.statValue}>{profile.currentWeight} kg</span>
-        </div>
-        <div style={styles.statRow}>
-          <span style={styles.statLabel}>Target Weight</span>
-          <span style={styles.statValue}>{profile.targetWeight} kg</span>
-        </div>
+        {displayProfile.age && (
+          <div style={styles.statRow}>
+            <span style={styles.statLabel}>Age</span>
+            <span style={styles.statValue}>{displayProfile.age} years</span>
+          </div>
+        )}
+        {displayProfile.height && (
+          <div style={styles.statRow}>
+            <span style={styles.statLabel}>Height</span>
+            <span style={styles.statValue}>{displayProfile.height} cm</span>
+          </div>
+        )}
+        {displayProfile.currentWeight && (
+          <div style={styles.statRow}>
+            <span style={styles.statLabel}>Current Weight</span>
+            <span style={styles.statValue}>{displayProfile.currentWeight} kg</span>
+          </div>
+        )}
+        {displayProfile.targetWeight && (
+          <div style={styles.statRow}>
+            <span style={styles.statLabel}>Target Weight</span>
+            <span style={styles.statValue}>{displayProfile.targetWeight} kg</span>
+          </div>
+        )}
       </div>
+
+      {/* Motivation */}
+      {displayProfile.goal && (
+        <div style={styles.motivationBox}>
+          <div style={styles.motivationText}>
+            "{displayProfile.goal}"
+          </div>
+        </div>
+      )}
 
       {/* Weight Gauge */}
       <div style={styles.gaugeSection}>
@@ -202,35 +244,20 @@ export default function DashboardPanel({ userData = {} }) {
       {/* Stats Grid */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{profile.currentStreak}</div>
+          <div style={styles.statCardValue}>{displayProfile.currentStreak}</div>
           <div style={styles.statCardLabel}>Day Streak</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{profile.totalFasts}</div>
+          <div style={styles.statCardValue}>{displayProfile.totalFasts}</div>
           <div style={styles.statCardLabel}>Total Fasts</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{profile.totalHours}h</div>
+          <div style={styles.statCardValue}>{displayProfile.totalHours}h</div>
           <div style={styles.statCardLabel}>Total Hours</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{profile.longestFast}h</div>
+          <div style={styles.statCardValue}>{displayProfile.longestFast}h</div>
           <div style={styles.statCardLabel}>Longest Fast</div>
-        </div>
-      </div>
-
-      {/* Goal */}
-      <div style={styles.profileSection}>
-        <div style={styles.statRow}>
-          <span style={styles.statLabel}>Goal</span>
-          <span style={{ ...styles.statValue, fontSize: '13px' }}>{profile.goal}</span>
-        </div>
-      </div>
-
-      {/* Motivation */}
-      <div style={styles.motivationBox}>
-        <div style={styles.motivationText}>
-          "{profile.motivation}"
         </div>
       </div>
     </div>

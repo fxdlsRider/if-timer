@@ -13,7 +13,7 @@
 @media (min-width: 1024px) {
   .timer-page-wrapper {
     padding: 40px 60px;
-    overflow-x: auto;
+    overflow-x: hidden;
   }
 
   .timer-page-container {
@@ -29,9 +29,6 @@
   /* Column positioning - Desktop */
   .dashboard-column {
     justify-self: start;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-    overflow-x: hidden;
   }
 
   .timer-section {
@@ -43,9 +40,6 @@
 
   .status-column {
     justify-self: end;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-    overflow-x: hidden;
   }
 }
 
