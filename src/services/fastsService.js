@@ -14,14 +14,38 @@ export async function saveFast(userId, fastData) {
   }
 
   try {
+    // Check for duplicate (same user, start_time, and duration)
+    const startTimeISO = fastData.startTime.toISOString();
+    const durationValue = parseFloat(fastData.duration);
+
+    const { data: existingFasts, error: checkError } = await supabase
+      .from('fasts')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('start_time', startTimeISO)
+      .eq('duration', durationValue)
+      .limit(1);
+
+    if (checkError) throw checkError;
+
+    if (existingFasts && existingFasts.length > 0) {
+      console.warn('Duplicate fast detected - skipping save:', {
+        userId,
+        startTime: startTimeISO,
+        duration: durationValue
+      });
+      return existingFasts[0]; // Return existing fast instead of creating duplicate
+    }
+
+    // No duplicate found, proceed with insert
     const { data, error } = await supabase
       .from('fasts')
       .insert([
         {
           user_id: userId,
-          duration: parseFloat(fastData.duration),
+          duration: durationValue,
           original_goal: fastData.originalGoal,
-          start_time: fastData.startTime.toISOString(),
+          start_time: startTimeISO,
           end_time: fastData.endTime.toISOString(),
           cancelled: fastData.cancelled || false,
           unit: fastData.unit || 'hours',
@@ -31,6 +55,7 @@ export async function saveFast(userId, fastData) {
       .single();
 
     if (error) throw error;
+    console.log('✅ Fast saved successfully:', data.id);
     return data;
   } catch (error) {
     console.error('Error saving fast:', error);
