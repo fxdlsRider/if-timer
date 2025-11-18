@@ -5,6 +5,33 @@
 
 ---
 
+## ⚡ ERSTE SCHRITTE - ZU BEGINN JEDER SESSION LESEN!
+
+### Pflichtlektüre (in dieser Reihenfolge):
+
+1. **`docs/conventions.md`** - Coding Standards!
+   - ⚠️ **WICHTIG:** Folder-Struktur ist ZWINGEND einzuhalten!
+   - Services für DB-Calls, keine direkten Supabase-Calls in Components
+   - JSDoc Comments, Naming Conventions
+
+2. **`docs/progress.md`** - Aktueller Stand
+   - Letzte Session: Was wurde implementiert?
+   - Bekannte Issues
+   - Next Steps
+
+3. **`docs/vision-alignment.md`** - Vision
+   - Projekt-Ziele und Philosophie
+   - Langfristige Roadmap
+
+4. **`docs/session-guide.md`** - Diese Datei (Quick Reference)
+   - Test Mode Location
+   - Wichtige Dateipfade
+   - Database Schema
+
+**→ Diese 4 Dateien geben dir den kompletten Kontext!**
+
+---
+
 ## 🔧 Test Mode Toggle (Wichtigste Info!)
 
 ### Location
@@ -476,12 +503,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ## ✅ Session Checklist
 
-### Session Start
+### Session Start (PFLICHT!)
 
-- [ ] `docs/session-guide.md` lesen
-- [ ] `docs/progress.md` (letzter Eintrag) checken
+- [ ] **`docs/conventions.md`** lesen (Coding Standards + Folder-Struktur!)
+- [ ] **`docs/progress.md`** lesen (letzter Eintrag = aktueller Stand)
+- [ ] **`docs/vision-alignment.md`** lesen (Projekt-Vision)
+- [ ] **`docs/session-guide.md`** lesen (Quick Reference = diese Datei)
 - [ ] Server Status prüfen (`npm start` falls nötig)
-- [ ] Test Mode Status checken
+- [ ] Test Mode Status checken (`src/config/constants.js:19`)
 
 ### Während der Session
 
