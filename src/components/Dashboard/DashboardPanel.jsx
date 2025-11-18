@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
 import { fetchProfile, calculateWeightToGo } from '../../services/profileService';
+import { getLastFast } from '../../services/fastsService';
 
 /**
  * DashboardPanel Component
@@ -15,11 +16,13 @@ export default function DashboardPanel({ userData = {} }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lastFast, setLastFast] = useState(null);
 
-  // Load profile from Supabase
+  // Load profile and last fast from Supabase
   useEffect(() => {
     if (user?.id) {
       loadProfile();
+      loadLastFast();
     } else {
       setLoading(false);
     }
@@ -30,6 +33,11 @@ export default function DashboardPanel({ userData = {} }) {
     const data = await fetchProfile(user.id);
     setProfile(data);
     setLoading(false);
+  };
+
+  const loadLastFast = async () => {
+    const fast = await getLastFast(user.id);
+    setLastFast(fast);
   };
 
   // Use profile data or fallback to dummy data
@@ -81,29 +89,6 @@ export default function DashboardPanel({ userData = {} }) {
       color: 'var(--color-text-secondary, #64748B)',
       textTransform: 'uppercase',
       letterSpacing: '1px'
-    },
-    profileSection: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px',
-      overflow: 'hidden'
-    },
-    statRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '10px 0',
-      borderBottom: '1px solid var(--color-border-subtle, #F1F5F9)'
-    },
-    statLabel: {
-      fontSize: '13px',
-      color: 'var(--color-text-secondary, #64748B)',
-      fontWeight: '500'
-    },
-    statValue: {
-      fontSize: '15px',
-      color: 'var(--color-text, #0F172A)',
-      fontWeight: '600'
     },
     gaugeSection: {
       background: 'var(--color-background, #FFFFFF)',
@@ -183,6 +168,39 @@ export default function DashboardPanel({ userData = {} }) {
       fontStyle: 'italic',
       textAlign: 'center',
       lineHeight: '1.5'
+    },
+    lastFastCard: {
+      background: 'var(--color-background, #FFFFFF)',
+      borderRadius: '12px',
+      padding: '16px',
+      border: '1px solid var(--color-border-subtle, #F1F5F9)'
+    },
+    lastFastTitle: {
+      fontSize: '12px',
+      color: 'var(--color-text-secondary, #64748B)',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      marginBottom: '12px'
+    },
+    lastFastDuration: {
+      fontSize: '28px',
+      fontWeight: '300',
+      color: 'var(--color-accent-teal, #4ECDC4)',
+      marginBottom: '8px'
+    },
+    lastFastDate: {
+      fontSize: '12px',
+      color: 'var(--color-text-tertiary, #94A3B8)',
+      marginBottom: '4px'
+    },
+    lastFastStatus: {
+      fontSize: '11px',
+      color: 'var(--color-text-secondary, #64748B)',
+      padding: '4px 8px',
+      background: 'var(--color-background-secondary, #F8FAFC)',
+      borderRadius: '6px',
+      display: 'inline-block',
+      marginTop: '8px'
     }
   };
 
@@ -194,40 +212,39 @@ export default function DashboardPanel({ userData = {} }) {
         <div style={styles.subtitle}>Dashboard</div>
       </div>
 
-      {/* Profile Info */}
-      <div style={styles.profileSection}>
-        {displayProfile.age && (
-          <div style={styles.statRow}>
-            <span style={styles.statLabel}>Age</span>
-            <span style={styles.statValue}>{displayProfile.age} years</span>
-          </div>
-        )}
-        {displayProfile.height && (
-          <div style={styles.statRow}>
-            <span style={styles.statLabel}>Height</span>
-            <span style={styles.statValue}>{displayProfile.height} cm</span>
-          </div>
-        )}
-        {displayProfile.currentWeight && (
-          <div style={styles.statRow}>
-            <span style={styles.statLabel}>Current Weight</span>
-            <span style={styles.statValue}>{displayProfile.currentWeight} kg</span>
-          </div>
-        )}
-        {displayProfile.targetWeight && (
-          <div style={styles.statRow}>
-            <span style={styles.statLabel}>Target Weight</span>
-            <span style={styles.statValue}>{displayProfile.targetWeight} kg</span>
-          </div>
-        )}
-      </div>
-
-      {/* Motivation */}
+      {/* Motivation - Goal at the top */}
       {displayProfile.goal && (
         <div style={styles.motivationBox}>
           <div style={styles.motivationText}>
             "{displayProfile.goal}"
           </div>
+        </div>
+      )}
+
+      {/* Last Fast */}
+      {lastFast && (
+        <div style={styles.lastFastCard}>
+          <div style={styles.lastFastTitle}>Last Fast</div>
+          <div style={styles.lastFastDuration}>
+            {lastFast.unit === 'seconds'
+              ? `${(lastFast.duration / 3600).toFixed(1)}h`
+              : `${lastFast.duration}h`}
+          </div>
+          <div style={styles.lastFastDate}>
+            {new Date(lastFast.end_time).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            })}
+          </div>
+          {lastFast.cancelled && (
+            <div style={styles.lastFastStatus}>Cancelled</div>
+          )}
+          {!lastFast.cancelled && lastFast.duration >= lastFast.original_goal && (
+            <div style={{...styles.lastFastStatus, color: '#34C759', background: 'rgba(52, 199, 89, 0.1)'}}>
+              ✓ Completed
+            </div>
+          )}
         </div>
       )}
 
