@@ -11,6 +11,7 @@ import {
   showCompletionNotification,
   getNotificationPermission,
 } from '../services/notificationService';
+import { saveFast } from '../services/fastsService';
 
 // Utils
 import {
@@ -30,9 +31,10 @@ import {
  * It receives hours from parent to prevent state synchronization bugs
  *
  * @param {number} hours - Current hours value (controlled from parent)
+ * @param {object} user - Authenticated user object (null if not logged in)
  * @returns {object} Timer state and control functions
  */
-export function useTimerState(hours) {
+export function useTimerState(hours, user) {
   // Test mode configuration
   const TEST_MODE = TEST_MODE_CONFIG.ENABLED;
   const TIME_MULTIPLIER = TEST_MODE ? TEST_MODE_CONFIG.TIME_MULTIPLIER : PRODUCTION_MODE.TIME_MULTIPLIER;
@@ -65,6 +67,36 @@ export function useTimerState(hours) {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  /**
+   * Helper function to save completed fast to database
+   * @param {object} completionData - Fast completion data
+   */
+  const saveCompletedFast = async (completionData) => {
+    // Only save if user is logged in
+    if (!user || !user.id) {
+      console.log('User not logged in, skipping fast save');
+      return;
+    }
+
+    // Convert completion data to database format
+    const fastData = {
+      startTime: completionData.startTime.toISOString(),
+      endTime: completionData.endTime.toISOString(),
+      goalHours: completionData.originalGoal,
+      actualHours: parseFloat(completionData.duration),
+      wasCancelled: completionData.cancelled || false,
+      fastingLevel: null, // TODO: Add fasting level detection
+      notes: null
+    };
+
+    const saved = await saveFast(user.id, fastData);
+    if (saved) {
+      console.log('Fast saved successfully:', saved);
+    } else {
+      console.error('Failed to save fast');
+    }
+  };
 
   // Calculate time left based on target time
   const timeLeft = isRunning
@@ -153,6 +185,9 @@ export function useTimerState(hours) {
       };
       setCompletedFastData(completionData);
       setShowCompletionSummary(true);
+
+      // Save fast to database
+      saveCompletedFast(completionData);
     }
 
     setIsRunning(false);
@@ -216,6 +251,11 @@ export function useTimerState(hours) {
     setTargetTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
+
+    // Save fast to database (if not already saved)
+    if (completedFastData && !completedFastData.cancelled) {
+      saveCompletedFast(completedFastData);
+    }
 
     // Show completion summary with "Start Fast" button
     setShowCompletionSummary(true);

@@ -54,7 +54,7 @@ export default function Timer() {
   const [hours, setHours] = useState(TIMER_CONSTANTS.DEFAULT_HOURS);
 
   // Custom Hooks - Timer state and logic
-  const timerState = useTimerState(hours);
+  const timerState = useTimerState(hours, user);
   const {
     isRunning,
     targetTime,
