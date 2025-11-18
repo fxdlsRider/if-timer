@@ -15,11 +15,10 @@ export async function saveFast(userId, fastData) {
         user_id: userId,
         start_time: fastData.startTime,
         end_time: fastData.endTime,
-        goal_hours: fastData.goalHours,
-        actual_hours: fastData.actualHours,
-        was_cancelled: fastData.wasCancelled || false,
-        fasting_level: fastData.fastingLevel || null,
-        notes: fastData.notes || null
+        original_goal: fastData.originalGoal,
+        duration: fastData.duration,
+        cancelled: fastData.cancelled || false,
+        unit: fastData.unit || 'hours'
       })
       .select()
       .single();
@@ -116,11 +115,16 @@ export async function getStatistics(userId) {
     // Total fasts
     const totalFasts = fasts.length;
 
-    // Total hours
-    const totalHours = fasts.reduce((sum, fast) => sum + (fast.actual_hours || 0), 0);
+    // Total hours (convert to hours if unit is seconds)
+    const totalHours = fasts.reduce((sum, fast) => {
+      const hours = fast.unit === 'seconds' ? fast.duration / 3600 : fast.duration;
+      return sum + (hours || 0);
+    }, 0);
 
-    // Longest fast
-    const longestFast = Math.max(...fasts.map(f => f.actual_hours || 0));
+    // Longest fast (in hours)
+    const longestFast = Math.max(...fasts.map(f => {
+      return f.unit === 'seconds' ? f.duration / 3600 : f.duration;
+    }));
 
     // Average fast
     const averageFast = totalHours / totalFasts;

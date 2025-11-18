@@ -132,77 +132,87 @@ supabase
 
 ---
 
-## 🔮 Planned Schema
+## 📊 Fasting Sessions
 
-### `fasting_sessions` (TODO - Not Yet Implemented ⏳)
+### `fasts` (✅ Implemented)
 
-Will store completed fasting sessions for history and statistics.
+Stores completed fasting sessions for history and statistics.
 
-**Planned Columns:**
+**Columns:**
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `uuid` | No | Primary key (auto-generated) |
-| `user_id` | `uuid` | No | User ID (foreign key) |
+| `user_id` | `uuid` | No | User ID (foreign key to auth.users) |
 | `start_time` | `timestamptz` | No | Fast start time |
 | `end_time` | `timestamptz` | No | Fast end time |
-| `target_duration` | `integer` | No | Planned duration (hours) |
-| `actual_duration` | `interval` | No | Actual duration (calculated) |
-| `fasting_level` | `varchar(20)` | No | Level: gentle, classic, intensive, warrior, monk, extended |
-| `was_extended` | `boolean` | No | Whether user went into extended mode |
-| `extended_duration` | `interval` | Yes | Time fasted beyond goal (if extended) |
-| `notes` | `text` | Yes | User notes (future feature) |
-| `created_at` | `timestamptz` | No | Row creation timestamp |
+| `original_goal` | `integer` | No | Planned duration (hours or seconds depending on unit) |
+| `duration` | `numeric(10,1)` | No | Actual duration fasted |
+| `cancelled` | `boolean` | Yes | Whether fast was cancelled early (default: false) |
+| `unit` | `varchar(10)` | Yes | Time unit: 'hours' or 'seconds' (default: 'hours') |
+| `created_at` | `timestamptz` | Yes | Row creation timestamp (default: now()) |
 
-**SQL Schema (Draft):**
+**SQL Schema:**
 
 ```sql
-CREATE TABLE fasting_sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+CREATE TABLE public.fasts (
+  id UUID NOT NULL DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  duration NUMERIC(10, 1) NOT NULL,
+  original_goal INTEGER NOT NULL,
   start_time TIMESTAMPTZ NOT NULL,
   end_time TIMESTAMPTZ NOT NULL,
-  target_duration INTEGER NOT NULL CHECK (target_duration >= 14 AND target_duration <= 48),
-  actual_duration INTERVAL NOT NULL,
-  fasting_level VARCHAR(20) NOT NULL
-    CHECK (fasting_level IN ('gentle', 'classic', 'intensive', 'warrior', 'monk', 'extended')),
-  was_extended BOOLEAN NOT NULL DEFAULT false,
-  extended_duration INTERVAL,
-  notes TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  cancelled BOOLEAN NULL DEFAULT false,
+  unit VARCHAR(10) NULL DEFAULT 'hours',
+  created_at TIMESTAMPTZ NULL DEFAULT now(),
 
-  -- Ensure end_time > start_time
-  CONSTRAINT valid_time_range CHECK (end_time > start_time)
+  CONSTRAINT fasts_pkey PRIMARY KEY (id),
+  CONSTRAINT unique_user_fast UNIQUE (user_id, start_time, duration),
+  CONSTRAINT fasts_user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES auth.users (id) ON DELETE CASCADE
 );
 
 -- Indexes
-CREATE INDEX idx_fasting_sessions_user_id ON fasting_sessions(user_id);
-CREATE INDEX idx_fasting_sessions_start_time ON fasting_sessions(start_time);
-CREATE INDEX idx_fasting_sessions_level ON fasting_sessions(fasting_level);
+CREATE INDEX IF NOT EXISTS fasts_user_id_idx ON public.fasts USING btree (user_id);
+CREATE INDEX IF NOT EXISTS fasts_end_time_idx ON public.fasts USING btree (end_time DESC);
 
--- Composite index for user + time queries
-CREATE INDEX idx_fasting_sessions_user_time ON fasting_sessions(user_id, start_time DESC);
+-- RLS Policies
+ALTER TABLE fasts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own fasts"
+  ON fasts FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own fasts"
+  ON fasts FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own fasts"
+  ON fasts FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own fasts"
+  ON fasts FOR DELETE
+  USING (auth.uid() = user_id);
 ```
 
-**Future Queries:**
+**Example Queries:**
 
 ```sql
 -- User's fasting history
-SELECT * FROM fasting_sessions
+SELECT * FROM fasts
 WHERE user_id = 'xxx'
-ORDER BY start_time DESC
+ORDER BY end_time DESC
 LIMIT 50;
 
 -- Statistics
 SELECT
   COUNT(*) as total_fasts,
-  AVG(EXTRACT(EPOCH FROM actual_duration)/3600) as avg_hours,
-  MAX(EXTRACT(EPOCH FROM actual_duration)/3600) as longest_fast,
-  fasting_level,
-  COUNT(*) as level_count
-FROM fasting_sessions
-WHERE user_id = 'xxx'
-GROUP BY fasting_level;
+  AVG(CASE WHEN unit = 'seconds' THEN duration / 3600 ELSE duration END) as avg_hours,
+  MAX(CASE WHEN unit = 'seconds' THEN duration / 3600 ELSE duration END) as longest_fast,
+  SUM(CASE WHEN unit = 'seconds' THEN duration / 3600 ELSE duration END) as total_hours
+FROM fasts
+WHERE user_id = 'xxx' AND cancelled = false;
 
 -- Current week stats
 SELECT

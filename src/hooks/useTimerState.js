@@ -83,11 +83,10 @@ export function useTimerState(hours, user) {
     const fastData = {
       startTime: completionData.startTime.toISOString(),
       endTime: completionData.endTime.toISOString(),
-      goalHours: completionData.originalGoal,
-      actualHours: parseFloat(completionData.duration),
-      wasCancelled: completionData.cancelled || false,
-      fastingLevel: null, // TODO: Add fasting level detection
-      notes: null
+      originalGoal: completionData.originalGoal,
+      duration: parseFloat(completionData.duration),
+      cancelled: completionData.cancelled || false,
+      unit: completionData.unit || 'hours'
     };
 
     const saved = await saveFast(user.id, fastData);
