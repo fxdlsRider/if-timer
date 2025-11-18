@@ -1125,9 +1125,9 @@ export default function IFTimerFinal() {
           right: 0,
           background: '#FF4444',
           color: 'white',
-          padding: '8px',
+          padding: '2px',
           textAlign: 'center',
-          fontSize: '14px',
+          fontSize: '9px',
           fontWeight: 'bold',
           zIndex: 9999
         }}>

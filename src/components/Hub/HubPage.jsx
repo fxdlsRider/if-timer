@@ -24,11 +24,11 @@ export default function HubPage({ user, onSignIn }) {
   };
 
   const statsData = {
-    totalFasts: 19,
-    currentStreak: 1,
-    totalHours: -342862.9, // Bug - will be fixed
-    longestFast: 137.7,
-    averageFast: -18045.4 // Bug - will be fixed
+    totalFasts: 0,
+    currentStreak: 0,
+    totalHours: 0,
+    longestFast: 0,
+    averageFast: 0
   };
 
   const achievements = [
