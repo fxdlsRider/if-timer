@@ -453,9 +453,22 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 → Ich weiß: `src/config/constants.js:19` → `ENABLED: false`
 
-### Commit & Push
+### Session Ende Workflow
 
-> "Sichere alles und pushe zu main"
+> "Sichere und dokumentiere"
+
+→ Ich führe aus:
+1. Test Mode ausschalten (falls aktiviert)
+2. Code testen (`npm start` checken)
+3. **`docs/progress.md` updaten** (Session-Log hinzufügen)
+4. **`docs/session-guide.md` updaten** (Current State aktualisieren)
+5. `git add` (alle Änderungen stagen)
+6. `git commit` (mit aussagekräftiger Message)
+7. `git push origin main`
+
+### Nur Code sichern (ohne Doku-Update)
+
+> "Sichere und pushe zu main"
 
 → Ich führe aus:
 1. `git status` (Check)
@@ -521,11 +534,24 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ### Session Ende
 
-- [ ] Test Mode ausschalten (falls aktiviert)
-- [ ] Code testen (keine Errors)
+**User sagt:** "Sichere und dokumentiere"
+
+**Dann ausführen:**
+- [ ] Test Mode ausschalten (falls aktiviert - `src/config/constants.js:19`)
+- [ ] Code testen (keine Errors, `npm start` checken)
+- [ ] **`docs/progress.md` updaten** - Chronologisches Log dieser Session
+  - Was wurde implementiert?
+  - Welche Commits?
+  - Bekannte Issues?
+  - Next Steps?
+- [ ] **`docs/session-guide.md` updaten** - Current State Snapshot
+  - "🎯 Aktueller Stand" Sektion aktualisieren
+  - Bekannte Issues updaten
+  - Next Steps anpassen
+  - Status-Zeile am Ende updaten
+  - Zeilen-Nummern prüfen (falls Code verschoben)
 - [ ] Commit mit aussagekräftiger Message
-- [ ] Push zu main
-- [ ] `docs/progress.md` updaten (falls große Changes)
+- [ ] Push zu main (`git push origin main`)
 
 ---
 
