@@ -1,6 +1,7 @@
 // components/Hub/HubPage.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ProfileCard from './ProfileCard';
+import { getStatistics } from '../../services/fastsService';
 
 /**
  * HubPage - User Hub
@@ -11,25 +12,32 @@ import ProfileCard from './ProfileCard';
  * - Achievements (right)
  */
 export default function HubPage({ user, onSignIn }) {
-  // Mock data - will be replaced with real data later
-  const profileData = {
-    name: 'Zoran Zdravkovic',
-    nickname: 'zz',
-    age: 52,
-    height: 174,
-    weight: 89,
-    targetWeight: 83,
-    goal: '83kg i kiselina',
-    weightToGo: 6.0
-  };
-
-  const statsData = {
+  // State for statistics
+  const [statsData, setStatsData] = useState({
     totalFasts: 0,
     currentStreak: 0,
     totalHours: 0,
     longestFast: 0,
     averageFast: 0
-  };
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Load statistics when user changes
+  useEffect(() => {
+    async function loadStats() {
+      if (!user || !user.id) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      const stats = await getStatistics(user.id);
+      setStatsData(stats);
+      setLoading(false);
+    }
+
+    loadStats();
+  }, [user]);
 
   const achievements = [
     { id: 'first-fast', icon: '🎯', label: 'First Fast', earned: true },
