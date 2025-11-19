@@ -44,6 +44,32 @@ export async function fetchLeaderboard(limit = 10) {
     const now = new Date();
     const totalActive = activeTimers.length;
 
+    // STEP 1: Load profiles for active users
+    const userIds = activeTimers.map(timer => timer.user_id);
+    console.log('🔍 [Leaderboard] Active user IDs:', userIds);
+
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_id, nickname')
+      .in('user_id', userIds);
+
+    if (profileError) {
+      console.error('❌ [Leaderboard] Error loading profiles:', profileError);
+    } else {
+      console.log('✅ [Leaderboard] Loaded profiles:', profiles);
+    }
+
+    // Create nickname mapping
+    const nicknameMap = {};
+    if (profiles) {
+      profiles.forEach(profile => {
+        if (profile.nickname) {
+          nicknameMap[profile.user_id] = profile.nickname;
+        }
+      });
+    }
+    console.log('🗺️ [Leaderboard] Nickname mapping:', nicknameMap);
+
     // Calculate elapsed time for each active fast
     const usersWithElapsed = activeTimers.map((timer) => {
       const targetTime = new Date(timer.target_time);
@@ -62,7 +88,7 @@ export async function fetchLeaderboard(limit = 10) {
 
       return {
         id: timer.user_id,
-        name: anonymizeUserId(timer.user_id),
+        name: anonymizeUserId(timer.user_id, nicknameMap[timer.user_id]),
         level,
         badge,
         hours: elapsedHours,
@@ -141,15 +167,23 @@ export async function getActiveFastersCount() {
 // Helper functions
 
 /**
- * Anonymize user ID to protect privacy
- * Generates a random username based on user_id hash
+ * Get display name for leaderboard
+ * Uses real nickname from profile if available, otherwise generates anonymous name
  *
  * @param {string} userId - UUID of user
- * @returns {string} Anonymized username
+ * @param {string|null|undefined} nickname - User's nickname from profile (optional)
+ * @returns {string} Display username
  */
-function anonymizeUserId(userId) {
-  // Simple hash-based anonymization
-  // In production, could fetch real usernames from user_profiles table
+function anonymizeUserId(userId, nickname = null) {
+  // If user has a nickname in their profile, use it
+  if (nickname) {
+    console.log(`👤 [Leaderboard] Using nickname for ${userId.slice(0, 8)}...: "${nickname}"`);
+    return nickname;
+  }
+
+  // Otherwise generate consistent anonymous name based on user_id hash
+  console.log(`🎭 [Leaderboard] Generating fantasy name for ${userId.slice(0, 8)}...`);
+
   const adjectives = [
     'Fast', 'Quick', 'Swift', 'Zen', 'Strong', 'Mindful', 'Wise', 'Calm',
     'Focused', 'Balanced', 'Health', 'Wellness', 'Fit', 'Active', 'Clean'

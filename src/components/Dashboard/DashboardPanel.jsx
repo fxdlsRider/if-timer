@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
 import { fetchProfile, calculateWeightToGo } from '../../services/profileService';
-import { getLastFast } from '../../services/fastsService';
+import { getLastFast, getStatistics } from '../../services/fastsService';
 
 /**
  * DashboardPanel Component
@@ -17,12 +17,14 @@ export default function DashboardPanel({ userData = {} }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastFast, setLastFast] = useState(null);
+  const [statistics, setStatistics] = useState(null);
 
-  // Load profile and last fast from Supabase
+  // Load profile, last fast, and statistics from Supabase
   useEffect(() => {
     if (user?.id) {
       loadProfile();
       loadLastFast();
+      loadStatistics();
     } else {
       setLoading(false);
     }
@@ -40,6 +42,11 @@ export default function DashboardPanel({ userData = {} }) {
     setLastFast(fast);
   };
 
+  const loadStatistics = async () => {
+    const stats = await getStatistics(user.id);
+    setStatistics(stats);
+  };
+
   // Use profile data or fallback to dummy data
   const displayProfile = {
     name: profile?.name || user?.email?.split('@')[0] || 'User',
@@ -49,11 +56,11 @@ export default function DashboardPanel({ userData = {} }) {
     height: profile?.height || null,
     goal: profile?.goal || null,
     nickname: profile?.nickname || null,
-    // Stats - will be replaced with real data later
-    currentStreak: userData.currentStreak || 0,
-    totalFasts: userData.totalFasts || 0,
-    totalHours: userData.totalHours || 0,
-    longestFast: userData.longestFast || 0
+    // Stats - loaded from Supabase
+    currentStreak: statistics?.currentStreak || 0,
+    totalFasts: statistics?.totalFasts || 0,
+    totalHours: statistics?.totalHours ? Math.round(statistics.totalHours * 10) / 10 : 0,
+    longestFast: statistics?.longestFast ? Math.round(statistics.longestFast * 10) / 10 : 0
   };
 
   const weightToGo = calculateWeightToGo(displayProfile.currentWeight, displayProfile.targetWeight);
