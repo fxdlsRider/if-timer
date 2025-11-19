@@ -71,7 +71,7 @@ export default function HubPage({ user, onSignIn }) {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4" style={{ background: 'var(--color-background-secondary, #F8FAFC)' }}>
+    <div className="min-h-screen py-8 px-4" style={{ background: 'var(--color-background, #FFFFFF)' }}>
       <div className="max-w-5xl mx-auto">
         {/* 3-Column Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -81,10 +81,13 @@ export default function HubPage({ user, onSignIn }) {
 
           {/* CENTER: Statistics Card */}
           <div style={{
-            background: 'var(--color-background, #FFFFFF)',
+            width: '300px',
+            height: '650px',
+            background: 'var(--color-background-secondary, #F8FAFC)',
             border: '1px solid var(--color-border, #E2E8F0)',
             borderRadius: '16px',
-            padding: '40px'
+            padding: '40px',
+            overflow: 'auto'
           }}>
             <h2 style={{
               fontSize: '12px',
@@ -136,10 +139,13 @@ export default function HubPage({ user, onSignIn }) {
 
           {/* RIGHT: Achievements Card */}
           <div style={{
-            background: 'var(--color-background, #FFFFFF)',
+            width: '300px',
+            height: '650px',
+            background: 'var(--color-background-secondary, #F8FAFC)',
             border: '1px solid var(--color-border, #E2E8F0)',
             borderRadius: '16px',
-            padding: '40px'
+            padding: '40px',
+            overflow: 'auto'
           }}>
             <h2 style={{
               fontSize: '12px',
@@ -162,8 +168,8 @@ export default function HubPage({ user, onSignIn }) {
                   key={achievement.id}
                   style={{
                     background: achievement.earned
-                      ? 'var(--color-background-secondary, #F8FAFC)'
-                      : 'var(--color-background-secondary, #F8FAFC)',
+                      ? 'var(--color-background, #FFFFFF)'
+                      : 'var(--color-background, #FFFFFF)',
                     border: achievement.earned
                       ? '2px solid #4ECDC4'
                       : '1px solid var(--color-border-subtle, #F1F5F9)',

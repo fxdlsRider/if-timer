@@ -96,14 +96,15 @@ export default function ProfileCard({ user }) {
   if (loading) {
     return (
       <div style={{
-        background: 'var(--color-background, #FFFFFF)',
+        width: '300px',
+        height: '650px',
+        background: 'var(--color-background-secondary, #F8FAFC)',
         border: '1px solid var(--color-border, #E2E8F0)',
         borderRadius: '16px',
         padding: '40px',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '400px'
+        alignItems: 'center'
       }}>
         <span style={{ color: 'var(--color-text-secondary, #64748B)' }}>Loading...</span>
       </div>
@@ -112,10 +113,13 @@ export default function ProfileCard({ user }) {
 
   return (
     <div style={{
-      background: 'var(--color-background, #FFFFFF)',
+      width: '300px',
+      height: '650px',
+      background: 'var(--color-background-secondary, #F8FAFC)',
       border: '1px solid var(--color-border, #E2E8F0)',
       borderRadius: '16px',
-      padding: '40px'
+      padding: '40px',
+      overflow: 'auto'
     }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
