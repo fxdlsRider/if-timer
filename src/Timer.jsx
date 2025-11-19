@@ -74,6 +74,7 @@ export default function Timer() {
     continueFasting,
     stopFasting,
     updateCompletedFastData,
+    restoreState,
   } = timerState;
 
   // Custom Hook - Drag handling (controlled component pattern)
@@ -98,9 +99,15 @@ export default function Timer() {
 
   // Stabilize callback to prevent re-creation
   const handleStateLoaded = useCallback((loadedState) => {
+    // Restore hours and angle
     if (loadedState.hours !== undefined) setHours(loadedState.hours);
     if (loadedState.angle !== undefined) setAngle(loadedState.angle);
-  }, []);
+
+    // Restore complete timer state if timer was running
+    if (loadedState.isRunning && restoreState) {
+      restoreState(loadedState);
+    }
+  }, [restoreState]);
 
   // Wrapper functions to reset angle on timer actions
   const handleStartTimer = useCallback(() => {

@@ -46,7 +46,6 @@ export async function fetchLeaderboard(limit = 10) {
 
     // STEP 1: Load profiles for active users
     const userIds = activeTimers.map(timer => timer.user_id);
-    console.log('🔍 [Leaderboard] Active user IDs:', userIds);
 
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
@@ -54,9 +53,7 @@ export async function fetchLeaderboard(limit = 10) {
       .in('user_id', userIds);
 
     if (profileError) {
-      console.error('❌ [Leaderboard] Error loading profiles:', profileError);
-    } else {
-      console.log('✅ [Leaderboard] Loaded profiles:', profiles);
+      console.error('Error loading profiles:', profileError);
     }
 
     // Create nickname mapping
@@ -68,7 +65,6 @@ export async function fetchLeaderboard(limit = 10) {
         }
       });
     }
-    console.log('🗺️ [Leaderboard] Nickname mapping:', nicknameMap);
 
     // Calculate elapsed time for each active fast
     const usersWithElapsed = activeTimers.map((timer) => {
@@ -132,7 +128,6 @@ export function subscribeToLeaderboard(callback) {
         filter: 'is_running=eq.true'
       },
       (payload) => {
-        console.log('Leaderboard change detected:', payload);
         callback();
       }
     )
@@ -177,12 +172,10 @@ export async function getActiveFastersCount() {
 function anonymizeUserId(userId, nickname = null) {
   // If user has a nickname in their profile, use it
   if (nickname) {
-    console.log(`👤 [Leaderboard] Using nickname for ${userId.slice(0, 8)}...: "${nickname}"`);
     return nickname;
   }
 
   // Otherwise generate consistent anonymous name based on user_id hash
-  console.log(`🎭 [Leaderboard] Generating fantasy name for ${userId.slice(0, 8)}...`);
 
   const adjectives = [
     'Fast', 'Quick', 'Swift', 'Zen', 'Strong', 'Mindful', 'Wise', 'Calm',

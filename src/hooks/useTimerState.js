@@ -282,6 +282,29 @@ export function useTimerState(hours, user) {
     setCompletedFastData(updatedData);
   };
 
+  /**
+   * Restore timer state from saved data (e.g., after page reload)
+   * @param {object} loadedState - Saved timer state from storage
+   */
+  const restoreState = (loadedState) => {
+    // Restore basic timer states
+    setIsRunning(loadedState.isRunning);
+    setTargetTime(loadedState.targetTime);
+    setIsExtended(loadedState.isExtended || false);
+    setOriginalGoalTime(loadedState.originalGoalTime || null);
+
+    // Calculate and restore start time from target time
+    if (loadedState.isRunning && loadedState.targetTime) {
+      const calculatedStartTime = loadedState.targetTime - (hours * TIME_MULTIPLIER * 1000);
+      setStartTime(new Date(calculatedStartTime));
+    }
+
+    // Reset celebration/summary screens
+    setShowCelebration(false);
+    setShowCompletionSummary(false);
+    notificationShownRef.current = false;
+  };
+
   return {
     // State
     isRunning,
@@ -309,5 +332,6 @@ export function useTimerState(hours, user) {
     stopFasting,
     startNewFast,
     updateCompletedFastData,
+    restoreState,
   };
 }
