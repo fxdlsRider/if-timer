@@ -52,11 +52,13 @@ export async function fetchLeaderboard(limit = 10) {
       const totalDurationSeconds = timer.hours * 3600;
       const elapsedSeconds = totalDurationSeconds - Math.max(0, Math.floor((targetTime - now) / 1000));
 
-      // Determine fasting level based on elapsed hours
+      // Calculate elapsed time
       const elapsedHours = Math.floor(elapsedSeconds / 3600);
       const elapsedMinutes = Math.floor((elapsedSeconds % 3600) / 60);
-      const level = getFastingLevelName(elapsedHours);
-      const badge = getFastingBadge(elapsedHours);
+
+      // Determine fasting level based on original goal (not elapsed time)
+      const level = getFastingLevelName(timer.hours);
+      const badge = getFastingBadge(timer.hours);
 
       return {
         id: timer.user_id,
@@ -171,17 +173,17 @@ function anonymizeUserId(userId) {
 }
 
 /**
- * Get fasting level name based on hours
- * @param {number} hours - Elapsed fasting hours
+ * Get fasting level name based on goal hours
+ * @param {number} hours - Goal fasting hours (14-48)
  * @returns {string} Level name
  */
 function getFastingLevelName(hours) {
-  if (hours < 14) return 'Light';
-  if (hours < 16) return 'Moderate';
-  if (hours < 20) return 'Deep';
-  if (hours < 24) return 'Intense';
-  if (hours < 36) return 'Extreme';
-  return 'Epic';
+  if (hours <= 16) return 'Gentle';
+  if (hours < 20) return 'Classic';
+  if (hours < 24) return 'Intensive';
+  if (hours < 36) return 'Warrior';
+  if (hours < 48) return 'Monk';
+  return 'Extended';
 }
 
 /**

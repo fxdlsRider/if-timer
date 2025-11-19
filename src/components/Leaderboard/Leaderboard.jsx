@@ -134,9 +134,9 @@ export default function Leaderboard({ onSignUp }) {
       color: 'var(--color-text-secondary, #64748B)'
     },
     userTime: {
-      fontSize: '14px',
-      fontWeight: '600',
-      color: 'var(--color-accent-teal, #4ECDC4)',
+      fontSize: '16px',
+      fontWeight: '700',
+      color: 'var(--color-text, #0F172A)',
       minWidth: '70px',
       textAlign: 'right'
     },
@@ -222,7 +222,6 @@ export default function Leaderboard({ onSignUp }) {
             <span style={getRankStyle(index + 1)}>
               {index + 1}
             </span>
-            <span style={styles.badge}>{user.badge}</span>
             <div style={styles.userInfo}>
               <div style={styles.userName}>{user.name}</div>
               <div style={styles.userLevel}>{user.level} Fast</div>

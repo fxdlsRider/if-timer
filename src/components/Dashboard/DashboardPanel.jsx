@@ -162,6 +162,15 @@ export default function DashboardPanel({ userData = {} }) {
       border: '1px solid var(--color-accent-teal, #4ECDC4)',
       borderStyle: 'dashed'
     },
+    motivationLabel: {
+      fontSize: '11px',
+      color: '#34C759',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '8px',
+      textAlign: 'center',
+      fontWeight: '700'
+    },
     motivationText: {
       fontSize: '14px',
       color: 'var(--color-text, #0F172A)',
@@ -209,12 +218,13 @@ export default function DashboardPanel({ userData = {} }) {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.title}>{displayProfile.name}</div>
-        <div style={styles.subtitle}>Dashboard</div>
+        <div style={styles.subtitle}>My Journey</div>
       </div>
 
       {/* Motivation - Goal at the top */}
       {displayProfile.goal && (
         <div style={styles.motivationBox}>
+          <div style={styles.motivationLabel}>Goal</div>
           <div style={styles.motivationText}>
             "{displayProfile.goal}"
           </div>
