@@ -107,7 +107,7 @@ export default function Timer() {
     if (loadedState.isRunning && restoreState) {
       restoreState(loadedState);
     }
-  }, [restoreState]);
+  }, []);
 
   // Wrapper functions to reset angle on timer actions
   const handleStartTimer = useCallback(() => {
