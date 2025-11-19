@@ -50,7 +50,7 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
   };
 
   return (
-    <header className="w-full bg-background sticky top-0 z-50 border-b border-transparent dark:border-border-dark" style={{ background: 'var(--color-background-secondary)' }}>
+    <header className="w-full bg-background sticky top-0 z-[100] border-b border-transparent dark:border-border-dark" style={{ background: 'var(--color-background-secondary)' }}>
       <div className="max-w-container mx-auto px-6 lg:px-10 h-16 flex items-center justify-center relative">
 
         {/* Logo - Left (absolute positioned) */}
