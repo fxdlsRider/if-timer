@@ -40,86 +40,21 @@ export default function LoginModal({ onClose }) {
     }
   };
 
-  const styles = {
-    modal: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    },
-    card: {
-      background: 'white',
-      padding: '40px',
-      borderRadius: '12px',
-      maxWidth: '400px',
-      width: '90%',
-      textAlign: 'center'
-    },
-    title: {
-      fontSize: '24px',
-      fontWeight: '300',
-      marginBottom: '12px',
-      color: '#333'
-    },
-    subtitle: {
-      fontSize: '14px',
-      color: '#666',
-      marginBottom: '30px',
-      lineHeight: '1.6'
-    },
-    input: {
-      width: '100%',
-      padding: '16px',
-      fontSize: '16px',
-      border: '2px solid #e0e0e0',
-      borderRadius: '8px',
-      marginBottom: '16px',
-      outline: 'none',
-      boxSizing: 'border-box'
-    },
-    button: {
-      width: '100%',
-      padding: '16px',
-      fontSize: '16px',
-      background: '#333',
-      color: 'white',
-      border: '1px solid rgba(0, 0, 0, 0.2)',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      marginBottom: '12px',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-    },
-    cancel: {
-      background: 'transparent',
-      color: '#666',
-      border: 'none',
-      padding: '12px',
-      cursor: 'pointer',
-      fontSize: '14px'
-    },
-    message: {
-      marginTop: '16px',
-      padding: '12px',
-      borderRadius: '6px',
-      fontSize: '14px',
-      background: message.includes('✅') ? '#e8f5e9' : '#ffebee',
-      color: message.includes('✅') ? '#2e7d32' : '#c62828'
-    }
-  };
-
   return (
-    <div style={styles.modal} onClick={onClose}>
-      <div style={styles.card} onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-gray-800 p-10 rounded-xl max-w-md w-[90%] text-center border border-gray-200 dark:border-gray-700"
+        onClick={(e) => e.stopPropagation()}
+      >
         {!success ? (
           <>
-            <h2 style={styles.title}>Sign in to sync</h2>
-            <p style={styles.subtitle}>
+            <h2 className="text-2xl font-light text-gray-900 dark:text-gray-100 mb-3">
+              Sign in to sync
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
               Enter your email to sync your timer<br />
               across all your devices. No password needed!
             </p>
@@ -131,13 +66,13 @@ export default function LoginModal({ onClose }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                style={styles.input}
+                className="w-full px-4 py-4 text-base border-2 border-gray-200 dark:border-gray-600 rounded-lg mb-4 outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:opacity-50"
               />
 
               <button
                 type="submit"
                 disabled={loading}
-                style={styles.button}
+                className="w-full px-4 py-4 text-base bg-gray-900 dark:bg-gray-700 text-white border border-black/20 dark:border-gray-600 rounded-lg cursor-pointer mb-3 shadow-xl hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Sending...' : 'Send Magic Link'}
               </button>
@@ -145,14 +80,18 @@ export default function LoginModal({ onClose }) {
               <button
                 type="button"
                 onClick={onClose}
-                style={styles.cancel}
+                className="bg-transparent text-gray-600 dark:text-gray-400 border-none py-3 cursor-pointer text-sm hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
               >
                 Cancel
               </button>
             </form>
 
             {message && (
-              <div style={styles.message}>
+              <div className={`mt-4 p-3 rounded-md text-sm ${
+                message.includes('✅')
+                  ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400'
+                  : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400'
+              }`}>
                 {message}
               </div>
             )}
@@ -160,59 +99,33 @@ export default function LoginModal({ onClose }) {
         ) : (
           <>
             {/* Success Screen */}
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📧</div>
-            <h2 style={styles.title}>Check your inbox!</h2>
-            <p style={{
-              fontSize: '15px',
-              color: '#666',
-              lineHeight: '1.6',
-              marginBottom: '8px'
-            }}>
+            <div className="text-5xl mb-5">📧</div>
+            <h2 className="text-2xl font-light text-gray-900 dark:text-gray-100 mb-3">
+              Check your inbox!
+            </h2>
+            <p className="text-[15px] text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
               We sent a magic link to<br />
-              <strong style={{ color: '#333' }}>{email}</strong>
+              <strong className="text-gray-900 dark:text-gray-100">{email}</strong>
             </p>
-            <p style={{
-              fontSize: '14px',
-              color: '#999',
-              lineHeight: '1.6',
-              marginBottom: '20px'
-            }}>
+            <p className="text-sm text-gray-500 dark:text-gray-500 leading-relaxed mb-5">
               Click the link in the email to sign in.
             </p>
 
             {/* Close tab instruction */}
-            <div style={{
-              background: '#FFF9E6',
-              border: '2px solid #FFE066',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              marginBottom: '24px'
-            }}>
-              <p style={{
-                fontSize: '14px',
-                color: '#333',
-                fontWeight: '600',
-                margin: 0
-              }}>
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg px-4 py-3 mb-6">
+              <p className="text-sm text-gray-900 font-semibold m-0">
                 ✓ You can close this tab now
               </p>
             </div>
 
             <button
               onClick={onClose}
-              style={{
-                ...styles.button,
-                background: '#4CAF50'
-              }}
+              className="w-full px-4 py-4 text-base bg-green-600 text-white border border-black/20 rounded-lg cursor-pointer shadow-xl hover:bg-green-700 transition-colors"
             >
               Got it!
             </button>
 
-            <p style={{
-              fontSize: '12px',
-              color: '#999',
-              marginTop: '16px'
-            }}>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-4">
               💡 The link works on all your devices
             </p>
           </>
