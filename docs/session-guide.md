@@ -1,6 +1,6 @@
 # Session Setup Guide für IF-Timer
 
-**Zuletzt aktualisiert:** 2025-11-18
+**Zuletzt aktualisiert:** 2025-11-19
 **Zweck:** Schneller Einstieg für neue Claude Code Sessions
 
 ---
@@ -153,6 +153,64 @@ ENABLED: false
 - Fasting Levels (Zeile 42-103)
 - Body Modes (Zeile 107-143)
 - Circle Config, Audio, etc.
+
+### UI Standardization - Card Layout System
+
+**Design Pattern (NEU ab 2025-11-19):**
+
+Alle Hauptseiten verwenden jetzt ein einheitliches 3-Karten-Layout:
+
+**Card Dimensions:**
+```javascript
+const cardStyle = {
+  width: '300px',
+  height: '650px',
+  background: 'var(--color-background-secondary, #F8FAFC)',
+  border: '1px solid var(--color-border, #E2E8F0)',
+  borderRadius: '16px',
+  padding: '40px',
+  overflow: 'auto'
+};
+```
+
+**Page Layout:**
+```javascript
+<div style={{ background: 'var(--color-background, #FFFFFF)' }}>
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <Card1 /> <Card2 /> <Card3 />
+  </div>
+</div>
+```
+
+**Pages mit Card Layout:**
+
+1. **Dashboard (Hub)** - `src/components/Hub/HubPage.jsx`
+   - Profile Card | Statistics Card | Achievements Card
+   - Alle 300x650px
+
+2. **Learn** - `src/components/Training/TrainingPage.jsx`
+   - The Foundation | Choose Your Method | Advanced Insights
+   - IF-Education Content
+
+3. **App-Modes** - `src/components/Modes/ModesPage.jsx`
+   - Scientific Mode | Hippie Mode | Pro Mode
+   - Theme Switcher in Hippie Mode Card
+
+4. **About** - `src/components/About/AboutPage.jsx`
+   - Our Mission | Tech Stack | Get Involved
+   - GitHub Link, Contact Info
+
+5. **Support** - `src/components/Support/SupportPage.jsx`
+   - Buy Me a Coffee | Affiliate Links | Merch Shop
+   - Donation Button, Coming Soon items
+
+**Color Scheme:**
+- Page Background: White `#FFFFFF`
+- Card Background: Light Gray `#F8FAFC`
+- Borders: `#E2E8F0`
+- Accent: Teal `#4ECDC4`
+
+**⚠️ WICHTIG:** Alle neuen Pages sollten diesem Pattern folgen!
 
 ---
 

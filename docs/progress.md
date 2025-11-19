@@ -1,5 +1,206 @@
 # IF-Timer Progress Log
 
+## 2025-11-19: UI Standardization - Card Layout Across All Pages
+
+### Features Implemented
+
+#### 1. Standardized Card Layout System
+**Major Update:** Implemented consistent 300x650px card layout across all main pages for unified user experience.
+
+**Design Specifications:**
+- Card dimensions: 300px width × 650px height
+- Background: Light gray `#F8FAFC` (cards) / White `#FFFFFF` (page)
+- Border: 1px solid `#E2E8F0`
+- Border radius: 16px
+- Padding: 40px
+- Overflow: auto (scrollable when content exceeds)
+
+#### 2. Dashboard Page (Hub) - Layout & Color Fixes
+**File:** `src/components/Hub/HubPage.jsx`, `src/components/Hub/ProfileCard.jsx`
+
+**Changes:**
+- Fixed color scheme: Page background → White, Cards → Light gray (was inverted)
+- Standardized all three cards to 300x650px dimensions
+- Profile Card: Editable user information
+- Statistics Card: Total Fasts, Current Streak, metrics
+- Achievements Card: Badge grid with progress tracking
+
+**Previous:** Cards were varying sizes, inconsistent colors
+**Current:** Uniform 300x650px, proper color hierarchy
+
+#### 3. Learn Page (Training) - Educational Content
+**File:** `src/components/Training/TrainingPage.jsx`
+
+**Three Cards Created:**
+1. **THE FOUNDATION**
+   - What is Intermittent Fasting?
+   - How It Works (HGH, insulin, cellular repair)
+   - Health Benefits
+
+2. **CHOOSE YOUR METHOD**
+   - 16:8 Method (beginners)
+   - 18:6 Method (experienced)
+   - OMAD (advanced)
+   - Extended Fasting (24-48h+)
+
+3. **ADVANCED INSIGHTS**
+   - Autophagy (cellular recycling)
+   - Ketosis (fat burning state)
+   - Breaking Your Fast (best practices)
+   - Important Notes (medical disclaimer)
+
+**Previous:** Simple "Coming Soon" placeholder
+**Current:** Comprehensive IF education with 3-card layout
+
+#### 4. App-Modes Page - Content Style Selection
+**File:** `src/components/Modes/ModesPage.jsx`
+
+**Three Cards Created:**
+1. **SCIENTIFIC MODE** 🔬
+   - Evidence-based approach
+   - Research citations and sources
+   - For health professionals and data enthusiasts
+
+2. **HIPPIE MODE** 🌿
+   - Holistic & mindful approach
+   - Mindfulness exercises
+   - Includes Theme Switcher (Light/Dark/System)
+
+3. **PRO MODE** 💀
+   - No-nonsense, brutally honest
+   - Sarcastic motivational messages
+   - For masochists who want tough love
+
+**Previous:** Linear list layout with theme switcher at top
+**Current:** 3-card layout with theme switcher integrated into Hippie Mode card
+
+#### 5. About Page - Project Information
+**File:** `src/components/About/AboutPage.jsx`
+
+**Three Cards Created:**
+1. **OUR MISSION**
+   - Simple & Effective approach
+   - Core Values (Simplicity, Privacy, Free Forever, Open Source)
+   - Why IF-Timer?
+
+2. **TECH STACK**
+   - Frontend: React 19, Tailwind CSS
+   - Backend: Supabase (PostgreSQL)
+   - Hosting: Vercel (Edge Network)
+   - Authentication: Magic Link
+
+3. **GET INVOLVED**
+   - Open Source information
+   - GitHub repository link
+   - Contact methods (Issues, Feature Requests, Contribute)
+   - Built with ❤️ by the community
+
+**Previous:** Single column layout with sections
+**Current:** 3-card layout with visual hierarchy
+
+#### 6. Support Page - Monetization Options
+**File:** `src/components/Support/SupportPage.jsx`
+
+**Three Cards Created:**
+1. **ONE-TIME DONATION** ☕
+   - Buy Me a Coffee
+   - Why Support? (keeps app free, no ads, funds servers)
+   - Your Impact
+   - Active donation button
+
+2. **AFFILIATE LINKS** 🔗
+   - Recommended products (Coming Soon)
+   - Books, Supplements, Health Tracking, Fasting Aids
+   - Commission-based support
+
+3. **MERCH SHOP** 👕
+   - IF-themed merchandise (Coming Soon)
+   - T-shirts, Mugs, Accessories, Gift Sets
+   - Show your IF love
+
+**Additional:** Thank You section below cards
+
+**Previous:** Horizontal 3-card layout with smaller dimensions
+**Current:** Standardized 300x650px cards with detailed content
+
+### Technical Details
+
+**Design Pattern Implemented:**
+```javascript
+const cardStyle = {
+  width: '300px',
+  height: '650px',
+  background: 'var(--color-background-secondary, #F8FAFC)',
+  border: '1px solid var(--color-border, #E2E8F0)',
+  borderRadius: '16px',
+  padding: '40px',
+  overflow: 'auto'
+};
+```
+
+**Files Modified (7 total):**
+- `src/components/Hub/HubPage.jsx` - Color fix + card dimensions
+- `src/components/Hub/ProfileCard.jsx` - Card dimensions
+- `src/components/Training/TrainingPage.jsx` - Complete rewrite with 3 cards
+- `src/components/Modes/ModesPage.jsx` - Complete rewrite with 3 cards
+- `src/components/About/AboutPage.jsx` - Complete rewrite with 3 cards
+- `src/components/Support/SupportPage.jsx` - Complete rewrite with 3 cards
+- `src/components/Learn/LearnPage.jsx` - (Created but not used - Training is the active page)
+
+**Layout Structure:**
+```html
+<div style={{ background: '#FFFFFF' }}>  {/* Page */}
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div style={cardStyle}>Card 1</div>
+    <div style={cardStyle}>Card 2</div>
+    <div style={cardStyle}>Card 3</div>
+  </div>
+</div>
+```
+
+### User Experience Improvements
+
+**Benefits:**
+- ✅ Consistent navigation experience across all pages
+- ✅ Predictable card dimensions and spacing
+- ✅ Better content organization with 3-column grid
+- ✅ Scrollable cards for extensive content
+- ✅ Responsive layout (stacks on mobile)
+- ✅ Visual hierarchy with proper typography
+- ✅ Color scheme consistency
+
+**Design Principles Applied:**
+- Card-based UI for modern, clean look
+- White space optimization (40px padding)
+- Typography scale (12px → 14px → 24px)
+- Color variables for theme support
+- Overflow handling for long content
+
+### Commits
+- `b09f00f` - feat: Standardize all pages with 300x650px card layout
+
+### Testing Results
+- ✅ All pages render with consistent card layout
+- ✅ Cards are exactly 300x650px on all pages
+- ✅ Scrolling works within cards when content exceeds height
+- ✅ Responsive grid collapses to single column on mobile
+- ✅ Color scheme correct (white page, gray cards)
+- ✅ Theme switcher functional in App-Modes page
+- ✅ All content properly formatted and readable
+
+### Known Issues
+- Level changes during active fast not updating in timer_states DB (pending)
+
+### Next Steps
+- Add content to remaining placeholder pages
+- Implement mode selection functionality (Scientific/Hippie/Pro)
+- Connect affiliate links and merch shop when ready
+- Add more educational content to Learn page
+- Consider adding animations/transitions between cards
+- Mobile optimization testing
+
+---
+
 ## 2025-11-18: Fast Tracking System & Statistics Integration
 
 ### Features Implemented
