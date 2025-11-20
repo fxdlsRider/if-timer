@@ -91,6 +91,32 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     return () => clearInterval(interval);
   }, []);
 
+  // Sync internal state when value prop changes (e.g., when picker reopens with updated time)
+  useEffect(() => {
+    const newValue = value || new Date();
+
+    // Find date index for the new value
+    const targetDay = newValue.getDate();
+    const targetMonth = newValue.getMonth();
+    const targetYear = newValue.getFullYear();
+
+    const index = dateOptions.findIndex(d =>
+      d.getDate() === targetDay &&
+      d.getMonth() === targetMonth &&
+      d.getFullYear() === targetYear
+    );
+
+    const dateIndex = index >= 0 ? index : 180;
+    const hourIndex = newValue.getHours();
+    const minuteIndex = newValue.getMinutes();
+
+    // Update states to match the new value
+    setSelectedDateIndex(dateIndex);
+    setSelectedHour(hourIndex);
+    setSelectedMinute(minuteIndex);
+    setSelectedDate(newValue);
+  }, [value, dateOptions]);
+
   // Update date when any component changes
   useEffect(() => {
     const baseDate = dateOptions[selectedDateIndex];
