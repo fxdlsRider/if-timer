@@ -36,8 +36,13 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     return dates;
   }, []); // Empty deps - only generate once on mount
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 60 }, (_, i) => i); // 0, 1, 2, ..., 59
+  // Create tripled arrays for infinite scroll effect
+  // [0-23, 0-23, 0-23] for hours and [0-59, 0-59, 0-59] for minutes
+  const hoursBase = Array.from({ length: 24 }, (_, i) => i);
+  const hours = [...hoursBase, ...hoursBase, ...hoursBase]; // 72 items total
+
+  const minutesBase = Array.from({ length: 60 }, (_, i) => i);
+  const minutes = [...minutesBase, ...minutesBase, ...minutesBase]; // 180 items total
 
   // Weekday names
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -60,8 +65,9 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     return index >= 0 ? index : 180; // Default to today (index 180) if not found
   }, [dateOptions, initialValue]);
 
-  const initialHourIndex = initialValue.getHours();
-  const initialMinuteIndex = initialValue.getMinutes(); // Use exact minute
+  // Start in the middle section for infinite scroll (second copy of the tripled array)
+  const initialHourIndex = initialValue.getHours() + 24; // Add 24 to start in middle section
+  const initialMinuteIndex = initialValue.getMinutes() + 60; // Add 60 to start in middle section
 
   // Current selections (default to the value prop)
   const [selectedDateIndex, setSelectedDateIndex] = useState(initialDateIndex);
@@ -107,8 +113,9 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     );
 
     const dateIndex = index >= 0 ? index : 180;
-    const hourIndex = newValue.getHours();
-    const minuteIndex = newValue.getMinutes();
+    // Start in middle section for infinite scroll
+    const hourIndex = newValue.getHours() + 24;
+    const minuteIndex = newValue.getMinutes() + 60;
 
     // Update states to match the new value
     setSelectedDateIndex(dateIndex);
@@ -120,12 +127,15 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
   // Update date when any component changes
   useEffect(() => {
     const baseDate = dateOptions[selectedDateIndex];
-    const actualMinute = minutes[selectedMinute];
+
+    // Use modulo to get actual hour/minute from tripled arrays
+    const actualHour = hours[selectedHour] % 24;
+    const actualMinute = minutes[selectedMinute] % 60;
 
     // Create date by copying base date and then setting time
     // This avoids DST issues with the Date constructor
     const newDate = new Date(baseDate);
-    newDate.setHours(selectedHour, actualMinute, 0, 0);
+    newDate.setHours(actualHour, actualMinute, 0, 0);
 
     setSelectedDate(newDate);
     if (onChange) onChange(newDate);
@@ -198,6 +208,52 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
 
       if (currentValue !== clampedIndex) {
         setValue(clampedIndex);
+
+        // Infinite scroll: Re-center if we're in the first or third section
+        // This creates seamless wrap-around effect
+        setTimeout(() => {
+          if (!ref.current) return;
+
+          let newIndex = clampedIndex;
+          let shouldReCenter = false;
+
+          if (columnName === 'HOUR') {
+            // Hours: 72 items (3 x 24), middle section is indices 24-47
+            if (clampedIndex < 24) {
+              // In first section, jump to equivalent in middle section
+              newIndex = clampedIndex + 24;
+              shouldReCenter = true;
+            } else if (clampedIndex >= 48) {
+              // In third section, jump to equivalent in middle section
+              newIndex = clampedIndex - 24;
+              shouldReCenter = true;
+            }
+          } else if (columnName === 'MINUTE') {
+            // Minutes: 180 items (3 x 60), middle section is indices 60-119
+            if (clampedIndex < 60) {
+              // In first section, jump to equivalent in middle section
+              newIndex = clampedIndex + 60;
+              shouldReCenter = true;
+            } else if (clampedIndex >= 120) {
+              // In third section, jump to equivalent in middle section
+              newIndex = clampedIndex - 60;
+              shouldReCenter = true;
+            }
+          }
+
+          if (shouldReCenter) {
+            setValue(newIndex);
+            // Scroll to the new position instantly without animation
+            const children = ref.current.querySelector('.py-14').children;
+            if (children && children[newIndex]) {
+              children[newIndex].scrollIntoView({
+                block: 'center',
+                inline: 'center',
+                behavior: 'instant'
+              });
+            }
+          }
+        }, 150); // Small delay after value is set
       }
     }, 100); // Wait 100ms after scroll stops
   };
