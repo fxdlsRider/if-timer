@@ -53,9 +53,10 @@
 
   .timer-page-container {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 40px;
     overflow-x: hidden;
+    width: 100%;
   }
 
   /* Reorder: Timer first, then StatusPanel (Fasting Levels), then Dashboard/Leaderboard */
