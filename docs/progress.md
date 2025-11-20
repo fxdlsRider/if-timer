@@ -4,6 +4,44 @@
 
 ### Bug Fixes
 
+#### 3. Quote Layout Shift on iPad Portrait Mode
+**Problem:** Body Mode section and elements below shifting left when motivational quotes are 3 lines long on iPad portrait (768-1023px)
+**Files:** `src/components/Timer/TimerCircle.jsx`, `docs/CLAUDE_ONBOARDING.md`
+
+**Root Cause:**
+- Quote container had `maxWidth: 500px` but no `overflow: hidden`
+- Long words or 3-line quotes caused horizontal overflow
+- Overflow affected CSS Grid layout centering in tablet mode
+- **Styling confusion:** Project uses Tailwind CSS + Inline Styles + CSS Variables (wasn't documented)
+
+**Fixes Applied:**
+
+**TimerCircle.jsx (Lines 337, 445, 582):**
+- Added `overflow: 'hidden'` to all 3 quote containers (prevents horizontal overflow)
+- Added `boxSizing: 'border-box'` for proper width calculation
+- Added `wordWrap: 'break-word'` and `overflowWrap: 'break-word'` to <p> tags (forces text wrapping)
+
+**CLAUDE_ONBOARDING.md (Line 128-131):**
+- Updated tech stack documentation to clarify Tailwind CSS usage
+- Added warning about styling approach: Tailwind + Inline Styles + CSS Variables
+- Prevents future confusion about styling patterns
+
+**Result:**
+- ✅ Quote container strictly constrained to 500px width
+- ✅ Body Mode section stays centered with all quote lengths
+- ✅ No horizontal overflow on any screen size
+- ✅ Documentation updated for future sessions
+
+**Screenshots:**
+- Reference: `screenshots/l1.png` - iPad portrait mode showing layout
+
+**Commits:**
+- `ba243ff` - "fix: Prevent layout shift with long quotes on iPad portrait"
+- `4d0e324` - "fix: Prevent horizontal overflow in quote containers on tablets"
+- `[pending]` - "docs: Add Tailwind CSS to tech stack documentation"
+
+---
+
 #### 1. Timer Buttons Layout Issue on iPad
 **Problem:** Started and Goal buttons were cramped/overlapping on iPad (11-inch) and tablet screens
 **Files:** `src/components/Timer/TimerCircle.jsx`, `src/components/Timer/FastingInfo.jsx`

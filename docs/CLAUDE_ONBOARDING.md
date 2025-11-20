@@ -125,7 +125,10 @@ src/
 ## 🔧 Technologie-Stack
 
 - **Frontend:** React 18 (Functional Components, Hooks)
-- **Styling:** Inline Styles + CSS Variables
+- **Styling:** Tailwind CSS + Inline Styles + CSS Variables
+  - ⚠️ **WICHTIG:** Tailwind wird für Utility-Classes verwendet (z.B. Layout, Spacing)
+  - Inline Styles für komponentenspezifisches Styling
+  - CSS Variables für Theme-Konsistenz
 - **Database:** Supabase (PostgreSQL)
 - **Auth:** Supabase Auth (Magic Link)
 - **Deployment:** Vercel
