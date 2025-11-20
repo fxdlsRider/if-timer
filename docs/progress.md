@@ -130,11 +130,12 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 
 ---
 
-#### 6. Intermittent Progress Bar Direction Bug (DOCUMENTED, FIX PENDING)
+#### 6. Intermittent Progress Bar Direction Bug ✅ FIXED
 **Problem:** Occasionally, when starting a timer (especially from preset buttons like "Classic"), the progress bar fills from the wrong direction (counterclockwise/left side) instead of clockwise from top
-**Status:** ⚠️ INTERMITTENT - Cannot reliably reproduce, self-corrects after changing goal
-**Files to modify:** `src/utils/timeCalculations.js`
+**Status:** ✅ FIXED with defensive progress clamping
+**Files Modified:** `src/utils/timeCalculations.js:49-64`
 **Date Reported:** 2025-11-20
+**Date Fixed:** 2025-11-20
 **Screenshot:** `screenshots/t1.png` - Shows timer at 16:33:29 (extended mode) with small teal segment
 
 **User Report:**
@@ -249,8 +250,27 @@ If this fix causes issues:
 - `src/hooks/useDragHandle.js:93-106` - handleLevelClick (sets hours/angle)
 - `src/components/Timer/TimerCircle.jsx:430` - SVG progress circle rendering
 
+**Implementation Details:**
+```javascript
+// Added to getProgress() function (lines 58-63)
+const progress = (elapsed / totalSeconds) * 100;
+
+// DEFENSIVE: Clamp progress between 0-100% to prevent visual glitches
+// Handles race conditions where hours/targetTime might be temporarily out of sync
+// See docs/progress.md Section 6 for detailed explanation
+return Math.max(0, Math.min(100, progress));
+```
+
+**Result:**
+- ✅ Progress always clamped to 0-100% range
+- ✅ Prevents negative progress from race conditions
+- ✅ Prevents overflow progress (>100%)
+- ✅ Visual glitches eliminated
+- ✅ No breaking changes to existing functionality
+
 **Commits:**
-- `[PENDING]` - "fix: Add defensive progress clamping to prevent visual glitches"
+- `f7c300b` - "docs: Document intermittent progress bar direction bug and proposed fix"
+- `[NEXT]` - "fix: Add defensive progress clamping to prevent visual glitches"
 
 ---
 

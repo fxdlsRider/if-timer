@@ -55,7 +55,12 @@ export const getProgress = (totalHours, timeLeft, isExtended = false) => {
   // Normal mode: calculate progress from elapsed time
   const totalSeconds = totalHours * 3600;
   const elapsed = totalSeconds - timeLeft;
-  return (elapsed / totalSeconds) * 100;
+  const progress = (elapsed / totalSeconds) * 100;
+
+  // DEFENSIVE: Clamp progress between 0-100% to prevent visual glitches
+  // Handles race conditions where hours/targetTime might be temporarily out of sync
+  // See docs/progress.md Section 6 for detailed explanation
+  return Math.max(0, Math.min(100, progress));
 };
 
 /**
