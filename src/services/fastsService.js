@@ -3,12 +3,33 @@ import { supabase } from '../supabaseClient';
 
 /**
  * Save a completed fast to the database
+ * Includes deduplication to prevent saving the same fast from multiple devices
  * @param {string} userId - User ID
  * @param {object} fastData - Fast data
  * @returns {object|null} Saved fast or null on error
  */
 export async function saveFast(userId, fastData) {
   try {
+    // DEDUPLICATION: Check if a fast with this start_time already exists
+    const { data: existing, error: checkError } = await supabase
+      .from('fasts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('start_time', fastData.startTime)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking for existing fast:', checkError);
+      // Continue with insert anyway
+    }
+
+    // If fast already exists, return it without creating duplicate
+    if (existing) {
+      console.log('Fast already saved (deduplication), skipping insert');
+      return existing;
+    }
+
+    // Insert new fast
     const { data, error } = await supabase
       .from('fasts')
       .insert({

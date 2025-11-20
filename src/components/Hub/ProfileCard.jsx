@@ -23,7 +23,8 @@ export default function ProfileCard({ user }) {
     height: null,
     weight: null,
     target_weight: null,
-    goal: ''
+    goal: '',
+    struggle: ''
   });
 
   // Edit form state
@@ -52,7 +53,8 @@ export default function ProfileCard({ user }) {
         height: null,
         weight: null,
         target_weight: null,
-        goal: ''
+        goal: '',
+        struggle: ''
       };
       setProfile(defaultProfile);
       setEditForm(defaultProfile);
@@ -181,7 +183,7 @@ export default function ProfileCard({ user }) {
         )}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {/* Name */}
         <div>
           {!isEditing ? (
@@ -240,7 +242,7 @@ export default function ProfileCard({ user }) {
         </div>
 
         {/* Stats Grid */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '8px' }}>
           {/* Age */}
           <ProfileField
             label="Age"
@@ -290,31 +292,68 @@ export default function ProfileCard({ user }) {
           {/* Goal */}
           <div style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingBottom: '12px',
+            flexDirection: 'column',
+            gap: '6px',
+            paddingBottom: '8px',
             borderBottom: '1px solid var(--color-border-subtle, #F1F5F9)'
           }}>
             <span style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>Goal</span>
             {!isEditing ? (
-              <span style={{ fontSize: '13px', color: 'var(--color-text, #0F172A)', textAlign: 'right', maxWidth: '60%' }}>
+              <span style={{ fontSize: '13px', color: 'var(--color-text, #0F172A)', lineHeight: '1.4' }}>
                 {profile.goal || 'N/A'}
               </span>
             ) : (
-              <input
-                type="text"
+              <textarea
                 value={editForm.goal || ''}
                 onChange={(e) => handleChange('goal', e.target.value)}
                 placeholder="Your goal"
+                rows="3"
                 style={{
                   fontSize: '13px',
                   color: 'var(--color-text, #0F172A)',
-                  padding: '6px 10px',
+                  padding: '8px 10px',
                   border: '1px solid var(--color-border, #E2E8F0)',
                   borderRadius: '6px',
                   background: 'var(--color-background, #FFFFFF)',
-                  width: '60%',
-                  textAlign: 'right'
+                  width: '100%',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  lineHeight: '1.4'
+                }}
+              />
+            )}
+          </div>
+
+          {/* My Struggle */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            paddingBottom: '8px',
+            borderBottom: '1px solid var(--color-border-subtle, #F1F5F9)'
+          }}>
+            <span style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>Struggle</span>
+            {!isEditing ? (
+              <span style={{ fontSize: '13px', color: 'var(--color-text, #0F172A)', lineHeight: '1.4' }}>
+                {profile.struggle || 'N/A'}
+              </span>
+            ) : (
+              <textarea
+                value={editForm.struggle || ''}
+                onChange={(e) => handleChange('struggle', e.target.value)}
+                placeholder="Your struggle"
+                rows="3"
+                style={{
+                  fontSize: '13px',
+                  color: 'var(--color-text, #0F172A)',
+                  padding: '8px 10px',
+                  border: '1px solid var(--color-border, #E2E8F0)',
+                  borderRadius: '6px',
+                  background: 'var(--color-background, #FFFFFF)',
+                  width: '100%',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  lineHeight: '1.4'
                 }}
               />
             )}
@@ -322,19 +361,29 @@ export default function ProfileCard({ user }) {
         </div>
 
         {/* Weight to Go */}
-        <div style={{ paddingTop: '12px' }}>
-          <p style={{
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(52, 199, 89, 0.1))',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          marginTop: '8px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span style={{
             fontSize: '11px',
-            color: 'var(--color-text-tertiary, #94A3B8)',
+            color: '#4ECDC4',
             letterSpacing: '1px',
             textTransform: 'uppercase',
-            marginBottom: '8px'
-          }}>WEIGHT TO GO</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <span style={{ fontSize: '48px', fontWeight: '300', color: '#4ECDC4' }}>
+            fontWeight: '700'
+          }}>
+            Weight to Go
+          </span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+            <span style={{ fontSize: '28px', fontWeight: '600', color: '#4ECDC4' }}>
               {weightToGo}
             </span>
-            <span style={{ fontSize: '18px', color: 'var(--color-text-secondary, #64748B)' }}>kg</span>
+            <span style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>kg</span>
           </div>
         </div>
       </div>
@@ -352,7 +401,7 @@ function ProfileField({ label, value, editValue, isEditing, onChange, suffix, ty
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingBottom: '12px',
+      paddingBottom: '8px',
       borderBottom: '1px solid var(--color-border-subtle, #F1F5F9)'
     }}>
       <span style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>
@@ -363,26 +412,35 @@ function ProfileField({ label, value, editValue, isEditing, onChange, suffix, ty
           {value ? `${value} ${suffix}` : 'N/A'}
         </span>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
           <input
             type={type}
             value={editValue ?? ''}
             onChange={(e) => onChange(e.target.value)}
             step={step}
-            placeholder="0"
+            placeholder={`0 ${suffix}`}
             style={{
               fontSize: '16px',
               fontWeight: '600',
               color: 'var(--color-text, #0F172A)',
               padding: '6px 10px',
+              paddingRight: '60px',
               border: '1px solid var(--color-border, #E2E8F0)',
               borderRadius: '6px',
               background: 'var(--color-background, #FFFFFF)',
-              width: '80px',
+              width: '120px',
               textAlign: 'right'
             }}
           />
-          <span style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)' }}>
+          <span style={{
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: '14px',
+            color: 'var(--color-text-secondary, #64748B)',
+            pointerEvents: 'none'
+          }}>
             {suffix}
           </span>
         </div>

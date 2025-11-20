@@ -185,8 +185,10 @@ export function useTimerState(hours, user) {
       setCompletedFastData(completionData);
       setShowCompletionSummary(true);
 
-      // Save fast to database
-      saveCompletedFast(completionData);
+      // Save fast to database ONLY if it was completed (not cancelled)
+      if (!wasCancelled) {
+        saveCompletedFast(completionData);
+      }
     }
 
     setIsRunning(false);

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
 import { fetchProfile, calculateWeightToGo } from '../../services/profileService';
 import { getLastFast, getStatistics } from '../../services/fastsService';
+import { philosophyQuotes } from '../../data/philosophyQuotes';
 
 /**
  * DashboardPanel Component
@@ -18,6 +19,12 @@ export default function DashboardPanel({ userData = {} }) {
   const [loading, setLoading] = useState(true);
   const [lastFast, setLastFast] = useState(null);
   const [statistics, setStatistics] = useState(null);
+
+  // Random quote on component mount - stays consistent during session
+  const [randomQuote] = useState(() => {
+    const randomIndex = Math.floor(Math.random() * philosophyQuotes.length);
+    return philosophyQuotes[randomIndex];
+  });
 
   // Load profile, last fast, and statistics from Supabase
   useEffect(() => {
@@ -55,6 +62,7 @@ export default function DashboardPanel({ userData = {} }) {
     targetWeight: profile?.target_weight || null,
     height: profile?.height || null,
     goal: profile?.goal || null,
+    struggle: profile?.struggle || null,
     nickname: profile?.nickname || null,
     // Stats - loaded from Supabase
     currentStreak: statistics?.currentStreak || 0,
@@ -175,14 +183,37 @@ export default function DashboardPanel({ userData = {} }) {
       textTransform: 'uppercase',
       letterSpacing: '0.5px',
       marginBottom: '8px',
-      textAlign: 'center',
+      textAlign: 'left',
       fontWeight: '700'
     },
     motivationText: {
       fontSize: '14px',
       color: 'var(--color-text, #0F172A)',
       fontStyle: 'italic',
-      textAlign: 'center',
+      textAlign: 'left',
+      lineHeight: '1.5'
+    },
+    struggleBox: {
+      background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(96, 165, 250, 0.1))',
+      borderRadius: '12px',
+      padding: '16px',
+      border: '1px solid #4A90E2',
+      borderStyle: 'dashed'
+    },
+    struggleLabel: {
+      fontSize: '11px',
+      color: '#4A90E2',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '8px',
+      textAlign: 'left',
+      fontWeight: '700'
+    },
+    struggleText: {
+      fontSize: '14px',
+      color: 'var(--color-text, #0F172A)',
+      fontStyle: 'italic',
+      textAlign: 'left',
       lineHeight: '1.5'
     },
     lastFastCard: {
@@ -231,7 +262,7 @@ export default function DashboardPanel({ userData = {} }) {
       {/* Motivation - Goal at the top */}
       {displayProfile.goal && (
         <div style={styles.motivationBox}>
-          <div style={styles.motivationLabel}>Goal</div>
+          <div style={styles.motivationLabel}>My Goal</div>
           <div style={styles.motivationText}>
             "{displayProfile.goal}"
           </div>
@@ -265,35 +296,23 @@ export default function DashboardPanel({ userData = {} }) {
         </div>
       )}
 
-      {/* Weight Gauge */}
-      <div style={styles.gaugeSection}>
-        <div style={styles.gaugeTitle}>Weight to Go</div>
-        <div style={styles.gaugeValue}>{weightToGo}</div>
-        <div style={styles.gaugeLabel}>kilograms remaining</div>
-        <div style={styles.progressBar}>
-          <div style={{ ...styles.progressFill, width: '35%' }} />
+      {/* Meditation Quote */}
+      <div style={styles.motivationBox}>
+        <div style={styles.motivationLabel}>Meditation</div>
+        <div style={styles.motivationText}>
+          "{randomQuote.text}" <span style={{ fontSize: '11px', color: '#34C759' }}>— {randomQuote.author}</span>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{displayProfile.currentStreak}</div>
-          <div style={styles.statCardLabel}>Day Streak</div>
+      {/* My Struggle */}
+      {displayProfile.struggle && (
+        <div style={styles.struggleBox}>
+          <div style={styles.struggleLabel}>My Struggle</div>
+          <div style={styles.struggleText}>
+            "{displayProfile.struggle}"
+          </div>
         </div>
-        <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{displayProfile.totalFasts}</div>
-          <div style={styles.statCardLabel}>Total Fasts</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{displayProfile.totalHours}h</div>
-          <div style={styles.statCardLabel}>Total Hours</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statCardValue}>{displayProfile.longestFast}h</div>
-          <div style={styles.statCardLabel}>Longest Fast</div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
