@@ -1,6 +1,54 @@
 # IF-Timer Progress Log
 
-## 2025-11-20: Community Page - Real-time Active Fasters with Card Layout
+## 2025-11-20 (Part 2): Responsive Layout Fixes for iPad/Tablets
+
+### Bug Fixes
+
+#### 1. Timer Buttons Layout Issue on iPad
+**Problem:** Started and Goal buttons were cramped/overlapping on iPad (11-inch) and tablet screens
+**Files:** `src/components/Timer/TimerCircle.jsx`, `src/components/Timer/FastingInfo.jsx`
+
+**Root Cause:**
+- `contentContainer` had fixed height of 40px
+- When buttons wrapped on smaller screens, they needed ~76px
+- Buttons were cut off or overlapping with STOP button
+
+**Fixes Applied:**
+
+**TimerCircle.jsx (Line 322-329):**
+- Changed `height: '40px'` → `minHeight: '40px'` (dynamic height)
+- Added `marginBottom: '8px'` for spacing before STOP button
+- Container now grows to accommodate wrapped buttons
+
+**FastingInfo.jsx (Line 22-32, 66-77):**
+- Simplified button text for better fit:
+  - Today: "Started at HH:MM" → "Started today"
+  - Past: "Started Nov 19 at 20:05" → "Started Nov 19"
+- Reduced `minWidth` from 140px → 110px (shorter text)
+- Removed text ellipsis properties (no longer needed)
+- Improved container: `width: 100%`, `padding: '0 8px'`
+
+**Result:**
+- ✅ Buttons wrap correctly without overlapping
+- ✅ Proper spacing between button groups
+- ✅ Cleaner, more compact appearance
+- ✅ Works on iPad 11-inch and all tablet sizes
+
+### Files Modified (2 total)
+- `src/components/Timer/TimerCircle.jsx` - Dynamic container height
+- `src/components/Timer/FastingInfo.jsx` - Simplified button text & layout
+
+### Commits
+- `5186fb3` - "fix: Improve responsive layout for timer buttons on iPad/tablets"
+- `73405b2` - "refactor: Simplify started button text to show only date"
+
+### Screenshots
+- Added: `screenshots/f1.png` - iPad 11-inch layout reference
+- Removed: Old screenshots (hub1, m1, s1, t1)
+
+---
+
+## 2025-11-20 (Part 1): Community Page - Real-time Active Fasters with Card Layout
 
 ### Features Implemented
 
