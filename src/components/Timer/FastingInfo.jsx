@@ -73,12 +73,16 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
     cursor: 'pointer',
     transition: 'all 0.2s',
     fontWeight: '400',
-    minWidth: '140px'
+    minWidth: '120px',
+    maxWidth: '200px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   };
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', width: '100%', padding: '0 8px' }}>
         {/* Started Button */}
         <button
           onClick={handleStartTimeEdit}

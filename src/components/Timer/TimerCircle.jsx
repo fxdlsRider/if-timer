@@ -318,10 +318,10 @@ export default function TimerCircle({
       textTransform: 'uppercase',
       letterSpacing: '2px'
     },
-    // CRITICAL: Fixed height container used in ALL states - reduced for closer button placement
+    // CRITICAL: Dynamic height container used in ALL states - allows buttons to wrap on small screens
     contentContainer: {
-      height: '40px',
-      marginBottom: '0px',
+      minHeight: '40px',
+      marginBottom: '8px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
