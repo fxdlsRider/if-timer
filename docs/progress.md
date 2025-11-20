@@ -130,9 +130,133 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 
 ---
 
+#### 6. Intermittent Progress Bar Direction Bug (DOCUMENTED, FIX PENDING)
+**Problem:** Occasionally, when starting a timer (especially from preset buttons like "Classic"), the progress bar fills from the wrong direction (counterclockwise/left side) instead of clockwise from top
+**Status:** ⚠️ INTERMITTENT - Cannot reliably reproduce, self-corrects after changing goal
+**Files to modify:** `src/utils/timeCalculations.js`
+**Date Reported:** 2025-11-20
+**Screenshot:** `screenshots/t1.png` - Shows timer at 16:33:29 (extended mode) with small teal segment
+
+**User Report:**
+> "Ich meine, einen Klassik Fast gestartet zu haben. Sobald ich das Fasting Goal verändert habe, hat das umgeschaltet und hat funktioniert."
+
+**Root Cause Analysis:**
+
+**Hypothesis: Race Condition in State Updates**
+When starting a timer from a preset button, there's a potential race condition where:
+
+1. User clicks fasting level button (e.g., "Classic" 16h)
+2. `handleLevelClick()` updates `hours` state and `angle` state
+3. Timer starts immediately via `startTimer()`
+4. For 1-2 render cycles, `hours` and `targetTime` might be out of sync
+5. Progress calculation uses mismatched values:
+   - `totalSeconds = hours * 3600` (using potentially stale hours)
+   - `elapsed = totalSeconds - timeLeft` (using new targetTime)
+   - If hours mismatch: `elapsed` could be NEGATIVE → negative progress
+6. Negative progress causes `progressOffset` to be > circumference
+7. SVG circle appears to fill from wrong direction
+8. After 1-2 render cycles, state synchronizes and progress corrects itself
+
+**Technical Details:**
+
+**Current Progress Calculation:** (`src/utils/timeCalculations.js:49-59`)
+```javascript
+export const getProgress = (totalHours, timeLeft, isExtended = false) => {
+  if (isExtended) {
+    return 100;
+  }
+
+  // Normal mode: calculate progress from elapsed time
+  const totalSeconds = totalHours * 3600;
+  const elapsed = totalSeconds - timeLeft;
+  return (elapsed / totalSeconds) * 100;
+}
+```
+
+**Problem Scenario:**
+- If `totalSeconds` (from old hours) < `timeLeft` (from new targetTime)
+- Then `elapsed` = negative value
+- Progress = negative percentage
+- `progressOffset = circumference - (negative% * circumference)` = value > circumference
+- SVG circle wraps around or appears inverted
+
+**Why It Self-Corrects:**
+- After state synchronizes (next render), `hours` matches `targetTime`
+- Progress calculates correctly
+- Visual bug disappears
+
+**Why Changing Goal Fixes It:**
+- `onChangeGoal()` recalculates everything from scratch (Timer.jsx:173-177)
+- Forces state synchronization
+- Resets angle and hours explicitly
+
+**Proposed Fix: Defensive Progress Clamping**
+
+**Approach:** Add defensive bounds checking to prevent negative/overflow progress values
+
+**Implementation:**
+```javascript
+export const getProgress = (totalHours, timeLeft, isExtended = false) => {
+  if (isExtended) {
+    return 100;
+  }
+
+  // Normal mode: calculate progress from elapsed time
+  const totalSeconds = totalHours * 3600;
+  const elapsed = totalSeconds - timeLeft;
+  const progress = (elapsed / totalSeconds) * 100;
+
+  // DEFENSIVE: Clamp progress between 0-100% to prevent visual glitches
+  // Handles race conditions where hours/targetTime might be temporarily out of sync
+  return Math.max(0, Math.min(100, progress));
+}
+```
+
+**Alternative Approach Considered (NOT CHOSEN):**
+Calculate hours from targetTime instead of using state:
+```javascript
+const actualHours = targetTime && startTime
+  ? (targetTime - startTime.getTime()) / (TIME_MULTIPLIER * 1000)
+  : hours;
+```
+**Why Not Chosen:** More invasive change, harder to test, defensive clamping is sufficient
+
+**Expected Result:**
+- ✅ Progress always between 0-100% regardless of state sync issues
+- ✅ Visual bug prevented even if race condition occurs
+- ✅ No breaking changes to existing functionality
+- ✅ Simple, safe fix with minimal side effects
+
+**Rollback Plan:**
+If this fix causes issues:
+1. Revert commit
+2. Return to current implementation
+3. Consider alternative approach (calculated hours)
+
+**Testing Plan:**
+1. Start multiple timers from different preset buttons rapidly
+2. Test with different hours values (14h, 16h, 18h, 20h, etc.)
+3. Test with saved timer state restoration
+4. Test with multi-device scenario
+5. Verify progress always displays correctly
+
+**Files Modified:**
+- `src/utils/timeCalculations.js` - Add Math.max/min clamping
+
+**Related Code Locations:**
+- `src/Timer.jsx:144` - Progress calculation call
+- `src/hooks/useTimerState.js:101-103` - timeLeft calculation
+- `src/hooks/useDragHandle.js:93-106` - handleLevelClick (sets hours/angle)
+- `src/components/Timer/TimerCircle.jsx:430` - SVG progress circle rendering
+
+**Commits:**
+- `[PENDING]` - "fix: Add defensive progress clamping to prevent visual glitches"
+
+---
+
 ### Layout & Spacing Improvements
 
-#### 6. Timer Spacing Optimization
+#### 7. Timer Spacing Optimization
 **Files:** `src/components/Timer/TimerPage.css`, `src/components/Timer/TimerPage.jsx`
 
 **Changes:**
