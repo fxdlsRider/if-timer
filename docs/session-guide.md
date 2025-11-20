@@ -1,6 +1,6 @@
 # Session Setup Guide für IF-Timer
 
-**Zuletzt aktualisiert:** 2025-11-19
+**Zuletzt aktualisiert:** 2025-11-20
 **Zweck:** Schneller Einstieg für neue Claude Code Sessions
 
 ---
@@ -106,24 +106,31 @@ ENABLED: false
 
 **Service Layer:**
 - `src/services/fastsService.js` (219 Zeilen)
-  - `saveFast(userId, fastData)` - Fast speichern
+  - `saveFast(userId, fastData)` - Fast speichern (mit Deduplication)
   - `getFasts(userId, limit)` - History laden
   - `getLastFast(userId)` - Letzter Fast
   - `getStatistics(userId)` - Stats berechnen
   - `calculateStreak(fasts)` - Streak-Logik
+  - **Deduplication:** Prüft vor Insert ob Fast mit gleicher `start_time` existiert
 
 **Integration:**
 - Timer Hook ruft `saveFast()` auf bei:
   - Fast Completion (Zeile 256)
-  - Fast Cancellation (Zeile 189)
+  - **WICHTIG:** Cancelled Fasts werden NICHT mehr gespeichert (conditional check)
 
 ### Dashboard & Hub
 
-**Dashboard:**
+**Dashboard (My Journey):**
 - `src/components/Dashboard/DashboardPanel.jsx`
 - Zeile 38-41: `loadLastFast()` - Lädt letzten Fast
-- Zeile 247-272: Last Fast Display
-- Layout: Goal → Last Fast → Weight Gauge → Stats Grid
+- **Layout (neue Struktur ab 2025-11-20):**
+  1. My Goal (grünes dashed gradient box)
+  2. Last Fast (completion status, date)
+  3. Meditation (philosophy quotes - 280 Stück)
+  4. My Struggle (blaues dashed gradient box)
+- **Philosophy Quotes:** `src/data/philosophyQuotes.js` (280 quotes)
+  - Marcus Aurelius, Seneca, Epictetus, Rumi, Buddha, Lao Tzu, etc.
+  - Random quote on mount, stays consistent during session
 
 **Hub (Statistiken & Profil):**
 - `src/components/Hub/HubPage.jsx`
@@ -133,6 +140,10 @@ ENABLED: false
 **Profile Card:**
 - `src/components/Hub/ProfileCard.jsx`
 - Editable Profile mit Supabase Integration
+- **Felder:** Name, Nickname, Age, Height, Weight, Target Weight, Goal, Struggle
+- **Compact Layout (ab 2025-11-20):** Reduzierte Gaps, Units inside fields
+- **Textareas:** Goal & Struggle (multi-line, vertical layout)
+- **Weight to Go:** Compact gradient card (horizontal layout)
 
 ### Services
 
@@ -286,9 +297,15 @@ CREATE TABLE profiles (
   weight NUMERIC,
   target_weight NUMERIC,
   goal TEXT,
+  struggle TEXT,                -- NEU: User's current struggle (ab 2025-11-20)
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ
 );
+```
+
+**Migration für `struggle` field:**
+```sql
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 ```
 
 **RLS Policies:** Alle Tabellen haben Row Level Security aktiviert.
@@ -297,7 +314,7 @@ CREATE TABLE profiles (
 
 ---
 
-## 🎯 Aktueller Stand (Session 2025-11-18)
+## 🎯 Aktueller Stand (Session 2025-11-20)
 
 ### ✅ Implementiert
 
@@ -308,18 +325,40 @@ CREATE TABLE profiles (
 - ✅ Test Mode funktioniert (Sekunden ↔ Stunden Konvertierung)
 - ✅ Streak Calculation (consecutive days)
 - ✅ Database Schema korrekt gemappt
+- ✅ **DEDUPLICATION:** Multi-Device Race Condition gelöst (prüft start_time vor Insert)
+- ✅ **BUG FIX:** Cancelled Fasts werden nicht mehr gespeichert
+- ✅ **BUG FIX:** Extended Mode Progress Bar bleibt bei 100%
+
+**My Journey Redesign (2025-11-20):**
+- ✅ Philosophy Quotes (280 Stück) statt Movie Quotes
+- ✅ Meditation Section mit zufälligen Philosophen-Zitaten
+- ✅ My Goal (grünes gradient box, left-aligned)
+- ✅ My Struggle (blaues gradient box, left-aligned)
+- ✅ Last Fast mit Status und Datum
+- ✅ Weight to Go entfernt (nur noch im Hub Profile Card)
+- ✅ Stats entfernt (redundant, sind im Hub Dashboard)
+
+**Profile Card Improvements (2025-11-20):**
+- ✅ Struggle Field hinzugefügt (editable, textarea)
+- ✅ Goal & Struggle als vertikale Textareas (multi-line)
+- ✅ Units inside input fields (absolute positioning)
+- ✅ Compact Layout (reduzierte Gaps: 12→8→6px)
+- ✅ Weight to Go als kompakte gradient card (horizontal)
 
 **UI Improvements:**
 - ✅ Complete-State (State 3) hat draggable Handle (50% transparent)
 - ✅ Dashboard: Statische Profildaten entfernt (sind im Hub)
-- ✅ Dashboard Layout: Goal → Last Fast → Weight Gauge → Stats
+- ✅ Dashboard Layout: Goal → Last Fast → Meditation → Struggle
 - ✅ Kompaktere Abstände im Dashboard
 - ✅ Test Mode Banner 70% kleiner
+- ✅ Timer spacing optimized (60px margin-top)
 
 **Database:**
 - ✅ `fasts` Table mit korrekten Column Names
+- ✅ `profiles` Table mit struggle field
 - ✅ RLS Policies aktiv
 - ✅ Unit-aware (hours/seconds)
+- ✅ Migration Script: `supabase_add_struggle_field.sql`
 
 ### 🐛 Bekannte Issues
 
@@ -625,4 +664,4 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ---
 
 **Letzte Aktualisierung:** 2025-11-20
-**Status:** Test Mode OFF | Community Page Live (Real Supabase Data) | All Pages follow 300x650px Card Layout
+**Status:** Test Mode OFF | My Journey Redesign (Philosophy Quotes + Struggle) | Profile Card Compact Layout | Multi-Device Deduplication | Extended Mode Progress Bar Fixed

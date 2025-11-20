@@ -1,5 +1,163 @@
 # IF-Timer Progress Log
 
+## 2025-11-20 (Part 3): My Journey Redesign & Critical Bug Fixes
+
+### Major Features
+
+#### 1. My Journey Complete Redesign
+**Files:** `src/components/Dashboard/DashboardPanel.jsx`, `src/data/philosophyQuotes.js`
+
+**Changes:**
+- Replaced 15 movie quotes with 280 curated philosophy quotes
+- Created separate quotes file: `src/data/philosophyQuotes.js`
+- Philosophy sources: Marcus Aurelius (20), Seneca (20), Epictetus (20), Rumi (20), Buddha (20), Lao Tzu (20), Aristotle (20), Socrates (20), Nietzsche (20), Confucius (20), Plato (20), Dostoevsky (15), Emerson (15), Viktor Frankl (10)
+- Changed "Motivation" → "Meditation" (better reflects philosophical nature)
+- Added "My Struggle" field with blue gradient theme (#4A90E2)
+- Removed redundant stats (Day Streak, Total Fasts, Total Hours, Longest Fast) - kept in Dashboard only
+- New structure: My Goal (green) → Last Fast → Meditation (green) → My Struggle (blue)
+- All text left-aligned for better readability
+- Quote and author in one line, author in green (#34C759)
+
+**Result:**
+- ✅ More personal, reflective My Journey
+- ✅ 280 philosophy quotes for variety
+- ✅ No redundancy with Dashboard stats
+- ✅ Consistent color theming
+
+**Commits:**
+- `b572a34` - "feat: Move motivational quotes outside grid to fix iPad layout shift"
+- `adb925e` - "feat: Major My Journey redesign with philosophy quotes and bug fixes"
+
+---
+
+#### 2. Profile Card Enhancements
+**Files:** `src/components/Hub/ProfileCard.jsx`, `supabase_add_struggle_field.sql`
+
+**Changes:**
+- Added "My Struggle" field for editing
+- Compact layout: gaps reduced (20→12→8→6px), paddings reduced (12→8px)
+- Unit labels (years, cm, kg) now INSIDE input fields (absolute positioning)
+- Goal & Struggle changed from single-line inputs to multi-line textareas (3 rows, resizable)
+- Vertical layout for Goal & Struggle (label above, text below)
+- Weight to Go redesigned as compact gradient card (horizontal, 28px font instead of 48px)
+- SQL migration provided for struggle field
+
+**SQL Migration:**
+```sql
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
+```
+
+**Result:**
+- ✅ Much more compact profile layout
+- ✅ Better multi-line text editing
+- ✅ Cleaner, more professional look
+- ✅ Users can add personal struggles
+
+**Commits:**
+- `adb925e` - "feat: Major My Journey redesign with philosophy quotes and bug fixes"
+
+---
+
+### Critical Bug Fixes
+
+#### 3. Extended Mode Progress Bar Running Backwards
+**Problem:** In extended mode (after completing goal), the progress bar ran backwards instead of staying at 100%
+**Files:** `src/utils/timeCalculations.js`, `src/Timer.jsx`
+
+**Root Cause:**
+- In extended mode, `timeLeft` represents time BEYOND goal (count-up), not remaining time
+- Formula `elapsed = totalSeconds - timeLeft` caused negative values as timeLeft increased
+- Progress decreased instead of staying at 100%
+
+**Fix:**
+- Modified `getProgress()` to accept `isExtended` parameter
+- Returns 100 when `isExtended === true`
+- Updated Timer.jsx to pass isExtended to calculateProgress()
+
+**Result:**
+- ✅ Progress bar stays at 100% in extended mode
+- ✅ Timer continues counting up correctly
+
+**Commits:**
+- `adb925e` - "feat: Major My Journey redesign with philosophy quotes and bug fixes"
+
+---
+
+#### 4. Cancelled Fasts Incorrectly Saved to Database
+**Problem:** When user cancelled timer before reaching goal, fast was saved to database
+**Files:** `src/hooks/useTimerState.js`
+
+**Root Cause:**
+- `cancelTimer()` always called `saveCompletedFast()` regardless of cancelled status
+- Database filled with incomplete/cancelled fasts
+
+**Fix:**
+- Added check: only save if `!wasCancelled`
+- Cancelled fasts still shown in UI summary but not persisted
+
+**Result:**
+- ✅ Only successful fasts saved to database
+- ✅ Cancelled fasts still visible in UI for user info
+
+**Commits:**
+- `adb925e` - "feat: Major My Journey redesign with philosophy quotes and bug fixes"
+
+---
+
+#### 5. Multi-Device Duplicate Fasts
+**Problem:** When stopping timer on iPad, Mac also saved the fast → duplicate entries
+**Files:** `src/services/fastsService.js`
+
+**Root Cause:**
+- No deduplication logic
+- Race condition: both devices tried to save before realtime sync kicked in
+- Realtime sync exists but wasn't fast enough to prevent duplicates
+
+**Fix:**
+- Added deduplication in `saveFast()`:
+  1. Check if fast with same `start_time` exists
+  2. If yes, return existing fast (no insert)
+  3. If no, insert new fast
+- Uses `maybeSingle()` for graceful handling
+
+**Result:**
+- ✅ No more duplicate fasts from multi-device usage
+- ✅ Realtime sync still works
+- ✅ Database stays clean
+
+**Commits:**
+- `adb925e` - "feat: Major My Journey redesign with philosophy quotes and bug fixes"
+
+---
+
+### Layout & Spacing Improvements
+
+#### 6. Timer Spacing Optimization
+**Files:** `src/components/Timer/TimerPage.css`, `src/components/Timer/TimerPage.jsx`
+
+**Changes:**
+- Moved motivational quotes from timer area to My Journey
+- Timer section moved 60px down (margin-top: 60px)
+- Top padding reduced 30px across all breakpoints (40→10px desktop/tablet, 30→0px mobile)
+- Quote container removed from TimerPage.jsx entirely
+
+**Result:**
+- ✅ Cleaner timer layout
+- ✅ Better spacing utilization
+- ✅ Quotes integrated into My Journey narrative
+
+**Commits:**
+- `168e690` - "feat: Adjust spacing - reduce top padding and move timer down"
+- `b572a34` - "feat: Move motivational quotes outside grid to fix iPad layout shift"
+
+---
+
+### Screenshots
+- `screenshots/p1.png` - Profile card with Goal & Struggle (view mode)
+- `screenshots/p2.png` - Profile card edit mode with compact inputs
+
+---
+
 ## 2025-11-20 (Part 2): Responsive Layout Fixes for iPad/Tablets
 
 ### Bug Fixes
