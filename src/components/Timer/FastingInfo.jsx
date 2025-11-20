@@ -23,12 +23,12 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
     if (!date) return '';
     const now = new Date();
 
-    // If today, show time only (24h format)
+    // If today, show "Started today"
     if (date.toDateString() === now.toDateString()) {
-      return `Started at ${date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+      return `Started today`;
     }
-    // If yesterday or older, show date + time (24h format)
-    return `Started ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+    // If yesterday or older, show date only
+    return `Started ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
 
   const handleStartTimeEdit = () => {
@@ -73,11 +73,7 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
     cursor: 'pointer',
     transition: 'all 0.2s',
     fontWeight: '400',
-    minWidth: '120px',
-    maxWidth: '200px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis'
+    minWidth: '110px'
   };
 
   return (
