@@ -13,7 +13,7 @@ import TimerPage from './components/Timer/TimerPage';
 import TrainingPage from './components/Training/TrainingPage';
 import ModesPage from './components/Modes/ModesPage';
 import HubPage from './components/Hub/HubPage';
-import GraphViewPage from './components/GraphView/GraphViewPage';
+import CommunityPage from './components/Community/CommunityPage';
 import ResourcesPage from './components/Resources/ResourcesPage';
 import AboutPage from './components/About/AboutPage';
 import SupportPage from './components/Support/SupportPage';
@@ -193,8 +193,8 @@ export default function Timer() {
         return <ModesPage />;
       case 'hub':
         return <HubPage user={user} onSignIn={() => setShowLogin(true)} />;
-      case 'graph-view':
-        return <GraphViewPage />;
+      case 'community':
+        return <CommunityPage />;
       case 'resources':
         return <ResourcesPage />;
       case 'about':

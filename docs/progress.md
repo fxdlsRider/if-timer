@@ -1,5 +1,147 @@
 # IF-Timer Progress Log
 
+## 2025-11-20: Community Page - Real-time Active Fasters with Card Layout
+
+### Features Implemented
+
+#### 1. Community Service Layer
+**File:** `src/services/communityService.js` (NEW)
+
+**Functions Created:**
+- `getActiveFasters()` - Fetches all users with active timers from Supabase
+  - Queries `timer_states` table (where `is_running = true`)
+  - Joins with `profiles` table to get user nicknames
+  - Automatically determines fasting level based on hours
+  - Returns array of active users with nickname, hours, and level
+- `getCommunityStats()` - Calculates community statistics
+  - Total active count
+  - Breakdown by fasting level (Gentle, Classic, Intensive, Warrior, Monk, Extended)
+
+**Technical Details:**
+- Real-time Supabase integration
+- RLS-compliant queries
+- Handles missing profiles gracefully (defaults to "Anonymous")
+- Level detection algorithm based on hour ranges from `FASTING_LEVELS`
+
+#### 2. Community Page Redesign
+**File:** `src/components/Community/CommunityPage.jsx` (REWRITTEN)
+
+**Previous Implementation:**
+- Attempted Obsidian-style graph visualization with react-force-graph-2d
+- Physics simulation was unstable and difficult to control
+- Mock data with 12 hardcoded users
+- Full-width layout not following card standard
+
+**Current Implementation:**
+- **3-Card Layout (300x650px)** following project standard
+- **Real Supabase Data** instead of mock users
+- **Live Updates** every 30 seconds
+- **Three Cards:**
+
+  **Card 1 - LIVE COMMUNITY:**
+  - Large teal number showing total active fasters
+  - Community overview text
+  - Empty state: "No one is fasting right now" with moon icon
+  - Live updates indicator
+
+  **Card 2 - FASTING LEVELS:**
+  - List of all 6 fasting levels
+  - Color-coded badges with level color
+  - Real-time count for each level
+  - Level descriptions and hour ranges
+  - Highlighted border (2px) when level has active users
+  - Opacity reduced (50%) when level has 0 users
+
+  **Card 3 - ACTIVE FASTERS:**
+  - Scrollable list of all active users
+  - Color-coded avatars (first letter of nickname)
+  - User nickname with fasting level label
+  - Hours displayed in level color
+  - Empty state: "No active fasters yet" with people icon
+
+**Features:**
+- Auto-refresh every 30 seconds
+- Loading states
+- Empty states for zero users
+- Dark mode support
+- Responsive design (stacks on mobile)
+- Scrollable cards when content exceeds 650px height
+
+#### 3. Package Cleanup
+**Change:** Uninstalled `react-force-graph-2d` package
+**Reason:** No longer needed after pivoting from graph visualization to card layout
+**Result:** Removed 34 packages, cleaner dependencies
+
+### Files Modified (3 total)
+
+**New Files:**
+- `src/services/communityService.js` (122 lines)
+
+**Modified Files:**
+- `src/components/Community/CommunityPage.jsx` (336 lines) - Complete rewrite
+
+**Removed:**
+- `react-force-graph-2d` dependency from package.json
+
+### Database Integration
+
+**Tables Used:**
+- `timer_states` - For checking active timers (is_running = true)
+- `profiles` - For fetching user nicknames
+
+**Query Logic:**
+```javascript
+// Step 1: Get active timer states
+SELECT user_id, hours, is_running
+FROM timer_states
+WHERE is_running = true
+
+// Step 2: Get nicknames for these users
+SELECT user_id, nickname
+FROM profiles
+WHERE user_id IN (...)
+
+// Step 3: Combine and calculate levels
+```
+
+### Design Consistency
+
+**Follows Project Standards:**
+- ✅ 300x650px card dimensions
+- ✅ 3-column grid layout
+- ✅ CSS variables for colors
+- ✅ Dark mode support
+- ✅ Consistent typography (12px headers, 14px body)
+- ✅ Border radius 16px on cards
+- ✅ Page background: White, Card background: Light gray
+
+### Testing
+
+**Server Status:** ✅ Compiled successfully with warnings (pre-existing)
+**Test Mode:** ✅ OFF (production ready)
+**Live Updates:** ✅ Working (30-second interval)
+**Empty State:** ✅ Handles zero users gracefully
+**Real Data:** ✅ Queries Supabase successfully
+
+### Next Steps (Suggestions)
+
+1. **Community Insights Card**
+   - Add statistics: Peak hours, most popular level, etc.
+
+2. **User Interaction**
+   - Click on user to see their profile (future)
+   - Filter by fasting level
+
+3. **Notifications**
+   - Notify when friends start fasting
+   - Milestone celebrations (e.g., "100 active fasters!")
+
+4. **Privacy Settings**
+   - Allow users to hide from community view
+   - Anonymous mode toggle
+
+---
+
 ## 2025-11-19: UI Standardization - Card Layout Across All Pages
 
 ### Features Implemented

@@ -145,6 +145,12 @@ ENABLED: false
 - `src/services/fastsService.js`
 - Siehe oben unter "Fast Tracking System"
 
+**Community Service:**
+- `src/services/communityService.js`
+- `getActiveFasters()` - Lädt aktive Faster von Supabase
+- `getCommunityStats()` - Berechnet Community-Statistiken
+- Queries: `timer_states` (is_running=true) + `profiles` (nicknames)
+
 ### Config & Constants
 
 **Constants:**
@@ -196,11 +202,16 @@ const cardStyle = {
    - Scientific Mode | Hippie Mode | Pro Mode
    - Theme Switcher in Hippie Mode Card
 
-4. **About** - `src/components/About/AboutPage.jsx`
+4. **Community** - `src/components/Community/CommunityPage.jsx`
+   - Live Community | Fasting Levels | Active Fasters
+   - Real Supabase data, auto-refresh every 30s
+   - Service: `src/services/communityService.js`
+
+5. **About** - `src/components/About/AboutPage.jsx`
    - Our Mission | Tech Stack | Get Involved
    - GitHub Link, Contact Info
 
-5. **Support** - `src/components/Support/SupportPage.jsx`
+6. **Support** - `src/components/Support/SupportPage.jsx`
    - Buy Me a Coffee | Affiliate Links | Merch Shop
    - Donation Button, Coming Soon items
 
@@ -613,5 +624,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-**Letzte Aktualisierung:** 2025-11-18
-**Status:** Test Mode OFF | Fast Tracking System Funktional | Dashboard mit Last Fast
+**Letzte Aktualisierung:** 2025-11-20
+**Status:** Test Mode OFF | Community Page Live (Real Supabase Data) | All Pages follow 300x650px Card Layout
