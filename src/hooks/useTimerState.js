@@ -294,8 +294,9 @@ export function useTimerState(hours, user) {
     setOriginalGoalTime(loadedState.originalGoalTime || null);
 
     // Calculate and restore start time from target time
-    if (loadedState.isRunning && loadedState.targetTime) {
-      const calculatedStartTime = loadedState.targetTime - (hours * TIME_MULTIPLIER * 1000);
+    // IMPORTANT: Use loadedState.hours (from Supabase), not the hours parameter (which may be stale)
+    if (loadedState.isRunning && loadedState.targetTime && loadedState.hours) {
+      const calculatedStartTime = loadedState.targetTime - (loadedState.hours * TIME_MULTIPLIER * 1000);
       setStartTime(new Date(calculatedStartTime));
     }
 
