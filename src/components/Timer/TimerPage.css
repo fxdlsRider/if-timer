@@ -36,6 +36,7 @@
     flex-direction: column;
     align-items: center;
     justify-self: center;
+    overflow-x: hidden;
   }
 
   .status-column {
@@ -54,6 +55,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 40px;
+    overflow-x: hidden;
   }
 
   /* Reorder: Timer first, then StatusPanel (Fasting Levels), then Dashboard/Leaderboard */
@@ -82,6 +84,7 @@
     align-items: center;
     width: 100%;
     max-width: 500px;
+    overflow-x: hidden;
   }
 
   .dashboard-column,
