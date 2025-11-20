@@ -334,8 +334,8 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
+        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto', overflow: 'hidden', boxSizing: 'border-box' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             "{randomQuote.text}"
           </p>
           <p style={{ fontSize: '12px', color: '#999' }}>
@@ -442,8 +442,8 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
+        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto', overflow: 'hidden', boxSizing: 'border-box' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             "{randomQuote.text}"
           </p>
           <p style={{ fontSize: '12px', color: '#999' }}>
@@ -579,8 +579,8 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
+        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto', overflow: 'hidden', boxSizing: 'border-box' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             "{randomQuote.text}"
           </p>
           <p style={{ fontSize: '12px', color: '#999' }}>
