@@ -334,7 +334,7 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px' }}>
+        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
           <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
             "{randomQuote.text}"
           </p>
@@ -442,7 +442,7 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px' }}>
+        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
           <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
             "{randomQuote.text}"
           </p>
@@ -579,7 +579,7 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px' }}>
+        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
           <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
             "{randomQuote.text}"
           </p>
