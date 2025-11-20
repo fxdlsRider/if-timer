@@ -54,6 +54,8 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 40px;
+    max-width: 600px;
+    margin: 0 auto;
   }
 
   /* Reorder: Timer first, then StatusPanel (Fasting Levels), then Dashboard/Leaderboard */
