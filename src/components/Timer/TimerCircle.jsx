@@ -334,12 +334,9 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '480px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <p style={{ fontSize: randomQuote.text.length > 70 ? '13px' : '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
-            "{randomQuote.text}"
-          </p>
-          <p style={{ fontSize: '12px', color: '#999' }}>
-            — {randomQuote.author}
+        <div style={{ textAlign: 'left', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '480px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '0', lineHeight: '1.4' }}>
+            "{randomQuote.text}" <span style={{ fontSize: '12px', color: '#999' }}>— {randomQuote.author}</span>
           </p>
         </div>
 
@@ -442,12 +439,9 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '480px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <p style={{ fontSize: randomQuote.text.length > 70 ? '13px' : '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
-            "{randomQuote.text}"
-          </p>
-          <p style={{ fontSize: '12px', color: '#999' }}>
-            — {randomQuote.author}
+        <div style={{ textAlign: 'left', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '480px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '0', lineHeight: '1.4' }}>
+            "{randomQuote.text}" <span style={{ fontSize: '12px', color: '#999' }}>— {randomQuote.author}</span>
           </p>
         </div>
 
@@ -579,12 +573,9 @@ export default function TimerCircle({
     return (
       <>
         {/* Motivational Quote */}
-        <div style={{ textAlign: 'center', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '480px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <p style={{ fontSize: randomQuote.text.length > 70 ? '13px' : '15px', fontStyle: 'italic', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
-            "{randomQuote.text}"
-          </p>
-          <p style={{ fontSize: '12px', color: '#999' }}>
-            — {randomQuote.author}
+        <div style={{ textAlign: 'left', marginTop: '50px', marginBottom: '45px', minHeight: '60px', maxWidth: '480px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: '15px', fontStyle: 'italic', color: '#666', marginBottom: '0', lineHeight: '1.4' }}>
+            "{randomQuote.text}" <span style={{ fontSize: '12px', color: '#999' }}>— {randomQuote.author}</span>
           </p>
         </div>
 
