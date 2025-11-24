@@ -87,9 +87,13 @@ ENABLED: false
   - Fasting Info Panel (Start Time, Goal Time, Elapsed)
 
 - **State 3 - Complete:** `src/components/Timer/TimerCircle.jsx:608-782`
-  - Celebration Screen nach Fast-Abschluss
+  - **Dynamic Center Display (NEW 2025-11-24):**
+    - Shows selected hours when dragging handle or clicking levels
+    - Shows "Time since last fast" after 30 seconds of inactivity
+    - Shows completion message (Cancelled/Well done) by default
   - Draggable Handle (50% transparent) für nächsten Fast
-  - "Continue Fasting" und "Stop Fasting" Buttons
+  - Editable start/end times with DateTimePicker
+  - Hint text: "Set your next fast by dragging..."
 
 **Timer Hook:**
 - `src/hooks/useTimerState.js`
@@ -358,6 +362,12 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 - ✅ Weight to Go als kompakte gradient card (horizontal)
 
 **UI Improvements:**
+- ✅ **State 3 Dynamic Display (2025-11-24):**
+  - User drags handle/clicks level → Center shows selected hours
+  - After 30 seconds inactivity → Shows "Time since last fast"
+  - Time calculation updates every minute
+  - Interaction detection with timer reset logic
+  - Files: Timer.jsx (state), TimerCircle.jsx (UI), useDragHandle.js (callbacks)
 - ✅ Complete-State (State 3) hat draggable Handle (50% transparent)
 - ✅ Dashboard: Statische Profildaten entfernt (sind im Hub)
 - ✅ Dashboard Layout: Goal → Last Fast → Meditation → Struggle
@@ -676,4 +686,4 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ---
 
 **Letzte Aktualisierung:** 2025-11-24
-**Status:** Test Mode ON | Ghost Timer Prevention (3 Layers) | 14h Minimum Fast Threshold | RLS Performance Optimization (41+ policies) | Database Cleanup Utilities
+**Status:** Test Mode OFF | State 3 Dynamic Display (30s inactivity timer) | Ghost Timer Prevention (3 Layers) | 14h Minimum Fast Threshold | RLS Performance Optimization (41+ policies)

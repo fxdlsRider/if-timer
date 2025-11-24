@@ -1,5 +1,210 @@
 # IF-Timer Progress Log
 
+## 2025-11-24 (Part 4): State 3 UI Improvements - Interactive Time Selection & Time Since Last Fast
+
+### Feature: Smart Timer Display in Completion State
+
+**Problem:** After completing or cancelling a fast (State 3), users couldn't easily see what time they were selecting when dragging the handle or clicking fasting levels. The center display remained static showing only the completion message.
+
+**User Request:**
+> "In State 3, also wenn der Fast beendet oder gecancelled wurde, steht in der Mitte vom Timer Cancelled oder die gefastete Zeit. Das ist okay so. Wenn der Benutzer jedoch auf die Fasting Levels oder am Handle draggt, sollte die Anzeige in der Mitte aktuallisiert werden, damit der Nutzer die neue Zeit einstellen kann."
+
+**Solution: Dynamic Center Display with Time Since Last Fast**
+
+Implemented a 3-state display system in State 3:
+1. **User is selecting time:** Shows selected hours (e.g., "20h") while dragging or clicking levels
+2. **30 seconds of inactivity:** Automatically shows "Time since last fast" with live calculation
+3. **Default state:** Shows original completion message (Cancelled or Well done)
+
+### Implementation Details
+
+#### 1. Interaction Detection System
+**Files:** `src/Timer.jsx:80-128`, `src/hooks/useDragHandle.js:68-118`
+
+**Features:**
+- Detects when user drags timer handle or clicks fasting levels in State 3
+- Triggers `handleUserInteraction()` callback to reset inactivity timer
+- Continuous detection during dragging (resets timer on every move)
+- Works in State 3 only (completion state)
+
+**State Management:**
+```javascript
+const [showTimeSinceLastFast, setShowTimeSinceLastFast] = useState(false);
+const [userIsSelecting, setUserIsSelecting] = useState(false);
+const inactivityTimerRef = useRef(null);
+```
+
+**Logic Flow:**
+1. User interacts → `handleUserInteraction()` called
+2. Clear existing inactivity timer
+3. Set `userIsSelecting = true`, `showTimeSinceLastFast = false`
+4. Start new 30-second timer
+5. After 30 seconds: Set `userIsSelecting = false`, `showTimeSinceLastFast = true`
+
+#### 2. Inactivity Timer with Reset Logic
+**File:** `src/Timer.jsx:86-108`
+
+**Features:**
+- 30-second countdown starts on user interaction
+- Resets on every new interaction (including continuous dragging)
+- Clears automatically when exiting State 3
+- Cleanup on component unmount
+
+**Debug Logging:**
+```javascript
+console.log('🎯 User interaction detected in State 3!');
+console.log('⏱️  Timer reset');
+console.log('⏰ 30 seconds of inactivity - showing Time since last fast!');
+```
+
+#### 3. Dynamic Center Display
+**File:** `src/components/Timer/TimerCircle.jsx:588-636`
+
+**Conditional Rendering:**
+```javascript
+{userIsSelecting ? (
+  // Show selected hours when user is dragging/clicking
+  <>
+    <div style={styles.hoursNumber}>{hours}</div>
+    <div style={styles.hoursLabel}>{TIME_UNIT}</div>
+  </>
+) : showTimeSinceLastFast ? (
+  // Show time since last fast after 30 seconds
+  <>
+    <div>TIME SINCE LAST FAST</div>
+    <div>{timeSinceLastFast}</div>
+  </>
+) : (
+  // Show original completion message (cancelled/success)
+  ...
+)}
+```
+
+#### 4. Live Time Since Last Fast Calculation
+**File:** `src/components/Timer/TimerCircle.jsx:85-112`
+
+**Features:**
+- Calculates elapsed time from `completedFastData.endTime` to now
+- Updates every 60 seconds via `setInterval`
+- Format: "Xh Ym" or "Ym" if less than 1 hour
+- Starts/stops interval based on `showTimeSinceLastFast` state
+
+**Implementation:**
+```javascript
+useEffect(() => {
+  if (showTimeSinceLastFast && completedFastData && completedFastData.endTime) {
+    const calculateTimeSince = () => {
+      const now = new Date();
+      const endTime = completedFastData.endTime;
+      const diffMs = now.getTime() - endTime.getTime();
+      const diffMinutes = Math.floor(diffMs / 60000);
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      }
+      return `${minutes}m`;
+    };
+
+    setTimeSinceLastFast(calculateTimeSince());
+    const interval = setInterval(() => {
+      setTimeSinceLastFast(calculateTimeSince());
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }
+}, [showTimeSinceLastFast, completedFastData]);
+```
+
+### User Experience Flow
+
+**Scenario 1: User Completes Fast**
+1. Timer reaches goal → Celebration screen → State 3
+2. Center shows: "Well done! 16h fasted +02:15 additional time"
+3. User drags handle to 20h → Center immediately shows: "20h"
+4. User continues dragging → Center updates live to selected hours
+5. User stops dragging → 30-second timer starts
+6. After 30 seconds → Center shows: "Time since last fast: 5h 23m"
+7. User clicks "Classic" level → Center immediately shows: "16h"
+8. Repeats cycle
+
+**Scenario 2: User Cancels Fast**
+1. User stops fast early → State 3
+2. Center shows: "Cancelled - Fasted only 12h"
+3. User clicks handle → Center shows: "18h"
+4. After 30 seconds → Shows time since cancelled fast
+
+### Technical Details
+
+**Props Passed Through Hierarchy:**
+```
+Timer.jsx (state management)
+  ↓ userIsSelecting, showTimeSinceLastFast
+TimerPage.jsx (prop drilling)
+  ↓ userIsSelecting, showTimeSinceLastFast
+TimerCircle.jsx (rendering)
+```
+
+**useDragHandle.js Enhancements:**
+- Added `onInteraction` parameter (callback function)
+- Called in `handlePointerDown()` - When drag starts
+- Called in `handlePointerMove()` - Continuously during drag
+- Called in `handleLevelClick()` - When clicking fasting levels
+
+**Files Modified (4 total):**
+- `src/Timer.jsx` - State management, inactivity timer, cleanup
+- `src/hooks/useDragHandle.js` - onInteraction callbacks
+- `src/components/Timer/TimerPage.jsx` - Prop drilling
+- `src/components/Timer/TimerCircle.jsx` - Conditional rendering, time calculation
+
+### Benefits
+
+**User Experience:**
+- ✅ Clear visual feedback when selecting new fast goal
+- ✅ No confusion about what time is being selected
+- ✅ Automatic display of time since last fast provides context
+- ✅ Smooth transitions between states
+- ✅ Timer resets intelligently during continuous interaction
+
+**Technical:**
+- ✅ Clean state management with proper cleanup
+- ✅ Efficient interval management (only runs when needed)
+- ✅ No memory leaks (clearInterval on unmount)
+- ✅ Minimal re-renders (useCallback, proper dependencies)
+- ✅ Debug logging for easy troubleshooting
+
+### Testing Results
+
+**Test Cases:**
+1. ✅ Drag handle → Center shows selected hours immediately
+2. ✅ Stop dragging → After 30 seconds shows time since last fast
+3. ✅ Long drag (>30 seconds) → Timer keeps resetting, doesn't fire during drag
+4. ✅ Click fasting level → Center shows level hours immediately
+5. ✅ Multiple interactions → Timer resets correctly each time
+6. ✅ Exit State 3 → Timer clears, no memory leaks
+7. ✅ Time since last fast → Updates every minute
+8. ✅ Complete vs Cancelled → Both work correctly
+
+**Console Logs:**
+```
+🎯 User interaction detected in State 3!
+⏱️  Timer reset
+[... user continues interacting ...]
+⏰ 30 seconds of inactivity - showing Time since last fast!
+```
+
+### Production Configuration
+
+**Timer Duration:** 30 seconds (changed from 3 seconds testing mode)
+- `src/Timer.jsx:106` - `setTimeout(..., 30000)`
+- Comment: "Start new 30-second inactivity timer"
+
+### Commits
+- `46b1a16` - "feat: Add State 3 UI improvements with time-since-last-fast display"
+
+---
+
 ## 2025-11-24: Maximum Safety - Ghost Timer Prevention System
 
 ### Critical Bug Fix: Ghost Timers (is_running stuck on true)
