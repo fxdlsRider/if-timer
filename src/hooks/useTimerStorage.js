@@ -141,7 +141,8 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     // Skip if already syncing
     if (syncing) return;
 
-    const saveToSupabase = async () => {
+    // LAYER 2: Retry logic with exponential backoff
+    const saveToSupabaseWithRetry = async (retryCount = 0, maxRetries = 3) => {
       setSyncing(true);
 
       try {
@@ -160,14 +161,34 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           });
 
         if (error) throw error;
-      } catch (error) {
-        console.error('Error saving to Supabase:', error);
-      } finally {
+
+        // Success - log if it was a retry
+        if (retryCount > 0) {
+          console.log(`✓ Supabase sync succeeded after ${retryCount} retries`);
+        }
+
         setSyncing(false);
+      } catch (error) {
+        console.error(`Supabase sync attempt ${retryCount + 1}/${maxRetries + 1} failed:`, error);
+
+        // Retry if not exceeded max attempts
+        if (retryCount < maxRetries) {
+          // Exponential backoff: 1s, 2s, 4s
+          const delayMs = 1000 * Math.pow(2, retryCount);
+          console.log(`⟳ Retrying in ${delayMs}ms...`);
+
+          setTimeout(() => {
+            saveToSupabaseWithRetry(retryCount + 1, maxRetries);
+          }, delayMs);
+        } else {
+          console.error('✗ All Supabase sync attempts failed. Timer state may be out of sync.');
+          setSyncing(false);
+          // TODO: Show user notification? Store for offline sync?
+        }
       }
     };
 
-    saveToSupabase();
+    saveToSupabaseWithRetry();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     user,
@@ -185,4 +206,52 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     syncing,
     isInitialLoad,
   };
+}
+
+/**
+ * Force immediate sync to Supabase (bypasses useEffect checks)
+ * Used for critical state changes like stopFasting() and cancelTimer()
+ *
+ * @param {object} user - Authenticated user object
+ * @param {object} timerState - Timer state to sync
+ * @returns {Promise<boolean>} Success status
+ */
+export async function forceSyncToSupabase(user, timerState) {
+  if (!user) {
+    console.warn('forceSyncToSupabase: No user provided, skipping sync');
+    return false;
+  }
+
+  try {
+    console.log('forceSyncToSupabase: Syncing state to database...', {
+      user_id: user.id,
+      is_running: timerState.isRunning,
+      hours: timerState.hours
+    });
+
+    const { error } = await supabase
+      .from('timer_states')
+      .upsert({
+        user_id: user.id,
+        hours: timerState.hours,
+        angle: timerState.angle,
+        is_running: timerState.isRunning,
+        target_time: timerState.targetTime ? new Date(timerState.targetTime).toISOString() : null,
+        is_extended: timerState.isExtended || false,
+        original_goal_time: timerState.originalGoalTime ? new Date(timerState.originalGoalTime).toISOString() : null
+      }, {
+        onConflict: 'user_id'
+      });
+
+    if (error) {
+      console.error('forceSyncToSupabase: Failed to sync', error);
+      throw error;
+    }
+
+    console.log('forceSyncToSupabase: Sync successful ✓');
+    return true;
+  } catch (error) {
+    console.error('forceSyncToSupabase: Exception during sync', error);
+    return false;
+  }
 }

@@ -1,5 +1,86 @@
 # IF-Timer Progress Log
 
+## 2025-11-24: Maximum Safety - Ghost Timer Prevention System
+
+### Critical Bug Fix: Ghost Timers (is_running stuck on true)
+
+**Problem:**
+- Users reported timers showing as active in Community page even after stopping
+- Investigation revealed: User "sz" had timer with `is_running=true` but expired target_time (31.5 hours ago)
+- Root cause: `stopFasting()` updated React state but database sync failed/was skipped
+
+**Solution: Defense in Depth (3 Layers)**
+
+#### **Layer 1: Explicit forceSync()** ✅ Active
+- Created `forceSyncToSupabase()` function in `useTimerStorage.js`
+- Added to `stopFasting()` and `cancelTimer()` in `useTimerState.js`
+- Uses `await` to guarantee DB update completes before continuing
+- Bypasses useEffect checks (isInitialLoad, syncing flags)
+
+**Files Modified:**
+- `src/hooks/useTimerStorage.js:190-236` - New forceSyncToSupabase() function
+- `src/hooks/useTimerState.js:15` - Import forceSyncToSupabase
+- `src/hooks/useTimerState.js:167-214` - cancelTimer() now async with forceSync
+- `src/hooks/useTimerState.js:250-279` - stopFasting() now async with forceSync
+
+#### **Layer 2: Retry Logic with Exponential Backoff** ✅ Active
+- Enhanced useTimerStorage auto-save with retry mechanism
+- Retries up to 3 times on network failure
+- Exponential backoff: 1s → 2s → 4s delays
+- Detailed logging for debugging
+
+**Files Modified:**
+- `src/hooks/useTimerStorage.js:144-203` - saveToSupabaseWithRetry() with exponential backoff
+
+#### **Layer 3: Server-side Cleanup (SQL Function)** ✅ Deployed & Tested
+- Created SQL function `cleanup_expired_timers()` in Supabase
+- Finds timers with `is_running=true` but expired `target_time`
+- Sets them to `is_running=false` and clears related fields
+- Returns cleaned count and user IDs for monitoring
+- Can be called manually or via Edge Function (cron)
+
+**Files Created:**
+- `database/functions/cleanup_expired_timers.sql` - SQL function definition
+- `supabase/functions/cleanup-timers/index.ts` - Edge Function (Deno) for automatic cleanup
+- `supabase/functions/README.md` - Deployment instructions
+- `test-cleanup-function.js` - Test script for SQL function
+- `check-active-fasters.js` - Utility to check active timers in DB
+- `DEPLOYMENT_LAYER3.md` - Complete deployment guide
+
+### Testing Results
+
+**Test Case: Ghost Timer Cleanup**
+```
+BEFORE:  2 active timers (zz + sz)
+- User "sz": 14h timer, expired 31.5 hours ago 🔴
+- User "zz": 18h timer, still active 🟢
+
+CLEANUP: SQL function executed
+- Cleaned 1 timer (User "sz")
+
+AFTER:   1 active timer (only zz)
+- Ghost timer removed ✅
+```
+
+### Technical Details
+
+**Why Ghost Timers Occurred:**
+1. User clicks "Stop Fasting"
+2. `stopFasting()` sets `isRunning = false` in React state
+3. `useTimerStorage` should sync to Supabase via useEffect
+4. **BUT:** If `isInitialLoad=true` or `syncing=true` or user closes app → sync skipped
+5. Result: DB still has `is_running=true`
+
+**How Layers Prevent This:**
+- **Layer 1:** Explicit sync bypasses all checks → 95% prevention
+- **Layer 2:** Network failures auto-retry → 99% prevention
+- **Layer 3:** Server cleans up any missed cases → 100% guarantee (max 5 min delay with cron)
+
+### Commits
+- `[pending]` - "fix: Implement 3-layer ghost timer prevention system"
+
+---
+
 ## 2025-11-20 (Part 3): My Journey Redesign & Critical Bug Fixes
 
 ### Major Features

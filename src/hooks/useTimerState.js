@@ -12,6 +12,7 @@ import {
   getNotificationPermission,
 } from '../services/notificationService';
 import { saveFast } from '../services/fastsService';
+import { forceSyncToSupabase } from './useTimerStorage';
 
 // Utils
 import {
@@ -163,7 +164,7 @@ export function useTimerState(hours, user) {
   /**
    * Cancel/stop the timer (before completion)
    */
-  const cancelTimer = () => {
+  const cancelTimer = async () => {
     // Calculate actual fasted time before stopping
     if (isRunning && startTime) {
       const now = Date.now();
@@ -197,6 +198,19 @@ export function useTimerState(hours, user) {
     setIsExtended(false);
     setOriginalGoalTime(null);
     notificationShownRef.current = false;
+
+    // LAYER 1: Force immediate sync to database (bypasses useEffect)
+    // This ensures is_running is set to false in DB before continuing
+    if (user) {
+      await forceSyncToSupabase(user, {
+        hours,
+        angle: 0, // Not critical for cancelTimer
+        isRunning: false,
+        targetTime: null,
+        isExtended: false,
+        originalGoalTime: null
+      });
+    }
   };
 
   /**
@@ -246,12 +260,26 @@ export function useTimerState(hours, user) {
    * Stop fasting and show completion summary
    * Called when user clicks "Stop Fasting" after completing/extending fast
    */
-  const stopFasting = () => {
+  const stopFasting = async () => {
     setShowCelebration(false);
     setIsRunning(false);
     setTargetTime(null);
+    setStartTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
+
+    // LAYER 1: Force immediate sync to database (bypasses useEffect)
+    // This ensures is_running is set to false in DB before continuing
+    if (user) {
+      await forceSyncToSupabase(user, {
+        hours,
+        angle: 0, // Not critical for stopFasting
+        isRunning: false,
+        targetTime: null,
+        isExtended: false,
+        originalGoalTime: null
+      });
+    }
 
     // Save fast to database (if not already saved)
     if (completedFastData && !completedFastData.cancelled) {
