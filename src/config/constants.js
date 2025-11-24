@@ -13,10 +13,11 @@ export const TIMER_CONSTANTS = {
   DEFAULT_HOURS: 16,
   HOUR_RANGE: 34, // MAX_HOURS - MIN_HOURS
   DEFAULT_ANGLE: 21.2,
+  MINIMUM_FAST_HOURS: 14, // Minimum hours to count as successful fast (even if goal not reached)
 };
 
 export const TEST_MODE = {
-  ENABLED: false, // Change to false for production!
+  ENABLED: true, // Change to false for production!
   TIME_MULTIPLIER: 1, // 1 second = 1 unit in test mode
   TIME_UNIT: 'seconds',
 };

@@ -23,6 +23,7 @@ import {
 import {
   TEST_MODE as TEST_MODE_CONFIG,
   PRODUCTION_MODE,
+  TIMER_CONSTANTS,
 } from '../config/constants';
 
 /**
@@ -186,8 +187,11 @@ export function useTimerState(hours, user) {
       setCompletedFastData(completionData);
       setShowCompletionSummary(true);
 
-      // Save fast to database ONLY if it was completed (not cancelled)
-      if (!wasCancelled) {
+      // Save fast to database if:
+      // 1. Goal was reached (!wasCancelled)
+      // 2. OR fast duration >= 14h (significant fast, even if goal not reached)
+      const isSignificantFast = actualFastedHours >= TIMER_CONSTANTS.MINIMUM_FAST_HOURS;
+      if (!wasCancelled || isSignificantFast) {
         saveCompletedFast(completionData);
       }
     }
