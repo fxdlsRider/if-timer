@@ -1,5 +1,5 @@
 // src/Timer.jsx
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 // Hooks
@@ -77,6 +77,56 @@ export default function Timer() {
     restoreState,
   } = timerState;
 
+  // State for "Time since last fast" feature
+  const [showTimeSinceLastFast, setShowTimeSinceLastFast] = useState(false);
+  const [userIsSelecting, setUserIsSelecting] = useState(false); // Track if user is actively selecting
+  const inactivityTimerRef = useRef(null);
+
+  // User interaction detection (for "Time since last fast" feature)
+  const handleUserInteraction = useCallback(() => {
+    // Only detect interactions in State 3 (completion state)
+    if (showCompletionSummary) {
+      console.log('🎯 User interaction detected in State 3!');
+
+      // Clear existing timer
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+        console.log('⏱️  Timer reset');
+      }
+
+      // User is actively selecting time - show hours instead of completion message
+      setUserIsSelecting(true);
+      setShowTimeSinceLastFast(false);
+
+      // Start new 30-second inactivity timer
+      inactivityTimerRef.current = setTimeout(() => {
+        console.log('⏰ 30 seconds of inactivity - showing Time since last fast!');
+        setUserIsSelecting(false); // Stop showing hours
+        setShowTimeSinceLastFast(true); // Show time since last fast
+      }, 30000); // 30 seconds
+    }
+  }, [showCompletionSummary]);
+
+  // Cleanup: Clear timer when exiting State 3 or unmounting
+  useEffect(() => {
+    // If not in completion state, clear timer and hide display
+    if (!showCompletionSummary) {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+        inactivityTimerRef.current = null;
+      }
+      setUserIsSelecting(false);
+      setShowTimeSinceLastFast(false);
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+    };
+  }, [showCompletionSummary]);
+
   // Custom Hook - Drag handling (controlled component pattern)
   const { isDragging, handlePointerDown, handleLevelClick } = useDragHandle(
     circleRef,
@@ -84,7 +134,8 @@ export default function Timer() {
     angle,
     setAngle,
     hours,
-    setHours
+    setHours,
+    handleUserInteraction // Pass interaction callback
   );
 
   // Stabilize timerState object to prevent re-renders
@@ -155,6 +206,8 @@ export default function Timer() {
             isRunning={isRunning}
             isExtended={isExtended}
             showCompletionSummary={showCompletionSummary}
+            userIsSelecting={userIsSelecting}
+            showTimeSinceLastFast={showTimeSinceLastFast}
             completedFastData={completedFastData}
             hours={hours}
             angle={angle}

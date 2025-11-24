@@ -24,6 +24,8 @@ export default function TimerPage({
   isRunning,
   isExtended,
   showCompletionSummary,
+  userIsSelecting,
+  showTimeSinceLastFast,
   completedFastData,
   hours,
   angle,
@@ -81,6 +83,8 @@ export default function TimerPage({
           isRunning={isRunning}
           isExtended={isExtended}
           showCompletionSummary={showCompletionSummary}
+          userIsSelecting={userIsSelecting}
+          showTimeSinceLastFast={showTimeSinceLastFast}
           completedFastData={completedFastData}
           hours={hours}
           angle={angle}

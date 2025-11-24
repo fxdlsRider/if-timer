@@ -21,6 +21,8 @@ export default function TimerCircle({
   isRunning,
   isExtended = false,
   showCompletionSummary = false,
+  userIsSelecting = false,
+  showTimeSinceLastFast = false,
   completedFastData = null,
   hours,
   angle,
@@ -76,6 +78,38 @@ export default function TimerCircle({
   // State for editing start time in running state
   const [isEditingStartTime, setIsEditingStartTime] = useState(false);
   const [tempStartTime, setTempStartTime] = useState(null);
+
+  // State for time since last fast
+  const [timeSinceLastFast, setTimeSinceLastFast] = useState('');
+
+  // Calculate and update time since last fast
+  useEffect(() => {
+    if (showTimeSinceLastFast && completedFastData && completedFastData.endTime) {
+      const calculateTimeSince = () => {
+        const now = new Date();
+        const endTime = completedFastData.endTime;
+        const diffMs = now.getTime() - endTime.getTime();
+        const diffMinutes = Math.floor(diffMs / 60000);
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+
+        if (hours > 0) {
+          return `${hours}h ${minutes}m`;
+        }
+        return `${minutes}m`;
+      };
+
+      // Calculate immediately
+      setTimeSinceLastFast(calculateTimeSince());
+
+      // Update every minute
+      const interval = setInterval(() => {
+        setTimeSinceLastFast(calculateTimeSince());
+      }, 60000);
+
+      return () => clearInterval(interval);
+    }
+  }, [showTimeSinceLastFast, completedFastData]);
 
   // Hide banner when timer starts (permission will be requested)
   useEffect(() => {
@@ -584,33 +618,52 @@ export default function TimerCircle({
           />
 
           <div style={styles.hoursDisplay}>
-            {isCancelled ? (
+            {userIsSelecting ? (
+              // Show selected hours when user is dragging handle or clicking levels
               <>
-                <div style={{ fontSize: '18px', fontWeight: '500', color: '#EF4444', marginBottom: '8px' }}>
-                  Cancelled
+                <div style={styles.hoursNumber}>{hours}</div>
+                <div style={styles.hoursLabel}>{TIME_UNIT}</div>
+              </>
+            ) : showTimeSinceLastFast ? (
+              // Show time since last fast after 3 seconds of inactivity
+              <>
+                <div style={{ fontSize: '14px', color: '#999', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  Time since last fast
                 </div>
-                <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
-                  Fasted only {totalDuration} {completedFastData.unit}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)' }}>
-                  Try again!
+                <div style={{ fontSize: '32px', fontWeight: '500', color: '#333' }}>
+                  {timeSinceLastFast}
                 </div>
               </>
             ) : (
-              <>
-                <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
-                  Well done!
-                </div>
-                <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
-                  {completedFastData.originalGoal} {completedFastData.unit} fasted
-                </div>
-                <div style={styles.timeDisplay}>
-                  +{formatTime(Math.round((parseFloat(totalDuration) - completedFastData.originalGoal) * (completedFastData.unit === 'hours' ? 3600 : 1)))}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
-                  additional time
-                </div>
-              </>
+              // Show original completion message (cancelled or success)
+              isCancelled ? (
+                <>
+                  <div style={{ fontSize: '18px', fontWeight: '500', color: '#EF4444', marginBottom: '8px' }}>
+                    Cancelled
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
+                    Fasted only {totalDuration} {completedFastData.unit}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)' }}>
+                    Try again!
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: '18px', fontWeight: '500', color: '#34C759', marginBottom: '8px' }}>
+                    Well done!
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--color-text-secondary, #64748B)', marginBottom: '12px' }}>
+                    {completedFastData.originalGoal} {completedFastData.unit} fasted
+                  </div>
+                  <div style={styles.timeDisplay}>
+                    +{formatTime(Math.round((parseFloat(totalDuration) - completedFastData.originalGoal) * (completedFastData.unit === 'hours' ? 3600 : 1)))}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary, #94A3B8)', marginTop: '4px' }}>
+                    additional time
+                  </div>
+                </>
+              )
             )}
           </div>
         </div>
