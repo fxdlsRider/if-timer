@@ -167,6 +167,7 @@ ENABLED: false
 **Constants:**
 - `src/config/constants.js`
 - Test Mode Toggle (Zeile 18-22)
+- **MINIMUM_FAST_HOURS** (Zeile 16) - 14h threshold for saving cancelled fasts
 - Fasting Levels (Zeile 42-103)
 - Body Modes (Zeile 107-143)
 - Circle Config, Audio, etc.
@@ -314,7 +315,7 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 
 ---
 
-## 🎯 Aktueller Stand (Session 2025-11-20)
+## 🎯 Aktueller Stand (Session 2025-11-24)
 
 ### ✅ Implementiert
 
@@ -326,8 +327,19 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 - ✅ Streak Calculation (consecutive days)
 - ✅ Database Schema korrekt gemappt
 - ✅ **DEDUPLICATION:** Multi-Device Race Condition gelöst (prüft start_time vor Insert)
-- ✅ **BUG FIX:** Cancelled Fasts werden nicht mehr gespeichert
+- ✅ **14h MINIMUM THRESHOLD:** Fasts ≥14h werden gespeichert (auch bei Abbruch)
 - ✅ **BUG FIX:** Extended Mode Progress Bar bleibt bei 100%
+
+**Ghost Timer Prevention (3-Layer Defense):**
+- ✅ **Layer 1:** Explicit forceSync() in stopFasting() + cancelTimer()
+- ✅ **Layer 2:** Retry logic with exponential backoff (1s, 2s, 4s)
+- ✅ **Layer 3:** Server-side SQL cleanup + Edge Function (5min cron)
+- ✅ Successfully tested and deployed to production
+
+**Database Performance (2025-11-24):**
+- ✅ **RLS Optimization:** 41+ policies optimized (auth.uid() → (select auth.uid()))
+- ✅ **Function Security:** Fixed mutable search_path warnings (3 functions)
+- ✅ **Slow Queries:** Analyzed and determined non-critical
 
 **My Journey Redesign (2025-11-20):**
 - ✅ Philosophy Quotes (280 Stück) statt Movie Quotes
@@ -663,5 +675,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-**Letzte Aktualisierung:** 2025-11-20
-**Status:** Test Mode OFF | My Journey Redesign (Philosophy Quotes + Struggle) | Profile Card Compact Layout | Multi-Device Deduplication | Extended Mode Progress Bar Fixed
+**Letzte Aktualisierung:** 2025-11-24
+**Status:** Test Mode ON | Ghost Timer Prevention (3 Layers) | 14h Minimum Fast Threshold | RLS Performance Optimization (41+ policies) | Database Cleanup Utilities

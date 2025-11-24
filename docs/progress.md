@@ -77,7 +77,161 @@ AFTER:   1 active timer (only zz)
 - **Layer 3:** Server cleans up any missed cases → 100% guarantee (max 5 min delay with cron)
 
 ### Commits
-- `[pending]` - "fix: Implement 3-layer ghost timer prevention system"
+- `4f8363b` - "feat: Implement 14h minimum fast threshold and cleanup ghost timers"
+
+---
+
+## 2025-11-24 (Part 2): Database Performance Optimization & 14h Fast Threshold
+
+### Database Performance Optimization
+
+#### RLS Policy Optimization (41+ Policies Fixed) ✅
+**Problem:** Supabase Performance Advisor showed 41+ warnings about RLS policies using `auth.uid()` directly
+**Impact:** Policy re-evaluated on every row access → significant performance overhead
+
+**Root Cause:**
+- RLS policies called `auth.uid()` directly in WHERE clauses
+- Function evaluated per-row instead of per-query
+- Example: `(auth.uid() = user_id)` evaluated thousands of times
+
+**Solution:**
+- Wrapped all `auth.uid()` calls in SELECT subquery: `((select auth.uid()) = user_id)`
+- PostgreSQL caches subquery result → evaluated once per query instead of per row
+- Created automated migration script to fix all policies at once
+
+**Files Created:**
+- `database/migrations/safe_optimize_all_policies_FIXED.sql` - Automated RLS optimization
+- `database/migrations/debug_policies.sql` - Policy inspection tool
+- `database/migrations/README_RLS_OPTIMIZATION.md` - Documentation
+- `check-rls-policies.js` - Verification script
+
+**Implementation Details:**
+```sql
+-- Before (slow)
+CREATE POLICY "Users can view own timer" ON timer_states
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- After (fast)
+CREATE POLICY "Users can view own timer" ON timer_states
+  FOR SELECT USING ((select auth.uid()) = user_id);
+```
+
+**Syntax Fix:**
+- Initial script failed with `AS PERMISSIVE` clause on DELETE policies
+- PostgreSQL doesn't accept `AS PERMISSIVE` for DELETE operations
+- Fixed by conditionally adding `WITH CHECK` only for INSERT/UPDATE
+
+**Result:**
+- ✅ All 41+ policies optimized
+- ✅ Performance warnings eliminated
+- ✅ Query execution significantly faster
+- ✅ No breaking changes to functionality
+
+#### Function search_path Security Fix ✅
+**Problem:** 3 functions had "mutable search_path" warnings
+**Impact:** Security vulnerability + performance degradation
+
+**Functions Fixed:**
+1. `update_updated_at_column()` - Trigger function for timestamp updates
+2. `cleanup_expired_timers()` - Ghost timer cleanup (Layer 3)
+3. All other public schema functions (automated)
+
+**Solution:**
+```sql
+ALTER FUNCTION public.update_updated_at_column() SET search_path = '';
+ALTER FUNCTION public.cleanup_expired_timers() SET search_path = '';
+```
+
+**Files Created:**
+- `database/migrations/fix_all_search_paths.sql` - Automated search_path fixes
+
+**Result:**
+- ✅ All functions secured
+- ✅ Performance warnings eliminated
+- ✅ Security vulnerability closed
+
+#### Slow Queries Analysis ✅
+**Findings:** 1 slow query identified but determined to be non-critical
+- Query: Internal Supabase maintenance operation
+- Impact: No user-facing performance issues
+- Action: Monitored, no changes needed
+
+### Feature: 14h Minimum Fast Threshold
+
+**Problem Identified:**
+User completes 16h of a 20h Warrior fast but must abort due to health concerns → receives NO credit
+
+**User Feedback:**
+> "Nehmen wir mal an, der Benutzer entscheidet sich für einen Warrior Fast und muss dann aber abbrechen weil es ihm nicht gut geht aber er bereits 16h gefastet hat. Aktuell würden wir das nicht anerkennen und ihn abstrafen. Richtig?"
+
+**Solution: Significant Fast Recognition**
+- Implemented 14h minimum threshold
+- Fasts ≥14h now saved even if goal not reached
+- Maintains `cancelled: true` flag for UI differentiation
+- Recognizes real achievement while filtering very early aborts
+
+**Implementation:**
+
+**Constants (src/config/constants.js:16):**
+```javascript
+export const TIMER_CONSTANTS = {
+  // ...
+  MINIMUM_FAST_HOURS: 14, // Minimum hours to count as successful fast
+};
+```
+
+**Logic (src/hooks/useTimerState.js:190-196):**
+```javascript
+// Save fast to database if:
+// 1. Goal was reached (!wasCancelled)
+// 2. OR fast duration >= 14h (significant fast, even if goal not reached)
+const isSignificantFast = actualFastedHours >= TIMER_CONSTANTS.MINIMUM_FAST_HOURS;
+if (!wasCancelled || isSignificantFast) {
+  saveCompletedFast(completionData);
+}
+```
+
+**Scenarios:**
+
+| Goal | Actual | Saved? | Cancelled Flag | Reason |
+|------|--------|--------|----------------|--------|
+| 20h  | 16h    | ✅     | `true`         | 16h ≥ 14h (significant) |
+| 24h  | 14h    | ✅     | `true`         | 14h = 14h (threshold) |
+| 36h  | 10h    | ❌     | -              | 10h < 14h (too short) |
+| 16h  | 16h    | ✅     | `false`        | Goal reached |
+
+**Benefits:**
+- ✅ Recognizes substantial fasting achievements
+- ✅ Motivates users who must abort for health reasons
+- ✅ Maintains data integrity with cancelled flag
+- ✅ Filters out trivial early aborts (<14h)
+
+**Files Modified:**
+- `src/config/constants.js` - Added MINIMUM_FAST_HOURS constant
+- `src/hooks/useTimerState.js` - Updated cancelTimer() logic
+
+### Test Mode & Utilities
+
+**Test Mode Enabled:**
+- `TEST_MODE.ENABLED = true` for faster UI testing
+- Timers run in seconds instead of hours
+- Database correctly saves `unit: 'seconds'`
+- Statistics auto-convert seconds → hours
+
+**Cleanup Utilities Created:**
+- `cleanup-test-fasts.js` - Node.js script to remove test data
+- `cleanup-test-fasts.sql` - SQL version for Supabase editor
+- `check-all-fasts.js` - Database inspection utility
+- Identifies test fasts by `unit='seconds'` or `duration < 1`
+
+**Features:**
+- Preview before deletion
+- Summary statistics
+- Safe (only targets test data)
+- Works with both Test Mode and Production data
+
+### Commits
+- `4f8363b` - "feat: Implement 14h minimum fast threshold and cleanup ghost timers"
 
 ---
 
