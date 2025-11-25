@@ -1,6 +1,6 @@
 # Session Setup Guide für IF-Timer
 
-**Zuletzt aktualisiert:** 2025-11-20
+**Zuletzt aktualisiert:** 2025-11-25
 **Zweck:** Schneller Einstieg für neue Claude Code Sessions
 
 ---
@@ -87,11 +87,18 @@ ENABLED: false
   - Fasting Info Panel (Start Time, Goal Time, Elapsed)
 
 - **State 3 - Complete:** `src/components/Timer/TimerCircle.jsx:608-782`
-  - **Dynamic Center Display (NEW 2025-11-24):**
+  - **Smooth Fade Transitions (NEW 2025-11-25):**
+    - Display Mode System ('well-done' | 'hours' | 'time-since')
+    - All content changes fade out (600ms) → change → fade in (600ms)
+    - "Well Done" displays for 8 seconds (no handle)
+    - Automatically transitions to "Time Since Last Fast" (with handle)
+    - User interactions (drag, click level) fade to hours display
+    - After 30s inactivity: fades back to "Time Since Last Fast"
+  - **Dynamic Center Display (2025-11-24):**
     - Shows selected hours when dragging handle or clicking levels
     - Shows "Time since last fast" after 30 seconds of inactivity
     - Shows completion message (Cancelled/Well done) by default
-  - Draggable Handle (50% transparent) für nächsten Fast
+  - Draggable Handle (100% opacity) für nächsten Fast
   - Editable start/end times with DateTimePicker
   - Hint text: "Set your next fast by dragging..."
 
