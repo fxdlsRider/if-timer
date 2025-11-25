@@ -59,8 +59,12 @@ export function useTimerState(hours, user) {
   // Post-fast summary state (after user clicks "Stop Fasting")
   const [showCompletionSummary, setShowCompletionSummary] = useState(false);
 
+  // State 3 UX: Well Done message (0-5s) vs Time Since Last Fast (>5s)
+  const [showWellDoneMessage, setShowWellDoneMessage] = useState(false);
+
   // Refs
   const notificationShownRef = useRef(false);
+  const wellDoneTimerRef = useRef(null);
 
   // Update current time every second for display
   useEffect(() => {
@@ -104,9 +108,9 @@ export function useTimerState(hours, user) {
     ? getTimeLeft(targetTime, currentTime, isExtended, originalGoalTime)
     : 0;
 
-  // Show notification when timer completes
+  // Auto-activate Extended Mode when timer completes (no modal)
   useEffect(() => {
-    if (isRunning && timeLeft === 0 && !notificationShownRef.current) {
+    if (isRunning && timeLeft === 0 && !notificationShownRef.current && !isExtended) {
       notificationShownRef.current = true;
 
       // Save completion data for celebration screen
@@ -125,10 +129,23 @@ export function useTimerState(hours, user) {
       // Show browser notification
       showCompletionNotification(hours, TIME_UNIT);
 
-      // Show celebration screen
-      setShowCelebration(true);
+      // AUTO-ACTIVATE EXTENDED MODE (no modal)
+      setIsExtended(true);
+      setOriginalGoalTime(targetTime);
+
+      // FORCE SYNC to DB immediately (prevent data loss on tab close)
+      if (user) {
+        forceSyncToSupabase(user, {
+          hours,
+          angle: 0, // Not critical for this operation
+          isRunning: true,
+          targetTime,
+          isExtended: true,
+          originalGoalTime: targetTime
+        });
+      }
     }
-  }, [isRunning, timeLeft, hours, targetTime, TIME_MULTIPLIER, TIME_UNIT]);
+  }, [isRunning, timeLeft, hours, targetTime, TIME_MULTIPLIER, TIME_UNIT, isExtended, user]);
 
   /**
    * Start the timer
@@ -186,6 +203,19 @@ export function useTimerState(hours, user) {
       };
       setCompletedFastData(completionData);
       setShowCompletionSummary(true);
+
+      // STATE 3 UX: Show "Well Done" for 5 seconds, then switch to "Time Since Last Fast"
+      setShowWellDoneMessage(true);
+
+      // Clear any existing timer
+      if (wellDoneTimerRef.current) {
+        clearTimeout(wellDoneTimerRef.current);
+      }
+
+      // After 8 seconds: Hide "Well Done", show "Time Since Last Fast" + Handle
+      wellDoneTimerRef.current = setTimeout(() => {
+        setShowWellDoneMessage(false);
+      }, 8000);
 
       // Save fast to database if:
       // 1. Goal was reached (!wasCancelled)
@@ -293,6 +323,19 @@ export function useTimerState(hours, user) {
     // Show completion summary with "Start Fast" button
     setShowCompletionSummary(true);
     // Keep completedFastData to display results
+
+    // STATE 3 UX: Show "Well Done" for 5 seconds, then switch to "Time Since Last Fast"
+    setShowWellDoneMessage(true);
+
+    // Clear any existing timer
+    if (wellDoneTimerRef.current) {
+      clearTimeout(wellDoneTimerRef.current);
+    }
+
+    // After 8 seconds: Hide "Well Done", show "Time Since Last Fast" + Handle
+    wellDoneTimerRef.current = setTimeout(() => {
+      setShowWellDoneMessage(false);
+    }, 8000);
   };
 
   /**
@@ -306,6 +349,13 @@ export function useTimerState(hours, user) {
     setTargetTime(null);
     setIsExtended(false);
     setOriginalGoalTime(null);
+    setShowWellDoneMessage(false);
+
+    // Clear Well Done timer if active
+    if (wellDoneTimerRef.current) {
+      clearTimeout(wellDoneTimerRef.current);
+      wellDoneTimerRef.current = null;
+    }
   };
 
   /**
@@ -352,6 +402,7 @@ export function useTimerState(hours, user) {
     showCelebration,
     completedFastData,
     showCompletionSummary,
+    showWellDoneMessage,
 
     // Config
     TEST_MODE,

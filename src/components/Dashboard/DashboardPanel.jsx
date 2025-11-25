@@ -220,19 +220,21 @@ export default function DashboardPanel({ userData = {} }) {
       background: 'var(--color-background, #FFFFFF)',
       borderRadius: '12px',
       padding: '16px',
-      border: '1px solid var(--color-border-subtle, #F1F5F9)'
+      border: '1px solid #2196F3',
+      boxShadow: '0 0 12px rgba(33, 150, 243, 0.4)'
     },
     lastFastTitle: {
       fontSize: '12px',
-      color: 'var(--color-text-secondary, #64748B)',
+      color: '#2196F3',
       textTransform: 'uppercase',
       letterSpacing: '1px',
-      marginBottom: '12px'
+      marginBottom: '12px',
+      fontWeight: '700'
     },
     lastFastDuration: {
       fontSize: '28px',
-      fontWeight: '300',
-      color: 'var(--color-accent-teal, #4ECDC4)',
+      fontWeight: '600',
+      color: '#2196F3',
       marginBottom: '8px'
     },
     lastFastDate: {
@@ -289,7 +291,7 @@ export default function DashboardPanel({ userData = {} }) {
             <div style={styles.lastFastStatus}>Cancelled</div>
           )}
           {!lastFast.cancelled && lastFast.duration >= lastFast.original_goal && (
-            <div style={{...styles.lastFastStatus, color: '#34C759', background: 'rgba(52, 199, 89, 0.1)'}}>
+            <div style={{...styles.lastFastStatus, color: '#2196F3', background: 'rgba(33, 150, 243, 0.1)', fontWeight: '600'}}>
               ✓ Completed
             </div>
           )}

@@ -1,5 +1,5 @@
 // components/Timer/TimerCircle.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { hasUserRespondedToPermission } from '../../services/notificationService';
 import StopFastingModal from './StopFastingModal';
 import FastingInfo from './FastingInfo';
@@ -21,6 +21,7 @@ export default function TimerCircle({
   isRunning,
   isExtended = false,
   showCompletionSummary = false,
+  showWellDoneMessage = false,
   userIsSelecting = false,
   showTimeSinceLastFast = false,
   completedFastData = null,
@@ -81,6 +82,48 @@ export default function TimerCircle({
 
   // State for time since last fast
   const [timeSinceLastFast, setTimeSinceLastFast] = useState('');
+
+  // State for fade animation in State 3
+  const [displayMode, setDisplayMode] = useState('well-done'); // 'well-done' | 'hours' | 'time-since'
+  const [contentOpacity, setContentOpacity] = useState(1);
+  const prevDisplayModeRef = useRef('well-done');
+
+  // Handle smooth transition: delay content change until fade-out completes
+  useEffect(() => {
+    if (showCompletionSummary) {
+      // Determine what should be displayed
+      let newMode;
+      if (showWellDoneMessage) {
+        newMode = 'well-done';
+      } else if (userIsSelecting) {
+        newMode = 'hours';
+      } else if (showTimeSinceLastFast) {
+        newMode = 'time-since';
+      } else {
+        newMode = 'hours'; // fallback
+      }
+
+      // If mode changed, trigger fade transition
+      if (newMode !== prevDisplayModeRef.current) {
+        // Step 1: Fade out current content
+        setContentOpacity(0);
+
+        // Step 2: After fade-out, change content and fade in
+        const timer = setTimeout(() => {
+          setDisplayMode(newMode);
+          setContentOpacity(1);
+          prevDisplayModeRef.current = newMode;
+        }, 600);
+
+        return () => clearTimeout(timer);
+      } else {
+        // No change, ensure content is visible
+        setDisplayMode(newMode);
+        setContentOpacity(1);
+        prevDisplayModeRef.current = newMode;
+      }
+    }
+  }, [showWellDoneMessage, showCompletionSummary, userIsSelecting, showTimeSinceLastFast]);
 
   // Calculate and update time since last fast
   useEffect(() => {
@@ -276,7 +319,8 @@ export default function TimerCircle({
       left: '50%',
       transform: 'translate(-50%, -50%)',
       textAlign: 'center',
-      pointerEvents: 'none'
+      pointerEvents: 'none',
+      transition: 'opacity 0.6s ease-in-out'
     },
     hoursNumber: {
       fontSize: '48px',
@@ -604,38 +648,25 @@ export default function TimerCircle({
             />
           </svg>
 
-          {/* Draggable handle for setting next fast */}
-          <div
-            style={{
-              ...styles.handle,
-              left: `${handlePosition.x - 10}px`,
-              top: `${handlePosition.y - 10}px`,
-              cursor: isDragging ? 'grabbing' : 'grab',
-              opacity: 0.5
-            }}
-            onMouseDown={handlePointerDown}
-            onTouchStart={handlePointerDown}
-          />
+          {/* Draggable handle for setting next fast - hidden during "Well Done" phase */}
+          {displayMode !== 'well-done' && (
+            <div
+              style={{
+                ...styles.handle,
+                left: `${handlePosition.x - 10}px`,
+                top: `${handlePosition.y - 10}px`,
+                cursor: isDragging ? 'grabbing' : 'grab',
+                opacity: contentOpacity,
+                transition: 'opacity 0.6s ease-in-out'
+              }}
+              onMouseDown={handlePointerDown}
+              onTouchStart={handlePointerDown}
+            />
+          )}
 
-          <div style={styles.hoursDisplay}>
-            {userIsSelecting ? (
-              // Show selected hours when user is dragging handle or clicking levels
-              <>
-                <div style={styles.hoursNumber}>{hours}</div>
-                <div style={styles.hoursLabel}>{TIME_UNIT}</div>
-              </>
-            ) : showTimeSinceLastFast ? (
-              // Show time since last fast after 3 seconds of inactivity
-              <>
-                <div style={{ fontSize: '14px', color: '#999', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Time since last fast
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: '500', color: '#333' }}>
-                  {timeSinceLastFast}
-                </div>
-              </>
-            ) : (
-              // Show original completion message (cancelled or success)
+          <div style={{ ...styles.hoursDisplay, opacity: contentOpacity }}>
+            {displayMode === 'well-done' ? (
+              // Phase 1 (0-8s): Show "Well Done" message
               isCancelled ? (
                 <>
                   <div style={{ fontSize: '18px', fontWeight: '500', color: '#EF4444', marginBottom: '8px' }}>
@@ -664,7 +695,23 @@ export default function TimerCircle({
                   </div>
                 </>
               )
-            )}
+            ) : displayMode === 'hours' ? (
+              // Phase 2: Show selected hours when user is interacting
+              <>
+                <div style={styles.hoursNumber}>{hours}</div>
+                <div style={styles.hoursLabel}>{TIME_UNIT}</div>
+              </>
+            ) : displayMode === 'time-since' ? (
+              // Phase 3: Show "Time since last fast" after inactivity
+              <>
+                <div style={{ fontSize: '14px', color: '#999', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  Time since last fast
+                </div>
+                <div style={{ fontSize: '32px', fontWeight: '500', color: '#333' }}>
+                  {timeSinceLastFast}
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
 

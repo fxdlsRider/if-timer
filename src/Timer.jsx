@@ -20,7 +20,6 @@ import SupportPage from './components/Support/SupportPage';
 import StatsPage from './components/Stats/StatsPage';
 import LearnPage from './components/Learn/LearnPage';
 import ProfilePage from './components/Profile/ProfilePage';
-import CelebrationScreen from './components/Celebration/CelebrationScreen';
 import LoginModal from './components/Auth/LoginModal';
 
 // Utils
@@ -64,6 +63,7 @@ export default function Timer() {
     showCelebration,
     completedFastData,
     showCompletionSummary,
+    showWellDoneMessage,
     TEST_MODE,
     TIME_UNIT,
     TIME_MULTIPLIER,
@@ -106,6 +106,19 @@ export default function Timer() {
       }, 30000); // 30 seconds
     }
   }, [showCompletionSummary]);
+
+  // Auto-show "Time Since Last Fast" after "Well Done" phase ends (after 5 seconds)
+  useEffect(() => {
+    if (showCompletionSummary) {
+      if (showWellDoneMessage) {
+        // Phase 1: During "Well Done" phase, hide "Time Since Last Fast"
+        setShowTimeSinceLastFast(false);
+      } else if (!userIsSelecting) {
+        // Phase 2: After "Well Done" phase, show "Time Since Last Fast"
+        setShowTimeSinceLastFast(true);
+      }
+    }
+  }, [showWellDoneMessage, showCompletionSummary, userIsSelecting]);
 
   // Cleanup: Clear timer when exiting State 3 or unmounting
   useEffect(() => {
@@ -206,6 +219,7 @@ export default function Timer() {
             isRunning={isRunning}
             isExtended={isExtended}
             showCompletionSummary={showCompletionSummary}
+            showWellDoneMessage={showWellDoneMessage}
             userIsSelecting={userIsSelecting}
             showTimeSinceLastFast={showTimeSinceLastFast}
             completedFastData={completedFastData}
@@ -291,16 +305,6 @@ export default function Timer() {
 
   return (
     <div style={styles.container}>
-      {/* CELEBRATION SCREEN */}
-      {showCelebration && completedFastData && (
-        <CelebrationScreen
-          completedFastData={completedFastData}
-          onContinue={continueFasting}
-          onStop={stopFasting}
-          isLoggedIn={!!user}
-        />
-      )}
-
       {/* AUTH ERROR BANNER */}
       {authError && (
         <div style={styles.authErrorBanner}>

@@ -16,14 +16,14 @@ DECLARE
 BEGIN
   -- Find all expired timers before updating (for logging)
   SELECT ARRAY_AGG(user_id) INTO user_ids
-  FROM timer_states
+  FROM public.timer_states
   WHERE
     is_running = true
     AND target_time < NOW()
     AND target_time IS NOT NULL;
 
   -- Update expired timers to stopped state
-  UPDATE timer_states
+  UPDATE public.timer_states
   SET
     is_running = false,
     target_time = NULL,

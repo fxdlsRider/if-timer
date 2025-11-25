@@ -24,6 +24,7 @@ export default function TimerPage({
   isRunning,
   isExtended,
   showCompletionSummary,
+  showWellDoneMessage,
   userIsSelecting,
   showTimeSinceLastFast,
   completedFastData,
@@ -83,6 +84,7 @@ export default function TimerPage({
           isRunning={isRunning}
           isExtended={isExtended}
           showCompletionSummary={showCompletionSummary}
+          showWellDoneMessage={showWellDoneMessage}
           userIsSelecting={userIsSelecting}
           showTimeSinceLastFast={showTimeSinceLastFast}
           completedFastData={completedFastData}
