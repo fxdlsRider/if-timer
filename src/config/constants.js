@@ -17,7 +17,7 @@ export const TIMER_CONSTANTS = {
 };
 
 export const TEST_MODE = {
-  ENABLED: true, // Change to false for production!
+  ENABLED: false, // Change to false for production!
   TIME_MULTIPLIER: 1, // 1 second = 1 unit in test mode
   TIME_UNIT: 'seconds',
 };
