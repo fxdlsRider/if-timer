@@ -16,21 +16,36 @@ import { FASTING_LEVELS } from '../config/constants';
  */
 function getFastingLevel(hours) {
   // Find the matching level based on hour ranges from FASTING_LEVELS
-  for (const level of FASTING_LEVELS) {
+  // Uses exclusive upper bounds to prevent overlapping (e.g., 18h is Intensive, not Classic)
+  for (let i = 0; i < FASTING_LEVELS.length; i++) {
+    const level = FASTING_LEVELS[i];
+    const isLastLevel = i === FASTING_LEVELS.length - 1;
+
     // Parse range string like "14-16h" or "20-24h"
     const rangeMatch = level.range.match(/(\d+)-(\d+)h/);
     if (rangeMatch) {
       const min = parseInt(rangeMatch[1]);
       const max = parseInt(rangeMatch[2]);
-      if (hours >= min && hours <= max) {
-        return level.id;
+
+      // Use inclusive lower bound, exclusive upper bound (except for last level)
+      // Examples: [14, 16), [16, 18), [18, 20), etc.
+      if (isLastLevel) {
+        // Last level: inclusive upper bound (36-48h includes 48)
+        if (hours >= min && hours <= max) {
+          return level.id;
+        }
+      } else {
+        // All other levels: exclusive upper bound
+        if (hours >= min && hours < max) {
+          return level.id;
+        }
       }
     }
   }
 
   // Default fallbacks
   if (hours < 14) return 'gentle';
-  if (hours > 24) return 'extended';
+  if (hours > 48) return 'extended';
   return 'classic';
 }
 

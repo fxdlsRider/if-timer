@@ -201,29 +201,31 @@ function anonymizeUserId(userId, nickname = null) {
 
 /**
  * Get fasting level name based on goal hours
+ * Uses exclusive upper bounds to match FASTING_LEVELS constants
  * @param {number} hours - Goal fasting hours (14-48)
  * @returns {string} Level name
  */
 function getFastingLevelName(hours) {
-  if (hours <= 16) return 'Gentle';
-  if (hours < 20) return 'Classic';
-  if (hours < 24) return 'Intensive';
-  if (hours < 36) return 'Warrior';
-  if (hours < 48) return 'Monk';
-  return 'Extended';
+  if (hours >= 14 && hours < 16) return 'Gentle';    // 14-16h
+  if (hours >= 16 && hours < 18) return 'Classic';   // 16-18h
+  if (hours >= 18 && hours < 20) return 'Intensive'; // 18-20h
+  if (hours >= 20 && hours < 24) return 'Warrior';   // 20-24h
+  if (hours >= 24 && hours < 36) return 'Monk';      // 24-36h
+  return 'Extended'; // 36+
 }
 
 /**
  * Get badge emoji based on hours
+ * Matches FASTING_LEVELS ranges with exclusive upper bounds
  * @param {number} hours - Elapsed fasting hours
  * @returns {string} Badge emoji
  */
 function getFastingBadge(hours) {
-  if (hours < 14) return '🌱';
-  if (hours < 16) return '🔥';
-  if (hours < 20) return '⚡';
-  if (hours < 24) return '💪';
-  if (hours < 36) return '🌟';
-  if (hours < 48) return '✨';
-  return '🏆';
+  if (hours < 14) return '🌱';       // Below minimum
+  if (hours < 16) return '🔥';       // Gentle (14-16h)
+  if (hours < 18) return '⚡';       // Classic (16-18h)
+  if (hours < 20) return '💪';       // Intensive (18-20h)
+  if (hours < 24) return '🌟';       // Warrior (20-24h)
+  if (hours < 36) return '✨';       // Monk (24-36h)
+  return '🏆';                       // Extended (36+h)
 }
