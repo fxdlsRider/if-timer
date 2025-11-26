@@ -1,5 +1,5 @@
 // hooks/useTimerStorage.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 /**
@@ -14,6 +14,7 @@ import { supabase } from '../supabaseClient';
 export function useTimerStorage(user, timerState, onStateLoaded) {
   const [syncing, setSyncing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const loadingRef = useRef(false); // Prevent concurrent loads
 
   // Load from localStorage (if not logged in)
   useEffect(() => {
@@ -50,6 +51,15 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     if (!user) return;
 
     const loadFromSupabase = async () => {
+      // Prevent concurrent loads
+      if (loadingRef.current) {
+        console.log('⏸️  Initial load skipped - already loading');
+        return;
+      }
+
+      loadingRef.current = true;
+      console.log('📥 Initial load starting...');
+
       const { data, error } = await supabase
         .from('timer_states')
         .select('*')
@@ -57,7 +67,14 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error loading from Supabase:', error);
+        console.error('Error loading from Supabase:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          fullError: error
+        });
+        loadingRef.current = false;
         setIsInitialLoad(false);
         return;
       }
@@ -84,6 +101,7 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
             originalGoalTime: null
           });
 
+          loadingRef.current = false;
           setIsInitialLoad(false);
           return; // Don't restore the expired state
         }
@@ -137,6 +155,7 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
         }
       }
 
+      loadingRef.current = false;
       setIsInitialLoad(false);
     };
 
@@ -151,6 +170,13 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
 
     const handleVisibilityChange = async () => {
       if (!document.hidden) {
+        // Prevent concurrent loads
+        if (loadingRef.current) {
+          console.log('⏸️  Visibility refresh skipped - already loading');
+          return;
+        }
+
+        loadingRef.current = true;
         console.log('🔄 Tab visible → Force refreshing state from Supabase...');
 
         // Force refresh state from database
@@ -161,7 +187,14 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           .single();
 
         if (error && error.code !== 'PGRST116') {
-          console.error('Error refreshing from Supabase:', error);
+          console.error('Error refreshing from Supabase:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            fullError: error
+          });
+          loadingRef.current = false;
           return;
         }
 
@@ -180,6 +213,7 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
               isExtended: false,
               originalGoalTime: null
             });
+            loadingRef.current = false;
             return;
           }
 
@@ -228,6 +262,8 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
             onStateLoaded(refreshedState);
           }
         }
+
+        loadingRef.current = false;
       }
     };
 
