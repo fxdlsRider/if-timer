@@ -167,11 +167,11 @@ export default function Timer() {
     if (loadedState.hours !== undefined) setHours(loadedState.hours);
     if (loadedState.angle !== undefined) setAngle(loadedState.angle);
 
-    // Restore complete timer state if timer was running
-    if (loadedState.isRunning && restoreState) {
+    // ALWAYS restore timer state (for State 3 default logic when timer is stopped)
+    if (restoreState) {
       restoreState(loadedState);
     }
-  }, []);
+  }, [restoreState]);
 
   // Wrapper functions to reset angle on timer actions
   const handleStartTimer = useCallback(() => {
