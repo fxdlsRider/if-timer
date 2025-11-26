@@ -61,9 +61,9 @@ export default function TimerPage({
   return (
     <div className="timer-page-wrapper">
       <div className="timer-page-container">
-        {/* Left Column: Leaderboard (not logged in) OR Dashboard (logged in) */}
+        {/* Left Column: Leaderboard (anonymous/not logged in) OR Dashboard (logged in with email) */}
         <div className="dashboard-column">
-          {user ? (
+          {user && !user.is_anonymous ? (
             <DashboardPanel />
           ) : (
             <Leaderboard onSignUp={onSignUp} />
