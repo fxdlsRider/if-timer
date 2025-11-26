@@ -88,6 +88,39 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           return; // Don't restore the expired state
         }
 
+        // STATE 3 DEFAULT LOGIC: Check if user should see "Time Since Last Fast"
+        // For logged-in users with stopped timer + completed fasts → show State 3
+        let shouldShowTimeSinceLastFast = false;
+        let completedFastData = null;
+
+        if (!data.is_running) {
+          // Timer is stopped → Check if user has any completed fasts
+          const { data: fasts, error: fastsError } = await supabase
+            .from('fasts')
+            .select('id, start_time, end_time, duration, original_goal, unit')
+            .eq('user_id', user.id)
+            .order('end_time', { ascending: false })
+            .limit(1);
+
+          if (!fastsError && fasts && fasts.length > 0) {
+            // User has at least one completed fast → State 3 is default
+            shouldShowTimeSinceLastFast = true;
+
+            // Load completed fast data for "Time Since Last Fast" calculation
+            const lastFast = fasts[0];
+            completedFastData = {
+              startTime: new Date(lastFast.start_time),
+              endTime: new Date(lastFast.end_time),
+              duration: lastFast.duration,
+              originalGoal: lastFast.original_goal,
+              unit: lastFast.unit || 'hours',
+              cancelled: false // From history, so completed successfully
+            };
+
+            console.log('✓ User has fast history → Showing "Time Since Last Fast" as default');
+          }
+        }
+
         const loadedState = {
           hours: data.hours,
           angle: data.angle,
@@ -95,6 +128,8 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           targetTime: targetTimeMs,
           isExtended: data.is_extended,
           originalGoalTime: originalGoalMs,
+          shouldShowTimeSinceLastFast, // New flag for intelligent State 3 default
+          completedFastData, // Last completed fast data (for "Time Since Last Fast" display)
         };
 
         if (onStateLoaded) {
@@ -106,6 +141,100 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     };
 
     loadFromSupabase();
+  }, [user, onStateLoaded]);
+
+  // PAGE VISIBILITY API: Force refresh when tab becomes visible
+  // Solves multi-device sync issue (e.g., iPad stops timer, Mac wakes from sleep)
+  useEffect(() => {
+    if (!user) return;
+
+    const handleVisibilityChange = async () => {
+      if (!document.hidden) {
+        console.log('🔄 Tab visible → Force refreshing state from Supabase...');
+
+        // Force refresh state from database
+        const { data, error } = await supabase
+          .from('timer_states')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error refreshing from Supabase:', error);
+          return;
+        }
+
+        if (data) {
+          const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
+          const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
+
+          // GHOST TIMER PREVENTION
+          if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
+            console.warn('⚠️ Expired timer detected on visibility change - cleaning up');
+            await forceSyncToSupabase(user, {
+              hours: data.hours,
+              angle: data.angle,
+              isRunning: false,
+              targetTime: null,
+              isExtended: false,
+              originalGoalTime: null
+            });
+            return;
+          }
+
+          // STATE 3 DEFAULT LOGIC
+          let shouldShowTimeSinceLastFast = false;
+          let completedFastData = null;
+
+          if (!data.is_running) {
+            const { data: fasts, error: fastsError } = await supabase
+              .from('fasts')
+              .select('id, start_time, end_time, duration, original_goal, unit')
+              .eq('user_id', user.id)
+              .order('end_time', { ascending: false })
+              .limit(1);
+
+            if (!fastsError && fasts && fasts.length > 0) {
+              shouldShowTimeSinceLastFast = true;
+
+              // Load completed fast data
+              const lastFast = fasts[0];
+              completedFastData = {
+                startTime: new Date(lastFast.start_time),
+                endTime: new Date(lastFast.end_time),
+                duration: lastFast.duration,
+                originalGoal: lastFast.original_goal,
+                unit: lastFast.unit || 'hours',
+                cancelled: false
+              };
+
+              console.log('✓ Force refresh: Showing "Time Since Last Fast"');
+            }
+          }
+
+          const refreshedState = {
+            hours: data.hours,
+            angle: data.angle,
+            isRunning: data.is_running && targetTimeMs !== null,
+            targetTime: targetTimeMs,
+            isExtended: data.is_extended,
+            originalGoalTime: originalGoalMs,
+            shouldShowTimeSinceLastFast,
+            completedFastData,
+          };
+
+          if (onStateLoaded) {
+            onStateLoaded(refreshedState);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [user, onStateLoaded]);
 
   // Real-time sync (if logged in)

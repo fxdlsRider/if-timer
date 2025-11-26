@@ -384,9 +384,24 @@ export function useTimerState(hours, user) {
       setStartTime(new Date(calculatedStartTime));
     }
 
-    // Reset celebration/summary screens
-    setShowCelebration(false);
-    setShowCompletionSummary(false);
+    // STATE 3 DEFAULT LOGIC: Intelligent restoration for logged-in users
+    // If user has fast history and timer is stopped → show "Time Since Last Fast" as default
+    if (loadedState.shouldShowTimeSinceLastFast) {
+      console.log('✓ Restoring State 3: "Time Since Last Fast" (default for logged-in users)');
+      setShowCompletionSummary(true);
+      setShowWellDoneMessage(false); // Don't show old "Well Done" message
+      setShowCelebration(false);
+
+      // Set completed fast data for "Time Since Last Fast" calculation
+      if (loadedState.completedFastData) {
+        setCompletedFastData(loadedState.completedFastData);
+      }
+    } else {
+      // Reset celebration/summary screens for other cases
+      setShowCelebration(false);
+      setShowCompletionSummary(false);
+    }
+
     notificationShownRef.current = false;
   };
 

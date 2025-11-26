@@ -1,6 +1,6 @@
 # Session Setup Guide für IF-Timer
 
-**Zuletzt aktualisiert:** 2025-11-25
+**Zuletzt aktualisiert:** 2025-11-26
 **Zweck:** Schneller Einstieg für neue Claude Code Sessions
 
 ---
@@ -87,7 +87,12 @@ ENABLED: false
   - Fasting Info Panel (Start Time, Goal Time, Elapsed)
 
 - **State 3 - Complete:** `src/components/Timer/TimerCircle.jsx:608-782`
-  - **Smooth Fade Transitions (NEW 2025-11-25):**
+  - **Default State for Logged-In Users (NEW 2025-11-26):**
+    - "Time Since Last Fast" is the DEFAULT for logged-in users with fast history
+    - Automatically shown on app load, page refresh, and tab focus
+    - Philosophy: State 3 is not temporary, it's the home state for active fasters
+    - "Well Done" only shown directly after fast completion (8 seconds)
+  - **Smooth Fade Transitions (2025-11-25):**
     - Display Mode System ('well-done' | 'hours' | 'time-since')
     - All content changes fade out (600ms) → change → fade in (600ms)
     - "Well Done" displays for 8 seconds (no handle)
@@ -326,9 +331,17 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 
 ---
 
-## 🎯 Aktueller Stand (Session 2025-11-24)
+## 🎯 Aktueller Stand (Session 2025-11-26)
 
 ### ✅ Implementiert
+
+**Multi-Device Sync & State 3 Default (2025-11-26):**
+- ✅ **Page Visibility API:** Force refresh on tab focus/wake from sleep
+- ✅ **State 3 as Default:** "Time Since Last Fast" shown automatically for logged-in users
+- ✅ **Intelligent State Detection:** Checks fast history on load, sets State 3 if applicable
+- ✅ **completedFastData Loading:** Last fast loaded from DB for time calculation
+- ✅ **Multi-Device Harmony:** iPad stops timer → Mac wakes → shows correct state
+- ✅ Files: `useTimerStorage.js` (Page Visibility + fast history check), `useTimerState.js` (smart restore)
 
 **Fast Tracking System (komplett):**
 - ✅ Fasts werden automatisch in DB gespeichert
@@ -692,5 +705,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-**Letzte Aktualisierung:** 2025-11-24
-**Status:** Test Mode OFF | State 3 Dynamic Display (30s inactivity timer) | Ghost Timer Prevention (3 Layers) | 14h Minimum Fast Threshold | RLS Performance Optimization (41+ policies)
+**Letzte Aktualisierung:** 2025-11-26
+**Status:** Test Mode OFF | State 3 as Default for Logged-In Users | Multi-Device Sync (Page Visibility API) | Ghost Timer Prevention (3 Layers) | 14h Minimum Fast Threshold | RLS Performance Optimization (41+ policies)

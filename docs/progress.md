@@ -1,5 +1,193 @@
 # IF-Timer Progress Log
 
+## 2025-11-26: Multi-Device Sync & State 3 Default Logic
+
+### Feature: Page Visibility API for Multi-Device Sync
+
+**Problem:** User reported that when stopping a fast on iPad while Mac was logged in, the Mac would still show the timer running after waking from sleep. The Real-time subscription (WebSocket) doesn't work when the browser tab is inactive or device is sleeping.
+
+**User Description:**
+> "Ich habe heute meinen Fast auf dem iPad beendet. Zu dem Zeitpunkt war ich auf dem Mac und iPad angemeldet. Als ich später meinen Mac aufgemacht habe, sah ich, dass der Timer noch läuft."
+
+**Solution: Force Refresh on Tab Visibility Change**
+
+Implemented Page Visibility API to force-refresh state from Supabase when tab becomes visible:
+
+#### Implementation
+**File:** `src/hooks/useTimerStorage.js:132-209`
+
+**How it works:**
+1. Listen for `visibilitychange` events
+2. When tab becomes visible (`!document.hidden`)
+3. Force fetch latest state from Supabase database
+4. Update local state via `onStateLoaded(refreshedState)`
+
+**Benefits:**
+- ✅ Solves multi-device sync issue (iPad stops timer → Mac wakes → sees correct state)
+- ✅ Works even if Real-time subscription was disconnected
+- ✅ Handles network interruptions gracefully
+- ✅ No polling overhead (only refreshes on user action)
+
+**Code Snippet:**
+```javascript
+useEffect(() => {
+  if (!user) return;
+
+  const handleVisibilityChange = async () => {
+    if (!document.hidden) {
+      console.log('🔄 Tab visible → Force refreshing state from Supabase...');
+
+      const { data, error } = await supabase
+        .from('timer_states')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      // Update state...
+      if (onStateLoaded) {
+        onStateLoaded(refreshedState);
+      }
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+}, [user, onStateLoaded]);
+```
+
+---
+
+### Feature: State 3 as Default for Logged-In Users
+
+**Philosophy Change:** "Time Since Last Fast" should be the **default state** for logged-in users with fast history, not just a temporary post-completion view.
+
+**User Request:**
+> "Grundsätzlich sollte es bei angemeldeten Benutzern so sein, dass da 'Time Since Your Last Fast' angezeigt wird."
+
+**New State Logic:**
+```
+┌─────────────────────────────────────┐
+│ Logged-in user opens app            │
+└──────────────┬──────────────────────┘
+               │
+               ├─ Timer running? → State 2 (Running Timer)
+               │
+               └─ Timer stopped?
+                  │
+                  ├─ Has completed fasts? → State 3 (Time Since Last Fast) ✅ DEFAULT
+                  │
+                  └─ No fast history? → State 1 (Set New Fast)
+```
+
+#### Implementation
+
+**1. Intelligent State Detection on Load**
+**File:** `src/hooks/useTimerStorage.js:91-122`
+
+When loading state from Supabase:
+- Check if timer is stopped (`!data.is_running`)
+- Query `fasts` table for user's last completed fast
+- If fast exists → set `shouldShowTimeSinceLastFast = true`
+- Load `completedFastData` from last fast for "Time Since Last Fast" display
+
+**Code:**
+```javascript
+// STATE 3 DEFAULT LOGIC
+let shouldShowTimeSinceLastFast = false;
+let completedFastData = null;
+
+if (!data.is_running) {
+  const { data: fasts } = await supabase
+    .from('fasts')
+    .select('id, start_time, end_time, duration, original_goal, unit')
+    .eq('user_id', user.id)
+    .order('end_time', { ascending: false })
+    .limit(1);
+
+  if (fasts && fasts.length > 0) {
+    shouldShowTimeSinceLastFast = true;
+    completedFastData = {
+      startTime: new Date(fasts[0].start_time),
+      endTime: new Date(fasts[0].end_time),
+      duration: fasts[0].duration,
+      originalGoal: fasts[0].original_goal,
+      unit: fasts[0].unit || 'hours',
+      cancelled: false
+    };
+  }
+}
+```
+
+**2. Smart State Restoration**
+**File:** `src/hooks/useTimerState.js:387-406`
+
+Modified `restoreState()` to use `shouldShowTimeSinceLastFast` flag:
+
+```javascript
+if (loadedState.shouldShowTimeSinceLastFast) {
+  console.log('✓ Restoring State 3: "Time Since Last Fast" (default for logged-in users)');
+  setShowCompletionSummary(true);
+  setShowWellDoneMessage(false); // Don't show old "Well Done" message
+
+  if (loadedState.completedFastData) {
+    setCompletedFastData(loadedState.completedFastData);
+  }
+}
+```
+
+**3. Page Visibility Integration**
+The Page Visibility API also applies this logic, ensuring consistent State 3 display after tab focus/wake from sleep.
+
+#### Benefits
+
+- ✅ **Consistent UX:** Every app load shows relevant state
+- ✅ **No "Well Done" Replay:** Only shown directly after fast completion
+- ✅ **Multi-Device Harmony:** Mac shows same state as iPad after sync
+- ✅ **Progress Visibility:** Users always see "Time Since Last Fast" metric
+
+#### User Flow Examples
+
+**Scenario 1: iPad stops fast, Mac wakes up**
+1. User completes fast on iPad → "Well Done" (8 sec) → "Time Since Last Fast"
+2. Mac in sleep mode, WebSocket disconnected
+3. User opens Mac → Page Visibility event fires
+4. Force refresh from Supabase → Timer stopped + fast history detected
+5. **Mac shows: "Time Since Last Fast: 2h 30min"** ✅
+
+**Scenario 2: User refreshes browser**
+1. Browser reload
+2. Load state from Supabase
+3. Timer stopped + user has fast history
+4. **Shows: "Time Since Last Fast"** (not "Well Done" from hours ago) ✅
+
+**Scenario 3: New user, no fast history**
+1. Load state from Supabase
+2. Timer stopped + no fasts in history
+3. **Shows: State 1 (Set New Fast)** ✅
+
+---
+
+### Files Modified
+
+1. **src/hooks/useTimerStorage.js**
+   - Added Page Visibility API listener (lines 132-209)
+   - Added fast history check in `loadFromSupabase()` (lines 91-122)
+   - Added `shouldShowTimeSinceLastFast` and `completedFastData` to loaded state
+
+2. **src/hooks/useTimerState.js**
+   - Modified `restoreState()` to handle State 3 default logic (lines 387-406)
+   - Sets `showCompletionSummary` and `completedFastData` when flag is true
+
+### Testing Checklist
+
+- [x] Code compiles without errors
+- [ ] Multi-device sync: Stop timer on Device A, wake Device B → correct state
+- [ ] Page refresh shows "Time Since Last Fast" (not "Well Done")
+- [ ] New users without fast history see State 1
+- [ ] "Well Done" only shows immediately after fast completion
+
+---
+
 ## 2025-11-25: State 3 Smooth Fade Transitions & Last Fast Blue Styling
 
 ### Feature: Smooth Fade-Out/Fade-In Animations in State 3
