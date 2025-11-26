@@ -141,7 +141,8 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     };
 
     loadFromSupabase();
-  }, [user, onStateLoaded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]); // onStateLoaded omitted - stable callback from parent
 
   // PAGE VISIBILITY API: Force refresh when tab becomes visible
   // Solves multi-device sync issue (e.g., iPad stops timer, Mac wakes from sleep)
@@ -235,7 +236,8 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, onStateLoaded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]); // onStateLoaded omitted - stable callback from parent
 
   // Real-time sync (if logged in)
   useEffect(() => {

@@ -172,7 +172,7 @@ export default function Timer() {
       restoreState(loadedState);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // restoreState omitted - stable function, doesn't change
+  }, []); // restoreState omitted - stable function, prevents infinite loop
 
   // Wrapper functions to reset angle on timer actions
   const handleStartTimer = useCallback(() => {
