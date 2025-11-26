@@ -4,6 +4,102 @@ import { supabase } from './supabaseClient';
 
 const AuthContext = createContext({});
 
+/**
+ * Generate fantasy name for anonymous users
+ * Same logic as leaderboardService.js anonymizeUserId()
+ */
+function generateFantasyName(userId) {
+  const adjectives = [
+    'Fast', 'Quick', 'Swift', 'Zen', 'Strong', 'Mindful', 'Wise', 'Calm',
+    'Focused', 'Balanced', 'Health', 'Wellness', 'Fit', 'Active', 'Clean'
+  ];
+
+  const nouns = [
+    'Master', 'Warrior', 'Champion', 'Seeker', 'Journey', 'Path', 'Guide',
+    'Spirit', 'Soul', 'Mind', 'Body', 'Guru', 'Sage', 'Hero', 'Legend'
+  ];
+
+  // Use userId to generate consistent but anonymous name
+  const hashCode = userId.split('').reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc);
+  }, 0);
+
+  const adjIndex = Math.abs(hashCode) % adjectives.length;
+  const nounIndex = Math.abs(hashCode >> 4) % nouns.length;
+  const number = Math.abs(hashCode % 100);
+
+  return `${adjectives[adjIndex]}${nouns[nounIndex]}${number}`;
+}
+
+/**
+ * Create profile with fantasy name for anonymous user
+ */
+async function createAnonymousProfile(user) {
+  try {
+    const fantasyName = generateFantasyName(user.id);
+    console.log(`🎭 Creating profile with fantasy name: "${fantasyName}"`);
+
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        user_id: user.id,
+        nickname: fantasyName,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
+      });
+
+    if (error) {
+      console.error('❌ Failed to create anonymous profile:', error);
+    } else {
+      console.log(`✅ Anonymous profile created: ${fantasyName}`);
+    }
+  } catch (error) {
+    console.error('❌ Exception during profile creation:', error);
+  }
+}
+
+/**
+ * Migrate localStorage timer state to Supabase when anonymous user is created
+ * This ensures timer state is preserved when transitioning from localStorage to Supabase
+ */
+async function migrateLocalStorageToSupabase(user) {
+  try {
+    const saved = localStorage.getItem('ifTimerState');
+    if (!saved) {
+      console.log('📦 No localStorage state to migrate');
+      return;
+    }
+
+    const state = JSON.parse(saved);
+    console.log('📦 Migrating localStorage state to Supabase...', state);
+
+    // Save to Supabase timer_states table
+    const { error } = await supabase
+      .from('timer_states')
+      .upsert({
+        user_id: user.id,
+        hours: state.hours || 16,
+        angle: state.angle || 0,
+        is_running: state.isRunning || false,
+        target_time: state.targetTime ? new Date(state.targetTime).toISOString() : null,
+        is_extended: false,
+        original_goal_time: null
+      }, {
+        onConflict: 'user_id'
+      });
+
+    if (error) {
+      console.error('❌ Failed to migrate localStorage to Supabase:', error);
+    } else {
+      console.log('✅ localStorage state migrated to Supabase successfully');
+      // Keep localStorage for now as backup (will be overwritten by Supabase sync)
+    }
+  } catch (error) {
+    console.error('❌ Exception during migration:', error);
+  }
+}
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -47,9 +143,36 @@ export const AuthProvider = ({ children }) => {
     // NOTE: Supabase automatically handles refresh tokens
     // Sessions last 1 hour, refresh tokens last 4 weeks (2,419,200 seconds)
     // User stays logged in for 4 weeks without re-authentication!
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        // User already has a session (email or anonymous)
+        setUser(session.user);
+        setLoading(false);
+      } else {
+        // No session → Auto-signin anonymously
+        console.log('🔐 No active session → Creating anonymous user...');
+        try {
+          const { data, error } = await supabase.auth.signInAnonymously();
+
+          if (error) {
+            console.error('Failed to create anonymous user:', error);
+            setUser(null);
+          } else {
+            console.log('✅ Anonymous user created:', data.user.id);
+            setUser(data.user);
+
+            // Create profile with fantasy name
+            await createAnonymousProfile(data.user);
+
+            // Migrate localStorage timer state to Supabase
+            await migrateLocalStorageToSupabase(data.user);
+          }
+        } catch (err) {
+          console.error('Exception during anonymous signin:', err);
+          setUser(null);
+        }
+        setLoading(false);
+      }
     });
 
     // Listen for auth changes
@@ -73,9 +196,26 @@ export const AuthProvider = ({ children }) => {
         emailRedirectTo: window.location.origin,
       }
     });
-    
+
     if (error) throw error;
     return { success: true };
+  };
+
+  const signInAnonymously = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously();
+
+      if (error) {
+        console.error('Error signing in anonymously:', error);
+        throw error;
+      }
+
+      console.log('✅ Anonymous user created:', data.user.id);
+      return data.user;
+    } catch (error) {
+      console.error('Failed to create anonymous user:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
@@ -88,6 +228,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     authError,
     signInWithEmail,
+    signInAnonymously,
     signOut,
   };
 
