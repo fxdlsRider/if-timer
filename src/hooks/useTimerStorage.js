@@ -67,6 +67,27 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
         const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
         const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
 
+        // GHOST TIMER PREVENTION: Don't restore expired timers
+        // If timer is running but target time is in the past, clean it up instead of restoring
+        if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
+          console.warn('⚠️ Expired timer detected during state load - cleaning up instead of restoring');
+          console.log(`   Target time: ${new Date(targetTimeMs).toISOString()}`);
+          console.log(`   Current time: ${new Date().toISOString()}`);
+
+          // Clean up the expired timer in the database immediately
+          await forceSyncToSupabase(user, {
+            hours: data.hours,
+            angle: data.angle,
+            isRunning: false,
+            targetTime: null,
+            isExtended: false,
+            originalGoalTime: null
+          });
+
+          setIsInitialLoad(false);
+          return; // Don't restore the expired state
+        }
+
         const loadedState = {
           hours: data.hours,
           angle: data.angle,
@@ -108,6 +129,12 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
             // Convert Supabase data to app state format
             const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
             const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
+
+            // GHOST TIMER PREVENTION: Don't sync expired timers from other devices
+            if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
+              console.warn('⚠️ Expired timer detected in real-time sync - ignoring');
+              return; // Don't sync the expired state
+            }
 
             const syncedState = {
               hours: data.hours,
