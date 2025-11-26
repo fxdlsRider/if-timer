@@ -253,7 +253,7 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           table: 'timer_states',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        async (payload) => {
           if (payload.new) {
             const data = payload.new;
 
@@ -267,6 +267,37 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
               return; // Don't sync the expired state
             }
 
+            // STATE 3 DEFAULT LOGIC: Check if user should see "Time Since Last Fast"
+            let shouldShowTimeSinceLastFast = false;
+            let completedFastData = null;
+
+            if (!data.is_running) {
+              // Timer stopped → Check if user has completed fasts
+              const { data: fasts, error: fastsError } = await supabase
+                .from('fasts')
+                .select('id, start_time, end_time, duration, original_goal, unit')
+                .eq('user_id', user.id)
+                .order('end_time', { ascending: false })
+                .limit(1);
+
+              if (!fastsError && fasts && fasts.length > 0) {
+                shouldShowTimeSinceLastFast = true;
+
+                // Load completed fast data
+                const lastFast = fasts[0];
+                completedFastData = {
+                  startTime: new Date(lastFast.start_time),
+                  endTime: new Date(lastFast.end_time),
+                  duration: lastFast.duration,
+                  originalGoal: lastFast.original_goal,
+                  unit: lastFast.unit || 'hours',
+                  cancelled: false
+                };
+
+                console.log('✓ Real-time sync: Showing "Time Since Last Fast"');
+              }
+            }
+
             const syncedState = {
               hours: data.hours,
               angle: data.angle,
@@ -274,6 +305,8 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
               targetTime: targetTimeMs,
               isExtended: data.is_extended,
               originalGoalTime: originalGoalMs,
+              shouldShowTimeSinceLastFast,
+              completedFastData,
             };
 
             if (onStateLoaded) {
