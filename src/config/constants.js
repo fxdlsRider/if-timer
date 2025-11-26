@@ -49,7 +49,7 @@ export const FASTING_LEVELS = [
     endHour: 16,
     color: '#4CAF50',
     title: 'NOVICE',
-    description: 'Building healthy habits, one fast at a time.',
+    description: 'Your journey begins here. As you complete your first 14-hour fast, your body depletes glycogen stores and initiates the metabolic switch – insulin drops significantly, fat-burning enzymes activate, and cellular repair processes begin.',
   },
   {
     id: 'disciple',
@@ -59,7 +59,7 @@ export const FASTING_LEVELS = [
     endHour: 18,
     color: '#2196F3',
     title: 'DISCIPLE',
-    description: 'This is the gold standard. You nailed it.',
+    description: "You've built foundational discipline. Now your body enters early ketosis – liver glycogen is fully depleted, ketone production begins, and autophagy starts cleansing damaged cells as your metabolism shifts to fat adaptation.",
   },
   {
     id: 'champion',
@@ -69,7 +69,7 @@ export const FASTING_LEVELS = [
     endHour: 20,
     color: '#FF9800',
     title: 'CHAMPION',
-    description: "Most people can't do this. You're not most people. Bro-Mode: ideal for OMAD.",
+    description: "You're entering elite territory. Here, autophagy peaks as your body recycles old proteins and cellular debris – ketones become a primary fuel source, mental clarity sharpens, and inflammation markers drop significantly.",
   },
   {
     id: 'warrior',
@@ -79,7 +79,7 @@ export const FASTING_LEVELS = [
     endHour: 24,
     color: '#F44336',
     title: 'WARRIOR',
-    description: 'Discipline. Focus. Power. This is mastery.',
+    description: 'This is where true metabolic mastery happens. Your body achieves therapeutic ketosis – stem cell activation begins, human growth hormone increases dramatically, and mitochondrial biogenesis accelerates for enhanced energy production.',
   },
   {
     id: 'monk',
@@ -89,7 +89,7 @@ export const FASTING_LEVELS = [
     endHour: 36,
     color: '#9C27B0',
     title: 'MONK',
-    description: 'Few reach this level. You have transcended.',
+    description: "Few possess this level of commitment. Your body enters deep ketosis – brain-derived neurotrophic factor surges, cellular regeneration peaks, and your gut microbiome undergoes beneficial restructuring.",
   },
   {
     id: 'sage',
@@ -99,7 +99,7 @@ export const FASTING_LEVELS = [
     endHour: 48,
     color: '#FFD700',
     title: 'SAGE',
-    description: "This is legendary. You've earned your place.",
+    description: "You've reached legendary status. At this stage, systemic renewal dominates – old immune cells are recycled, inflammation resets, and profound metabolic flexibility becomes your new biological normal.",
   },
 ];
 
