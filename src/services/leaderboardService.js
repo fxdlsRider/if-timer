@@ -206,12 +206,12 @@ function anonymizeUserId(userId, nickname = null) {
  * @returns {string} Level name
  */
 function getFastingLevelName(hours) {
-  if (hours >= 14 && hours < 16) return 'Gentle';    // 14-16h
-  if (hours >= 16 && hours < 18) return 'Classic';   // 16-18h
-  if (hours >= 18 && hours < 20) return 'Intensive'; // 18-20h
+  if (hours >= 14 && hours < 16) return 'Novice';    // 14-16h
+  if (hours >= 16 && hours < 18) return 'Disciple';  // 16-18h
+  if (hours >= 18 && hours < 20) return 'Champion';  // 18-20h
   if (hours >= 20 && hours < 24) return 'Warrior';   // 20-24h
   if (hours >= 24 && hours < 36) return 'Monk';      // 24-36h
-  return 'Extended'; // 36+
+  return 'Sage'; // 36+
 }
 
 /**

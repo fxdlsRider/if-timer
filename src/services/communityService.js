@@ -12,7 +12,7 @@ import { FASTING_LEVELS } from '../config/constants';
 /**
  * Determine fasting level based on hours
  * @param {number} hours - Fasting hours
- * @returns {string} Level ID (e.g., 'gentle', 'classic', etc.)
+ * @returns {string} Level ID (e.g., 'novice', 'disciple', etc.)
  */
 function getFastingLevel(hours) {
   // Find the matching level based on hour ranges from FASTING_LEVELS
@@ -44,9 +44,9 @@ function getFastingLevel(hours) {
   }
 
   // Default fallbacks
-  if (hours < 14) return 'gentle';
-  if (hours > 48) return 'extended';
-  return 'classic';
+  if (hours < 14) return 'novice';
+  if (hours > 48) return 'sage';
+  return 'disciple';
 }
 
 /**
