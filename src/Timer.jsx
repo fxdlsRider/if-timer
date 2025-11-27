@@ -365,7 +365,8 @@ export default function Timer() {
       {renderActivePage()}
 
       {/* LOGIN MODAL */}
-      {showLogin && !user && <LoginModal onClose={() => setShowLogin(false)} />}
+      {/* Show modal for anonymous users too (not just !user) */}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
     </div>
   );
 }

@@ -276,9 +276,18 @@ export default function DashboardPanel({ userData = {} }) {
         <div style={styles.lastFastCard}>
           <div style={styles.lastFastTitle}>Last Fast</div>
           <div style={styles.lastFastDuration}>
-            {lastFast.unit === 'seconds'
-              ? `${(lastFast.duration / 3600).toFixed(1)}h`
-              : `${lastFast.duration}h`}
+            {(() => {
+              // Convert duration to hours (if in seconds)
+              let durationInHours = lastFast.unit === 'seconds'
+                ? lastFast.duration / 3600
+                : lastFast.duration;
+
+              // Format as HH:MMh (e.g., 19:25h)
+              const hours = Math.floor(durationInHours);
+              const minutes = Math.round((durationInHours - hours) * 60);
+
+              return `${hours}:${minutes.toString().padStart(2, '0')}h`;
+            })()}
           </div>
           <div style={styles.lastFastDate}>
             {new Date(lastFast.end_time).toLocaleDateString('en-US', {

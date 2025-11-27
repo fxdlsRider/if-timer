@@ -52,7 +52,8 @@ export default function HubPage({ user, onSignIn }) {
   const totalCount = achievements.length;
   const progress = Math.round((earnedCount / totalCount) * 100);
 
-  if (!user) {
+  // Anonymous users should also see sign-in screen (same logic as My Journey)
+  if (!user || user.is_anonymous) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-16 text-center">
         <h1 className="text-4xl font-bold text-text dark:text-text-dark mb-4">Welcome to Your Hub</h1>

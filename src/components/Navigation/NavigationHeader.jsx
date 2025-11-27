@@ -35,13 +35,20 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
   ];
 
   const handleMenuClick = (itemId) => {
-    // Special handling for hub when user not logged in
-    if (itemId === 'hub' && !user && onSignIn) {
-      onSignIn();
-    } else {
-      onTabChange(itemId);
+    // Special handling for hub when user not logged in or anonymous
+    // Same logic as My Journey fix (commit 44f11f6)
+    if (itemId === 'hub' && (!user || user.is_anonymous)) {
+      // Anonymous users should sign in to access Dashboard
+      if (onSignIn) {
+        onSignIn();
+      }
+      setIsMobileMenuOpen(false);
+      return; // Prevent navigation
     }
-    setIsMobileMenuOpen(false); // Close mobile menu after click
+
+    // Normal navigation for authenticated email users
+    onTabChange(itemId);
+    setIsMobileMenuOpen(false);
   };
 
   const handleLogoClick = () => {
