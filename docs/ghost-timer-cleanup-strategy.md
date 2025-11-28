@@ -2,7 +2,7 @@
 
 **Status:** To be decided when user base grows (>100 users)
 **Priority:** Low (currently ~3 users)
-**Date:** 2025-11-27
+**Date:** 2025-11-27 (created) / 2025-11-28 (updated with failed approach)
 
 ---
 
@@ -34,6 +34,186 @@ User starts 24h fast
 **This means:**
 - A timer CAN legitimately run for 48h, 72h, or even longer
 - Simple "running > 48h = ghost timer" logic would **kill real fasts** ❌
+
+---
+
+## ❌ Failed Approach: Client-Side Ghost Timer Prevention
+
+**Date:** 2025-11-27 to 2025-11-28
+**Status:** FAILED - Completely disabled
+**Reason:** Fundamentally incompatible with Extended Mode
+
+### What We Tried
+
+**Attempt 1: Basic Expiration Check**
+```javascript
+// useTimerStorage.js - Initial Load & Page Visibility
+if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
+  // Clean up expired timer
+  await forceSyncToSupabase(user, {
+    isRunning: false,
+    targetTime: null,
+    isExtended: false,
+    originalGoalTime: null
+  });
+}
+```
+
+**Problem:** Killed Extended Mode fasts on every page reload.
+
+---
+
+**Attempt 2: Exclude Extended Mode**
+```javascript
+if (data.is_running && targetTimeMs && targetTimeMs < Date.now() && !data.is_extended) {
+  // Only clean non-extended timers
+}
+```
+
+**Problem:** Still killed Extended Mode fasts (race condition or timing issue).
+
+---
+
+**Attempt 3: Complete Disablement**
+```javascript
+/* DISABLED - DO NOT RE-ENABLE WITHOUT THOROUGH TESTING
+if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
+  // Cleanup code
+}
+*/
+```
+
+**Result:** ✅ Extended Mode fasts now survive page reloads and iPad sleep/wake cycles.
+
+---
+
+### Why It Failed
+
+**Fundamental Design Conflict:**
+
+1. **Extended Mode stores ORIGINAL goal time as `target_time`**
+   - User sets 16h fast → `target_time = now + 16h`
+   - User reaches 16h → Extended Mode activates (`is_extended = true`)
+   - User continues to 18h, 24h, 48h+
+   - **BUT `target_time` still shows 16h (original goal)!**
+
+2. **Ghost Timer Prevention logic:**
+   ```javascript
+   if (target_time < now) {
+     // This is true for ALL Extended Mode fasts!
+     // Extended fasts are DESIGNED to go past their target_time
+   }
+   ```
+
+3. **Result:**
+   - Ghost Timer Prevention sees Extended Fast as "expired"
+   - Kills legitimate Extended Mode fasts
+   - User loses multi-day fasting progress
+
+---
+
+### Critical Bug: iPad Sleep/Wake Cycle
+
+**Trigger:** Page Visibility API fires when iPad wakes from sleep
+
+**Location:** `useTimerStorage.js` lines 211-232 (Page Visibility handler)
+
+**What Happened:**
+1. User starts 16h fast, enters Extended Mode at 18h
+2. iPad goes to sleep (WiFi still connected, music playing)
+3. iPad wakes up → `visibilitychange` event fires
+4. Ghost Timer Prevention runs: `target_time (16h) < now (18h)` → TRUE
+5. Extended Fast gets killed
+
+**Initial Discovery:**
+- User thought GitHub Actions cleanup script was killing the fast
+- Actually: Client-side Page Visibility handler was the culprit
+- Same bug existed in TWO places:
+  - Initial page load (lines 87-113) - Fixed first
+  - Page Visibility handler (lines 211-232) - Fixed second
+
+---
+
+### Lessons Learned
+
+1. **Don't mix cleanup logic with state restoration:**
+   - State loading should NEVER modify data
+   - Cleanup should be separate, manual, server-side process
+
+2. **Extended Mode breaks time-based assumptions:**
+   - Can't use `target_time < now` to detect ghost timers
+   - Extended fasts are DESIGNED to exceed their goal time
+   - Any expiration check will false-positive on Extended Mode
+
+3. **Client-side cleanup is dangerous:**
+   - Race conditions on page load
+   - Triggers on legitimate events (sleep/wake, tab switching)
+   - No way to distinguish ghost timer from Extended Fast
+
+4. **Manual cleanup is sufficient at small scale:**
+   - With ~3 users, manual SQL cleanup works fine
+   - 3-layer prevention (Visibility API, Retry, Real-time sync) handles 99% of cases
+   - Ghost timers are rare, not worth risking Extended Fast kills
+
+---
+
+### Current Implementation (Stable)
+
+**Ghost Timer Prevention: COMPLETELY DISABLED**
+
+**Code Locations:**
+- `useTimerStorage.js` lines 87-113 (Initial load)
+- `useTimerStorage.js` lines 211-232 (Page Visibility)
+
+**Both blocks commented out with:**
+```javascript
+// GHOST TIMER PREVENTION: DISABLED
+// Reason: Was killing Extended Mode fasts on reload/wake (critical bug)
+// Manual cleanup is sufficient for current user count
+// See: docs/ghost-timer-cleanup-strategy.md
+// TODO: Re-enable when properly fixed and tested at scale (100+ users)
+```
+
+**Real-time sync still has check (lines 306-310):**
+```javascript
+// Don't sync expired timers from other devices (but don't force cleanup)
+if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
+  console.warn('⚠️ Expired timer detected in real-time sync - ignoring');
+  return; // Don't sync, but don't kill the timer either
+}
+```
+This is SAFE because it only ignores the sync, doesn't force cleanup.
+
+---
+
+### If Re-Implementing (Future)
+
+**Requirements for safe client-side ghost detection:**
+
+1. **Use `updated_at` timestamp instead of `target_time`:**
+   ```javascript
+   // Safe: Check when state was last updated
+   if (data.updated_at < NOW() - INTERVAL '7 days') {
+     // Likely a ghost (no activity for 7 days)
+   }
+   ```
+
+2. **Never clean on page load/visibility:**
+   - Only log potential ghosts
+   - Let server-side cleanup handle it
+
+3. **Add explicit "ghost timer" flag:**
+   ```sql
+   ALTER TABLE timer_states ADD COLUMN is_ghost BOOLEAN DEFAULT false;
+   ```
+   - Mark suspected ghosts, don't auto-kill
+   - Manual review before deletion
+
+4. **Thorough testing with Extended Mode:**
+   - Test 48h+ fasts
+   - Test sleep/wake cycles
+   - Test multi-device scenarios
+   - Test at scale (100+ users)
 
 ---
 
@@ -266,6 +446,6 @@ LIMIT 30;
 
 ---
 
-**Last Updated:** 2025-11-27
+**Last Updated:** 2025-11-28
 **Revisit When:** User count > 100
-**Current Status:** Manual cleanup sufficient
+**Current Status:** Manual cleanup sufficient (client-side prevention DISABLED)
