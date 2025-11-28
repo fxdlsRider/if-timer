@@ -208,7 +208,14 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
           const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
 
-          // GHOST TIMER PREVENTION
+          // GHOST TIMER PREVENTION: DISABLED
+          // Reason: Was killing Extended Mode fasts when iPad wakes from sleep (critical bug)
+          // This is the SAME issue as initial load - Extended fasts have expired target_time
+          // Manual cleanup is sufficient for current user count
+          // See: docs/ghost-timer-cleanup-strategy.md
+          // TODO: Re-enable when properly fixed and tested at scale (100+ users)
+
+          /* DISABLED - DO NOT RE-ENABLE WITHOUT THOROUGH TESTING
           if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
             console.warn('⚠️ Expired timer detected on visibility change - cleaning up');
             await forceSyncToSupabase(user, {
@@ -222,6 +229,7 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
             loadingRef.current = false;
             return;
           }
+          */
 
           // STATE 3 DEFAULT LOGIC
           let shouldShowTimeSinceLastFast = false;
