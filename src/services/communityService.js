@@ -10,6 +10,35 @@ import { FASTING_LEVELS } from '../config/constants';
  */
 
 /**
+ * Generate fantasy name for users without profiles
+ * Uses consistent hash-based generation (same user_id = same name)
+ * @param {string} userId - User UUID
+ * @returns {string} Fantasy name like "ZenMaster42"
+ */
+function generateFantasyName(userId) {
+  const adjectives = [
+    'Zen', 'Mindful', 'Strong', 'Wellness', 'Fit', 'Health', 'Clean',
+    'Fast', 'Quick', 'Swift', 'Wise', 'Calm', 'Focused', 'Balanced', 'Active'
+  ];
+
+  const nouns = [
+    'Master', 'Guru', 'Guide', 'Legend', 'Champion', 'Warrior', 'Path',
+    'Journey', 'Spirit', 'Mind', 'Body', 'Sage', 'Hero', 'Seeker', 'Soul'
+  ];
+
+  // Use userId to generate consistent but anonymous name
+  const hashCode = userId.split('').reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc);
+  }, 0);
+
+  const adjIndex = Math.abs(hashCode) % adjectives.length;
+  const nounIndex = Math.abs(hashCode >> 4) % nouns.length;
+  const number = Math.abs(hashCode % 100);
+
+  return `${adjectives[adjIndex]}${nouns[nounIndex]}${number}`;
+}
+
+/**
  * Determine fasting level based on hours
  * @param {number} hours - Fasting hours
  * @returns {string} Level ID (e.g., 'novice', 'disciple', etc.)
@@ -101,9 +130,12 @@ export async function getActiveFasters() {
       const hours = state.hours || 16;
       const level = getFastingLevel(hours);
 
+      // Use nickname from profile, or generate fantasy name if profile doesn't exist
+      const nickname = nicknameMap[state.user_id] || generateFantasyName(state.user_id);
+
       return {
         id: state.user_id,
-        nickname: nicknameMap[state.user_id] || 'Anonymous',
+        nickname: nickname,
         fastingHours: hours,
         level: level
       };
