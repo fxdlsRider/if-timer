@@ -86,10 +86,12 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
 
         // GHOST TIMER PREVENTION: Don't restore expired timers
         // If timer is running but target time is in the past, clean it up instead of restoring
-        if (data.is_running && targetTimeMs && targetTimeMs < Date.now()) {
+        // IMPORTANT: Do NOT clean up Extended Mode fasts (user is continuing beyond goal)
+        if (data.is_running && targetTimeMs && targetTimeMs < Date.now() && !data.is_extended) {
           console.warn('⚠️ Expired timer detected during state load - cleaning up instead of restoring');
           console.log(`   Target time: ${new Date(targetTimeMs).toISOString()}`);
           console.log(`   Current time: ${new Date().toISOString()}`);
+          console.log(`   Extended mode: ${data.is_extended} (protected from cleanup)`);
 
           // Clean up the expired timer in the database immediately
           await forceSyncToSupabase(user, {
