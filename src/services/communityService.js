@@ -91,6 +91,9 @@ export async function getActiveFasters() {
       .select('user_id, hours, is_running')
       .eq('is_running', true);
 
+    // DEBUG: Log active timer states
+    console.log('🔍 Community Debug - Active timer_states:', timerStates);
+
     if (timerError) {
       console.error('Error fetching timer states:', timerError);
       return [];
@@ -102,6 +105,7 @@ export async function getActiveFasters() {
 
     // Fetch profiles for these users
     const userIds = timerStates.map(state => state.user_id);
+    console.log('🔍 Community Debug - User IDs to fetch profiles for:', userIds);
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('user_id, nickname')
@@ -131,7 +135,11 @@ export async function getActiveFasters() {
       const level = getFastingLevel(hours);
 
       // Use nickname from profile, or generate fantasy name if profile doesn't exist
-      const nickname = nicknameMap[state.user_id] || generateFantasyName(state.user_id);
+      const nicknameFromMap = nicknameMap[state.user_id];
+      const nickname = nicknameFromMap || generateFantasyName(state.user_id);
+
+      // DEBUG: Log nickname generation
+      console.log(`🔍 User ${state.user_id.slice(0, 8)}... - From map: "${nicknameFromMap}" → Final: "${nickname}"`);
 
       return {
         id: state.user_id,
