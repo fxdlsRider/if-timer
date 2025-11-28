@@ -62,9 +62,6 @@ export async function getActiveFasters() {
       .select('user_id, hours, is_running')
       .eq('is_running', true);
 
-    // DEBUG: Log active timer states
-    console.log('🔍 Community Debug - Active timer_states:', timerStates);
-
     if (timerError) {
       console.error('Error fetching timer states:', timerError);
       return [];
@@ -76,15 +73,10 @@ export async function getActiveFasters() {
 
     // Fetch profiles for these users
     const userIds = timerStates.map(state => state.user_id);
-    console.log('🔍 Community Debug - User IDs to fetch profiles for:', userIds);
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('user_id, nickname')
       .in('user_id', userIds);
-
-    // DEBUG: Log what we got from database
-    console.log('🔍 Community Debug - Fetched profiles:', profiles);
-    console.log('🔍 Community Debug - Profile error:', profileError);
 
     if (profileError) {
       console.error('Error fetching profiles:', profileError);
@@ -97,23 +89,14 @@ export async function getActiveFasters() {
       nicknameMap[profile.user_id] = profile.nickname || 'Anonymous';
     });
 
-    // DEBUG: Log the nickname map
-    console.log('🔍 Community Debug - Nickname map:', nicknameMap);
-
     // Combine data
     const activeUsers = timerStates.map(state => {
       const hours = state.hours || 16;
       const level = getFastingLevel(hours);
 
-      // Use nickname from profile, fallback to 'Anonymous' if not found
-      const nickname = nicknameMap[state.user_id] || 'Anonymous';
-
-      // DEBUG: Log nickname resolution
-      console.log(`🔍 User ${state.user_id.slice(0, 8)}... - Nickname: "${nickname}" (from map: ${nicknameMap[state.user_id] ? 'YES' : 'NO'})`);
-
       return {
         id: state.user_id,
-        nickname: nickname,
+        nickname: nicknameMap[state.user_id] || 'Anonymous',
         fastingHours: hours,
         level: level
       };
