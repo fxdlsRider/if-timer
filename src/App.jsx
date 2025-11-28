@@ -1,15 +1,18 @@
 import React from 'react';
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import IFTimerWithThemeWrapper from './IFTimerWithThemeWrapper';
 
 const App = () => {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <IFTimerWithThemeWrapper />
-      </AuthProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <IFTimerWithThemeWrapper />
+        </AuthProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 };
 

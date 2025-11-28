@@ -1,6 +1,7 @@
 // components/Leaderboard/Leaderboard.jsx
 import React, { useState, useEffect } from 'react';
 import { fetchLeaderboard, subscribeToLeaderboard } from '../../services/leaderboardService';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * Leaderboard Component
@@ -11,6 +12,7 @@ import { fetchLeaderboard, subscribeToLeaderboard } from '../../services/leaderb
  * @param {function} onSignUp - Callback when user clicks "Sign Up to Compete"
  */
 export default function Leaderboard({ onSignUp }) {
+  const { t } = useTranslation();
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,7 +193,7 @@ export default function Leaderboard({ onSignUp }) {
   if (isLoading) {
     return (
       <div style={styles.container}>
-        <div style={styles.loading}>Loading leaderboard...</div>
+        <div style={styles.loading}>{t('leaderboard.loading')}</div>
       </div>
     );
   }
@@ -200,8 +202,8 @@ export default function Leaderboard({ onSignUp }) {
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <div style={styles.title}>Top Fasters</div>
-        <div style={styles.subtitle}>Right Now</div>
+        <div style={styles.title}>{t('leaderboard.title')}</div>
+        <div style={styles.subtitle}>{t('leaderboard.subtitle')}</div>
       </div>
 
       {/* Leaderboard List */}
@@ -237,7 +239,7 @@ export default function Leaderboard({ onSignUp }) {
       <div style={styles.footer}>
         <div style={styles.totalCount}>
           <span style={styles.totalNumber}>{totalUsers}</span>
-          people fasting now
+          {t('leaderboard.peopleFasting')}
         </div>
         <button
           style={styles.ctaButton}
@@ -251,7 +253,7 @@ export default function Leaderboard({ onSignUp }) {
             e.currentTarget.style.boxShadow = '0 4px 12px rgba(78, 205, 196, 0.3)';
           }}
         >
-          Sign Up to Compete
+          {t('leaderboard.signUpToCompete')}
         </button>
       </div>
     </div>
