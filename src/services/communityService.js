@@ -78,6 +78,10 @@ export async function getActiveFasters() {
       .select('user_id, nickname')
       .in('user_id', userIds);
 
+    // DEBUG: Log what we got from database
+    console.log('🔍 Community Debug - Fetched profiles:', profiles);
+    console.log('🔍 Community Debug - Profile error:', profileError);
+
     if (profileError) {
       console.error('Error fetching profiles:', profileError);
       return [];
@@ -88,6 +92,9 @@ export async function getActiveFasters() {
     (profiles || []).forEach(profile => {
       nicknameMap[profile.user_id] = profile.nickname || 'Anonymous';
     });
+
+    // DEBUG: Log the nickname map
+    console.log('🔍 Community Debug - Nickname map:', nicknameMap);
 
     // Combine data
     const activeUsers = timerStates.map(state => {
