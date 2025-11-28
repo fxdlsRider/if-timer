@@ -60,6 +60,37 @@ async function createAnonymousProfile(user) {
 }
 
 /**
+ * Ensure anonymous user has a profile (creates one if missing)
+ * Fixes issue where old anonymous users don't have profiles (created before RLS fix)
+ */
+async function ensureAnonymousProfileExists(user) {
+  try {
+    // Check if profile exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      // PGRST116 = no rows returned (expected if profile doesn't exist)
+      console.error('❌ Error checking for existing profile:', fetchError);
+      return;
+    }
+
+    if (!existingProfile) {
+      // Profile doesn't exist → Create it
+      console.log(`🔧 Profile missing for anonymous user ${user.id.slice(0, 8)}... → Creating now`);
+      await createAnonymousProfile(user);
+    } else {
+      console.log(`✅ Profile exists for anonymous user ${user.id.slice(0, 8)}...`);
+    }
+  } catch (error) {
+    console.error('❌ Exception during profile check:', error);
+  }
+}
+
+/**
  * Migrate localStorage timer state to Supabase when anonymous user is created
  * This ensures timer state is preserved when transitioning from localStorage to Supabase
  */
@@ -176,13 +207,18 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
-      
+
       // Clear error on successful auth
       if (session?.user) {
         setAuthError(null);
+
+        // Ensure anonymous users have profiles (fixes missing profiles from before RLS fix)
+        if (session.user.is_anonymous) {
+          await ensureAnonymousProfileExists(session.user);
+        }
       }
     });
 
