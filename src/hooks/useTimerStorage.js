@@ -84,16 +84,19 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
         const targetTimeMs = data.target_time ? new Date(data.target_time).getTime() : null;
         const originalGoalMs = data.original_goal_time ? new Date(data.original_goal_time).getTime() : null;
 
-        // GHOST TIMER PREVENTION: Don't restore expired timers
-        // If timer is running but target time is in the past, clean it up instead of restoring
-        // IMPORTANT: Do NOT clean up Extended Mode fasts (user is continuing beyond goal)
+        // GHOST TIMER PREVENTION: DISABLED
+        // Reason: Was killing Extended Mode fasts on reload (critical bug)
+        // Manual cleanup is sufficient for current user count
+        // See: docs/ghost-timer-cleanup-strategy.md
+        // TODO: Re-enable when properly fixed and tested at scale (100+ users)
+
+        /* DISABLED - DO NOT RE-ENABLE WITHOUT THOROUGH TESTING
         if (data.is_running && targetTimeMs && targetTimeMs < Date.now() && !data.is_extended) {
           console.warn('⚠️ Expired timer detected during state load - cleaning up instead of restoring');
           console.log(`   Target time: ${new Date(targetTimeMs).toISOString()}`);
           console.log(`   Current time: ${new Date().toISOString()}`);
           console.log(`   Extended mode: ${data.is_extended} (protected from cleanup)`);
 
-          // Clean up the expired timer in the database immediately
           await forceSyncToSupabase(user, {
             hours: data.hours,
             angle: data.angle,
@@ -105,8 +108,9 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
 
           loadingRef.current = false;
           setIsInitialLoad(false);
-          return; // Don't restore the expired state
+          return;
         }
+        */
 
         // STATE 3 DEFAULT LOGIC: Check if user should see "Time Since Last Fast"
         // For logged-in users with stopped timer + completed fasts → show State 3
