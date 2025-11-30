@@ -1,5 +1,6 @@
 // components/Navigation/NavigationHeader.jsx
 import React, { useState } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * NavigationHeader Component
@@ -22,16 +23,17 @@ import React, { useState } from 'react';
  * @param {function} onSignIn - Handler for sign in (used in Hub)
  */
 export default function NavigationHeader({ activeTab, onTabChange, user = null, onSignIn = null }) {
+  const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { id: 'timer', label: 'Timer', description: 'Intermittent Fasting Timer' },
-    { id: 'hub', label: 'Dashboard', description: user ? 'Your Statistics' : 'Sign In / Sign Up' },
-    { id: 'training', label: 'Learn', description: 'Learn about IF' },
-    { id: 'modes', label: 'App-Modes', description: 'Scientific, Hippie, Pro' },
-    { id: 'community', label: 'Community', description: 'Who\'s fasting now' },
-    { id: 'about', label: 'About', description: 'About this project' },
-    { id: 'support', label: 'Support', description: 'Buy Me a Coffee & Shop' }
+    { id: 'timer', label: t('nav.timer'), description: 'Intermittent Fasting Timer' },
+    { id: 'hub', label: t('nav.dashboard'), description: user ? 'Your Statistics' : 'Sign In / Sign Up' },
+    { id: 'training', label: t('nav.learn'), description: 'Learn about IF' },
+    { id: 'modes', label: t('nav.modes'), description: 'Scientific, Hippie, Pro' },
+    { id: 'community', label: t('nav.community'), description: 'Who\'s fasting now' },
+    { id: 'about', label: t('nav.about'), description: 'About this project' },
+    { id: 'support', label: t('nav.support'), description: 'Buy Me a Coffee & Shop' }
   ];
 
   const handleMenuClick = (itemId) => {

@@ -11,12 +11,12 @@ export const translations = {
   de: {
     // Navigation
     'nav.timer': 'Timer',
-    'nav.dashboard': 'Dashboard',
-    'nav.learn': 'Lernen',
+    'nav.dashboard': 'Übersicht',
+    'nav.learn': 'Wissen',
     'nav.modes': 'App-Modi',
     'nav.community': 'Community',
-    'nav.about': 'Über',
-    'nav.support': 'Unterstützen',
+    'nav.about': 'Info',
+    'nav.support': 'Unterstützung',
 
     // Timer Page
     'timer.startFast': 'Fasten starten',
