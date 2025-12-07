@@ -1,6 +1,6 @@
 # Session Setup Guide für IF-Timer
 
-**Zuletzt aktualisiert:** 2025-11-26
+**Zuletzt aktualisiert:** 2025-12-07
 **Zweck:** Schneller Einstieg für neue Claude Code Sessions
 
 ---
@@ -405,6 +405,24 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS struggle TEXT;
 ### 🐛 Bekannte Issues
 
 Aktuell keine kritischen Bugs.
+
+### ✅ Latest Fixes (2025-12-07)
+
+**Bug Fixes:**
+1. **Extended Mode Buttons** - Started/Goal buttons now always visible in Extended Mode
+2. **State 3 DateTime Picker** - Stopped time changes now saved to database
+   - New function: `updateFast()` in `fastsService.js`
+   - Dashboard statistics update correctly after tab switch
+
+**Design Decisions:**
+- Started button in State 3 intentionally non-editable (data integrity)
+- Only Stopped button editable (common use case: forgot to stop)
+
+**Service Functions:**
+- `saveFast()` - Save new fast to database
+- `updateFast()` - Update existing fast (finds by user_id + start_time)
+- `getLastFast()` - Get most recent fast
+- `getStatistics()` - Calculate Total/Longest/Average from all fasts
 
 ### 📋 Next Steps (Priorität)
 

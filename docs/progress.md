@@ -1,5 +1,105 @@
 # IF-Timer Progress Log
 
+## 2025-12-07: Bug Fixes - Extended Mode & DateTime Picker Save
+
+### Bug 1: Extended Mode - Started/Goal Buttons Disappeared
+
+**Problem:** In Extended Mode (after goal completion), the Started and Goal buttons completely disappeared, preventing users from adjusting settings.
+
+**Root Cause:**
+- `FastingInfo.jsx` had an early return when `isExtended === true`
+- Only showed "EXTENDED MODE" text instead of buttons
+- Lines 51-63: Early return prevented rendering of buttons
+
+**Solution:**
+- Removed early return in `FastingInfo.jsx`
+- Buttons now always visible, even in Extended Mode
+- User can still adjust start time and goal while in extended fasting
+
+**Files Modified:**
+- `src/components/Timer/FastingInfo.jsx` - Removed lines 51-63 (extended mode early return)
+
+**Result:** ✅ Started/Goal buttons always visible, even in Extended Mode
+
+---
+
+### Bug 2: State 3 DateTime Picker - Changes Not Saved to Database
+
+**Problem:** When user edited the "Stopped" time in State 3 (completion screen) and clicked Save:
+- ✅ React state was updated (UI showed new time)
+- ❌ Database was NOT updated
+- ❌ Dashboard "My Journey" still showed old time (loaded from DB)
+
+**Root Cause:**
+- `updateCompletedFastData()` in `useTimerState.js` only updated React state
+- No database update was performed
+- Dashboard loads data from Supabase, not React state
+
+**Solution:**
+
+**1. Created new service function** `updateFast()` in `fastsService.js`:
+- Finds fast by `user_id` + `start_time` (unique combination)
+- Updates `end_time` and `duration` in database
+- Returns updated fast object
+
+**2. Extended** `updateCompletedFastData()` in `useTimerState.js`:
+- Made function async
+- Updates React state first (immediate UI feedback)
+- Then updates database (persistent storage)
+- Only if user is logged in
+
+**Files Modified:**
+- `src/services/fastsService.js` - Added `updateFast()` function (lines 222-271)
+- `src/hooks/useTimerState.js` - Extended `updateCompletedFastData()` with DB update (lines 366-388)
+- Added import: `import { saveFast, updateFast } from '../services/fastsService'`
+
+**Result:**
+- ✅ Stopped time changes saved to database
+- ✅ Dashboard statistics (Total/Longest/Average) updated correctly
+- ✅ Works on tab switch (Dashboard reloads data from DB)
+
+**Verified:** User "zoran@mailbox.org" successfully updated fast duration from 20.7h to 20h
+
+---
+
+### Design Decision: Started Button in State 3
+
+**Question:** Should "Started" button be editable in State 3 (like "Stopped")?
+
+**Decision:** NO - Keep "Started" button non-editable in State 3
+
+**Reasoning:**
+1. **Different context:** State 2 (running) allows start time correction when just started, State 3 (complete) is historical
+2. **Common use case:** Users forget to STOP (frequent) vs forget start time (rare)
+3. **Data integrity:** Start time is anchor point - changing it affects entire fast history
+4. **UX clarity:** One editable time = focused, two editable = confusing
+
+**Current behavior:** Only "Stopped" button is editable in State 3 ✅
+
+---
+
+### Statistics Update Behavior
+
+**How it works:**
+1. User edits Stopped time → Database updated immediately
+2. Dashboard loads statistics via `getStatistics()` from DB
+3. Statistics are calculated from ALL fasts (including updated one)
+4. Dashboard refreshes on tab switch or page reload
+
+**Result:** Statistics (Total/Longest/Average) reflect changes after tab switch ✅
+
+**Future enhancement:** If timer component is integrated into Dashboard, automatic reload can be added
+
+---
+
+### Commit Details
+- **Commit:** `fdd67a8`
+- **Branch:** `main`
+- **Files Changed:** 3 files, 74 insertions(+), 16 deletions(-)
+- **Test Mode:** OFF (production ready)
+
+---
+
 ## 2025-11-26: Multi-Device Sync & State 3 Default Logic
 
 ### Feature: Page Visibility API for Multi-Device Sync
