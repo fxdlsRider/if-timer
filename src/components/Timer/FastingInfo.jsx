@@ -48,20 +48,6 @@ export default function FastingInfo({ startTime, hours, onStartTimeChange, onGoa
     setTempStartTime(null);
   };
 
-  if (isExtended) {
-    return (
-      <div style={{
-        fontSize: '14px',
-        color: '#34C759',
-        fontWeight: '500',
-        letterSpacing: '1px',
-        textTransform: 'uppercase'
-      }}>
-        EXTENDED MODE
-      </div>
-    );
-  }
-
   // Style similar to STOP button but smaller - for symmetric buttons
   const buttonStyle = {
     padding: '8px 16px',

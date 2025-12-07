@@ -11,7 +11,7 @@ import {
   showCompletionNotification,
   getNotificationPermission,
 } from '../services/notificationService';
-import { saveFast } from '../services/fastsService';
+import { saveFast, updateFast } from '../services/fastsService';
 import { forceSyncToSupabase } from './useTimerStorage';
 
 // Utils
@@ -360,10 +360,31 @@ export function useTimerState(hours, user) {
 
   /**
    * Update completed fast data (for editing end time in completion screen)
+   * Updates both React state AND database
    * @param {object} updatedData - New completion data
    */
-  const updateCompletedFastData = (updatedData) => {
+  const updateCompletedFastData = async (updatedData) => {
+    // Update React state immediately for responsive UI
     setCompletedFastData(updatedData);
+
+    // Update database if user is logged in
+    if (user && user.id) {
+      console.log('🔄 Updating fast in database...');
+
+      const fastData = {
+        startTime: updatedData.startTime.toISOString(),
+        endTime: updatedData.endTime.toISOString(),
+        duration: parseFloat(updatedData.duration),
+      };
+
+      const updated = await updateFast(user.id, fastData);
+
+      if (updated) {
+        console.log('✅ Fast updated in database');
+      } else {
+        console.error('❌ Failed to update fast in database');
+      }
+    }
   };
 
   /**

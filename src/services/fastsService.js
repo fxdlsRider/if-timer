@@ -220,6 +220,57 @@ function calculateStreak(fasts) {
 }
 
 /**
+ * Update an existing fast (e.g., when user edits end time in State 3)
+ * Finds fast by user_id + start_time and updates end_time and duration
+ * @param {string} userId - User ID
+ * @param {object} fastData - Fast data with startTime, endTime, duration
+ * @returns {object|null} Updated fast or null on error
+ */
+export async function updateFast(userId, fastData) {
+  try {
+    // Find the fast by user_id and start_time
+    const { data: existing, error: findError } = await supabase
+      .from('fasts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('start_time', fastData.startTime)
+      .maybeSingle();
+
+    if (findError) {
+      console.error('Error finding fast to update:', findError);
+      return null;
+    }
+
+    if (!existing) {
+      console.log('No existing fast found to update');
+      return null;
+    }
+
+    // Update the fast
+    const { data, error } = await supabase
+      .from('fasts')
+      .update({
+        end_time: fastData.endTime,
+        duration: fastData.duration,
+      })
+      .eq('id', existing.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating fast:', error);
+      return null;
+    }
+
+    console.log('✅ Fast updated successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in updateFast:', error);
+    return null;
+  }
+}
+
+/**
  * Delete a fast
  * @param {string} fastId - Fast ID
  * @returns {boolean} Success status
