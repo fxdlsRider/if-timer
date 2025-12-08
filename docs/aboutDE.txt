@@ -1,0 +1,9 @@
+Über dieses Projekt
+Ich habe den IF-Timer ursprünglich für meinen eigenen Gebrauch entwickelt – als Tool für meine tägliche Intervallfasten-Praxis. Falls er auch für dich nützlich ist, kannst du ihn gerne verwenden.
+Der Timer verbindet praktische Funktionalität mit Elementen stoischer Philosophie. Er soll dich dabei unterstützen, achtsam mit deiner Fastenpraxis umzugehen. Die Meditationen sind dazu gedacht, dich zum Nachdenken über deinen eigenen Weg zu motivieren. Fasten kann Verzicht bedeuten, es kann dir aber auch dabei helfen Klarheit zu gewinnen.
+Technische Details
+Der IF-Timer wurde mit modernen Web-Technologien und Unterstützung von Claude AI (Anthropic) entwickelt. Der vollständige Quellcode ist frei auf GitHub verfügbar – Transparenz und Offenheit sind mir wichtig.
+[Link zu GitHub Repository]
+Feedback willkommen
+Dies ist ein Projekt im Werden. Fehler können passieren, Verbesserungen sind immer möglich. Wenn du Vorschläge hast oder auf Probleme stößt, freue ich mich über dein Feedback.
+Kontakt

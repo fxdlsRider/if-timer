@@ -21,6 +21,8 @@ import StatsPage from './components/Stats/StatsPage';
 import LearnPage from './components/Learn/LearnPage';
 import ProfilePage from './components/Profile/ProfilePage';
 import LoginModal from './components/Auth/LoginModal';
+import TermsPage from './components/Legal/TermsPage';
+import PrivacyPage from './components/Legal/PrivacyPage';
 
 // Utils
 import {
@@ -106,6 +108,15 @@ export default function Timer() {
       }, 30000); // 30 seconds
     }
   }, [showCompletionSummary]);
+
+  // Listen for navigation events from child components
+  useEffect(() => {
+    const handleNavigate = (event) => {
+      setActiveTab(event.detail);
+    };
+    window.addEventListener('navigate', handleNavigate);
+    return () => window.removeEventListener('navigate', handleNavigate);
+  }, []);
 
   // Auto-show "Time Since Last Fast" after "Well Done" phase ends (after 5 seconds)
   useEffect(() => {
@@ -267,6 +278,10 @@ export default function Timer() {
         return <ResourcesPage />;
       case 'about':
         return <AboutPage />;
+      case 'terms':
+        return <TermsPage />;
+      case 'privacy':
+        return <PrivacyPage />;
       case 'support':
         return <SupportPage />;
       case 'stats':
