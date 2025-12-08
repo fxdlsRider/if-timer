@@ -1,5 +1,212 @@
 # IF-Timer Progress Log
 
+## 2025-12-08: About Page Redesign & Legal Pages Implementation
+
+### Overview
+Major redesign of About page and implementation of legal pages (Terms of Use & Privacy Policy) with bilingual support (DE/EN).
+
+### Features Implemented
+
+#### 1. About Page Complete Redesign
+**File:** `src/components/About/AboutPage.jsx`
+
+**Changes:**
+- Removed 3-card layout, replaced with simple scrollable single-column design
+- Integrated personal story from `docs/aboutDE.txt` and `docs/aboutEN.rtf`
+- Fully bilingual (DE/EN) using `useTranslation` hook
+- No emojis (as requested)
+- Max-width: 800px for optimal readability
+
+**Sections:**
+1. **About This Project** - Personal story, philosophy, stoic elements
+2. **Technical Details** - Modern web tech, Claude AI mention, GitHub link
+3. **Feedback Welcome** - Work in progress note
+4. **Contact** - contact@if-timer.app
+5. **Legal Links** - Links to Terms and Privacy pages
+6. **Health Disclaimer** - Medical warning box at bottom
+
+**Design:**
+- Clean typography (16px body, 24px headings)
+- Link hover effects (teal underline on hover)
+- Disclaimer box with light gray background
+- Consistent with app color scheme
+
+#### 2. Terms of Use Page
+**File:** `src/components/Legal/TermsPage.jsx`
+**Sources:** `docs/termsDE.txt`, `docs/termsEN.txt`
+
+**German Version (Compact):**
+- Verbindliche Zustimmung
+- Keine medizinische Anwendung
+- Ärztlicher Rat erforderlich (5 bullet points)
+- Eigenverantwortung & Risiken (red warning box)
+- Nutzungsbeschränkung
+- Gewährleistungsausschluss
+- Haftungsbeschränkung
+
+**English Version (Numbered):**
+1. Acceptance of Terms
+2. Nature of the Tool & No Medical Advice
+3. Mandatory Medical Consultation & Acknowledgment of Risks
+4. Limitation of Liability
+5. No Warranties
+6. User Eligibility and Responsibility
+
+**Features:**
+- Conditional rendering based on language
+- Red warning boxes for health risks
+- Back button to About page
+- Fully responsive
+
+#### 3. Privacy Policy Page
+**File:** `src/components/Legal/PrivacyPage.jsx`
+
+**Sections (DE/EN):**
+1. **Data Collection** - What we store (email, timer state, profile)
+2. **How We Use Your Data** - Timer functionality, statistics, authentication
+3. **Data Storage** - Supabase (EU), encryption (HTTPS)
+4. **Your Rights** - Access, export, delete, anonymous usage
+5. **Cookies and Tracking** - No tracking, only essential auth cookies
+6. **Contact** - contact@if-timer.app
+
+**Key Points:**
+- DSGVO-compliant language (German version)
+- No data selling/sharing statement
+- EU data hosting mentioned
+- Anonymous usage option highlighted
+
+#### 4. Custom Navigation System
+**Files Modified:** `src/Timer.jsx`, All legal/about pages
+
+**Implementation:**
+- Custom event system: `window.dispatchEvent(new CustomEvent('navigate', { detail: 'about' }))`
+- Event listener in Timer.jsx: `window.addEventListener('navigate', handleNavigate)`
+- Button-based navigation (styled as links)
+- Routes added: `case 'terms'`, `case 'privacy'`
+
+**Why Custom Events:**
+- App uses tab-based navigation (not React Router)
+- Needed internal navigation between pages
+- Avoids full page reload
+- Maintains state consistency
+
+#### 5. React Update
+**Change:** React 19.2.0 → 19.2.1
+**Files:** `package.json`, `package-lock.json`
+
+**Command Used:**
+```bash
+npm install react@19.2.1 react-dom@19.2.1
+```
+
+**npm audit:**
+- 9 vulnerabilities remain (3 moderate, 6 high)
+- All in `react-scripts` dev dependencies
+- Non-critical (development-only tools)
+- Production build unaffected
+
+#### 6. Documentation Added
+**New Files:**
+- `docs/aboutDE.txt` - German About text
+- `docs/aboutEN.rtf` - English About text
+- `docs/termsDE.txt` - German Terms of Use
+- `docs/termsEN.txt` - English Terms of Use
+
+**Existing Files Referenced:**
+- `docs/nutzungsbedingungen.txt` - Same content as termsEN.txt
+
+### Technical Implementation Details
+
+**Navigation Flow:**
+```
+AboutPage (button click)
+  → dispatchEvent('navigate', 'terms')
+    → Timer.jsx (event listener)
+      → setActiveTab('terms')
+        → renderActivePage() → <TermsPage />
+```
+
+**Language Detection:**
+```javascript
+const { language } = useTranslation();
+// Returns 'de' or 'en' based on browser language
+// User can switch via language selector
+```
+
+**Styling Approach:**
+- Inline styles (following project conventions)
+- CSS variables for theme colors
+- Hover effects via onMouseEnter/onMouseLeave
+- Consistent spacing (16px, 24px, 32px, 48px)
+
+### Files Modified (10 total)
+
+**Modified:**
+1. `src/Timer.jsx` - Added Terms/Privacy routes, navigation event listener
+2. `src/components/About/AboutPage.jsx` - Complete redesign
+3. `package.json` - React 19.2.1
+4. `package-lock.json` - React 19.2.1
+
+**Created:**
+5. `src/components/Legal/TermsPage.jsx` - Terms of Use page
+6. `src/components/Legal/PrivacyPage.jsx` - Privacy Policy page
+7. `docs/aboutDE.txt` - German About text
+8. `docs/aboutEN.rtf` - English About text
+9. `docs/termsDE.txt` - German Terms
+10. `docs/termsEN.txt` - English Terms
+
+### Commits
+
+**Commit:** `fc1ccd0`
+**Message:** "feat: Redesign About page and add legal pages"
+**Stats:** 10 files changed, 750 insertions(+), 246 deletions(-)
+**Branch:** main
+**Pushed:** ✅ Yes (origin/main)
+
+### Testing Results
+
+**Server Status:** ✅ Running on localhost:3000
+**Hot Reload:** ✅ Working
+**Navigation:** ✅ About ↔ Terms ↔ Privacy working
+**Language Switch:** ✅ DE/EN switching correctly
+**Links:** ✅ GitHub link, email link working
+
+### Known Issues
+
+**None currently.**
+
+### Next Steps (Suggestions)
+
+1. **Test on Production** - Verify Vercel deployment
+2. **Test Mobile** - Check responsive layout on phones/tablets
+3. **Add Privacy DE** - Create German-specific privacy text if needed
+4. **Legal Review** - Have Terms/Privacy reviewed by lawyer (optional)
+5. **Footer Links** - Consider adding Terms/Privacy links to app footer
+6. **Sitemap** - Add /about, /terms, /privacy to sitemap
+
+### Session Summary
+
+**Duration:** ~2 hours
+**Tasks Completed:**
+- ✅ Read all documentation files
+- ✅ Restored local changes (git restore)
+- ✅ Updated React to 19.2.1
+- ✅ Redesigned About page
+- ✅ Created Terms page (bilingual)
+- ✅ Created Privacy page (bilingual)
+- ✅ Implemented navigation system
+- ✅ Committed and pushed to GitHub
+
+**User Requests Fulfilled:**
+- ✅ Use texts from docs/ folder
+- ✅ No 3-card layout on About page
+- ✅ No emojis
+- ✅ Contact: contact@if-timer.app
+- ✅ Link to Terms and Privacy pages
+- ✅ Bilingual support (DE/EN)
+
+---
+
 ## 2025-12-07: Bug Fixes - Extended Mode & DateTime Picker Save
 
 ### Bug 1: Extended Mode - Started/Goal Buttons Disappeared

@@ -723,5 +723,31 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-**Letzte Aktualisierung:** 2025-11-26
-**Status:** Test Mode OFF | State 3 as Default for Logged-In Users | Multi-Device Sync (Page Visibility API) | Ghost Timer Prevention (3 Layers) | 14h Minimum Fast Threshold | RLS Performance Optimization (41+ policies)
+## Quick Session Start (2025-12-08+)
+
+**Latest Changes:**
+- ✅ About Page redesigned (simple scrollable layout, no 3-cards)
+- ✅ Terms of Use page added (DE/EN bilingual)
+- ✅ Privacy Policy page added (DE/EN bilingual)
+- ✅ Custom navigation system (`/terms`, `/privacy`)
+- ✅ React updated to 19.2.1
+- ✅ Contact email: contact@if-timer.app
+- ✅ No emojis in About/Legal pages
+
+**New Files:**
+- `src/components/Legal/TermsPage.jsx`
+- `src/components/Legal/PrivacyPage.jsx`
+- `docs/aboutDE.txt`, `docs/aboutEN.rtf`
+- `docs/termsDE.txt`, `docs/termsEN.txt`
+
+**Navigation:**
+- About → Terms: Custom event system
+- About → Privacy: Custom event system
+- Terms/Privacy → About: Back button
+
+**Last Commit:** `fc1ccd0` (2025-12-08)
+
+---
+
+**Letzte Aktualisierung:** 2025-12-08
+**Status:** Test Mode OFF | About/Legal Pages Live | React 19.2.1 | Multi-Device Sync | Fast Tracking System Complete | 14h Minimum Threshold
