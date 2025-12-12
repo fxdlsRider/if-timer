@@ -117,7 +117,26 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
         let shouldShowTimeSinceLastFast = false;
         let completedFastData = null;
 
-        if (!data.is_running) {
+        // BUG FIX 2025-12-10: If timer is running in Extended Mode, use CURRENT timer data
+        // DO NOT load old completed fasts - this causes wrong data to be displayed
+        if (data.is_running && data.is_extended && data.target_time && data.hours) {
+          // Timer is running in Extended Mode → use current timer data
+          const targetDate = new Date(data.target_time);
+          const startTime = new Date(targetDate.getTime() - (data.hours * 3600 * 1000));
+
+          completedFastData = {
+            startTime: startTime,
+            endTime: targetDate, // Original goal time (not "now")
+            duration: data.hours,
+            originalGoal: data.hours,
+            unit: 'hours',
+            cancelled: false
+          };
+
+          console.log('✓ Extended Mode detected → Using CURRENT timer data (not loading old fasts)');
+        }
+        // Only load completed fasts if timer is NOT running
+        else if (!data.is_running) {
           // Timer is stopped → Check if user has any completed fasts
           const { data: fasts, error: fastsError } = await supabase
             .from('fasts')
@@ -235,7 +254,24 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
           let shouldShowTimeSinceLastFast = false;
           let completedFastData = null;
 
-          if (!data.is_running) {
+          // BUG FIX 2025-12-10: If timer is running in Extended Mode, use CURRENT timer data
+          if (data.is_running && data.is_extended && data.target_time && data.hours) {
+            const targetDate = new Date(data.target_time);
+            const startTime = new Date(targetDate.getTime() - (data.hours * 3600 * 1000));
+
+            completedFastData = {
+              startTime: startTime,
+              endTime: targetDate,
+              duration: data.hours,
+              originalGoal: data.hours,
+              unit: 'hours',
+              cancelled: false
+            };
+
+            console.log('✓ Force refresh: Extended Mode → Using CURRENT timer data');
+          }
+          // Only load completed fasts if timer is NOT running
+          else if (!data.is_running) {
             const { data: fasts, error: fastsError } = await supabase
               .from('fasts')
               .select('id, start_time, end_time, duration, original_goal, unit')
@@ -321,7 +357,24 @@ export function useTimerStorage(user, timerState, onStateLoaded) {
             let shouldShowTimeSinceLastFast = false;
             let completedFastData = null;
 
-            if (!data.is_running) {
+            // BUG FIX 2025-12-10: If timer is running in Extended Mode, use CURRENT timer data
+            if (data.is_running && data.is_extended && data.target_time && data.hours) {
+              const targetDate = new Date(data.target_time);
+              const startTime = new Date(targetDate.getTime() - (data.hours * 3600 * 1000));
+
+              completedFastData = {
+                startTime: startTime,
+                endTime: targetDate,
+                duration: data.hours,
+                originalGoal: data.hours,
+                unit: 'hours',
+                cancelled: false
+              };
+
+              console.log('✓ Real-time sync: Extended Mode → Using CURRENT timer data');
+            }
+            // Only load completed fasts if timer is NOT running
+            else if (!data.is_running) {
               // Timer stopped → Check if user has completed fasts
               const { data: fasts, error: fastsError } = await supabase
                 .from('fasts')

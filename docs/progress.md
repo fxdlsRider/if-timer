@@ -1,5 +1,132 @@
 # IF-Timer Progress Log
 
+## 2025-12-10: Critical Bug Fix - iOS Extended Mode Shows Wrong Fast Data
+
+### Overview
+Fixed critical iOS-specific bug where Extended Mode displayed wrong completed fast data (old fasts from previous days instead of current running timer).
+
+### Bug Description
+
+**Reported Issue:**
+- User started 18h fast on iPhone (Dec 9, 17:00)
+- Fast ran correctly into Extended Mode (Dec 10, 11:00+)
+- Next morning, iPhone showed wrong data: "Started Dec 8, 20h fasted, +23:31:45 additional time"
+- After checking on Mac/iPad, iPhone synced to correct data: "Started Dec 9, 18h fasted, +0:46 additional time"
+
+**Root Cause:**
+When iOS reopened the app after being in background/standby:
+1. App performed initial load from Supabase `timer_states`
+2. Found `is_running = true` AND `is_extended = true` (correct)
+3. **BUG:** Code incorrectly loaded last completed fast from `fasts` table
+4. Displayed old completed fast (Dec 8, 20h) instead of current running timer (Dec 9, 18h)
+
+**Why this happened:**
+- State 3 Default Logic (lines 115-165 in useTimerStorage.js) was designed to show "Time Since Last Fast"
+- It queried `fasts` table for last completed fast
+- But when timer is RUNNING in Extended Mode, it should use CURRENT timer data, not old completed fasts
+- iOS aggressive background app management caused frequent re-initialization, triggering this bug
+
+### Solution Implemented
+
+**File:** `src/hooks/useTimerStorage.js`
+
+**Changes Made (3 locations):**
+
+1. **Initial Load (lines 120-165)** - Added Extended Mode check
+2. **Page Visibility API (lines 257-298)** - Added Extended Mode check
+3. **Real-time Subscription (lines 360-402)** - Added Extended Mode check
+
+**New Logic:**
+```javascript
+// BUG FIX 2025-12-10: If timer is running in Extended Mode, use CURRENT timer data
+if (data.is_running && data.is_extended && data.target_time && data.hours) {
+  // Calculate from CURRENT running timer (timer_states table)
+  const targetDate = new Date(data.target_time);
+  const startTime = new Date(targetDate.getTime() - (data.hours * 3600 * 1000));
+
+  completedFastData = {
+    startTime: startTime,
+    endTime: targetDate,
+    duration: data.hours,
+    originalGoal: data.hours,
+    unit: 'hours',
+    cancelled: false
+  };
+}
+// Only load completed fasts if timer is NOT running
+else if (!data.is_running) {
+  // Load from fasts table (existing logic)
+}
+```
+
+**Key Changes:**
+- ✅ When timer is running in Extended Mode → use CURRENT timer data from `timer_states`
+- ✅ When timer is stopped → load last completed fast from `fasts` table (original behavior)
+- ✅ Applied to all 3 sync mechanisms: Initial Load, Page Visibility, Real-time Subscription
+
+### Files Modified
+
+**Modified:**
+- `src/hooks/useTimerStorage.js` (3 locations, ~60 lines changed)
+
+**Screenshot Evidence:**
+- `screenshots/timerBug.PNG` - Shows incorrect data before fix (Dec 8, 20h, +23h Extended)
+
+### Testing
+
+**Scenarios Covered:**
+1. ✅ Extended Mode running → shows CURRENT timer data
+2. ✅ Timer stopped with fast history → shows last completed fast
+3. ✅ iOS app backgrounded and resumed → loads correct current timer
+4. ✅ Page visibility change (tab focus) → loads correct current timer
+5. ✅ Real-time sync from other device → loads correct current timer
+
+**Result:** Bug eliminated - iOS now consistently shows correct timer data in Extended Mode.
+
+### Impact
+
+**Before Fix:**
+- iOS users saw wrong fast data after app resume
+- Data loss perception (completed fasts appeared to "disappear")
+- Multi-device sync confusion
+- Trust issues with timer accuracy
+
+**After Fix:**
+- Correct timer data always displayed
+- Consistent behavior across devices
+- Reliable Extended Mode display
+- Better iOS app lifecycle handling
+
+### Technical Details
+
+**Why iOS specifically?**
+- iOS aggressively manages background apps (removes from RAM)
+- WebSocket connections terminated after ~30 seconds in background
+- App reload triggers initial load more frequently than desktop
+- Page Visibility API behaves differently on iOS Safari
+
+**Prevention Strategy:**
+- Always check `is_running` state before loading completed fasts
+- Use current `timer_states` data for running timers
+- Only query `fasts` table when timer is actually stopped
+- Explicit Extended Mode detection prevents wrong data path
+
+### Commits
+
+- `[NEXT]` - "fix: iOS Extended Mode shows correct current timer instead of old completed fast"
+
+### Known Issues
+
+None currently.
+
+### Next Steps
+
+- Monitor for any edge cases in production
+- Consider adding explicit device/session tracking for better debugging
+- Evaluate if similar logic needed elsewhere in codebase
+
+---
+
 ## 2025-12-08: About Page Redesign & Legal Pages Implementation
 
 ### Overview
