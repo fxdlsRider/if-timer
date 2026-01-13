@@ -1,5 +1,6 @@
 // contexts/LanguageContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { FEATURE_FLAGS } from '../config/constants';
 
 /**
  * Language Context
@@ -16,6 +17,11 @@ const LanguageContext = createContext();
  * @returns {string} Language code ('de' or 'en')
  */
 function detectBrowserLanguage() {
+  // If language detection is disabled, always return English
+  if (!FEATURE_FLAGS.LANGUAGE_DETECTION_ENABLED) {
+    return 'en';
+  }
+
   // Check localStorage first (user preference)
   const savedLang = localStorage.getItem('if-timer-language');
   if (savedLang && ['de', 'en'].includes(savedLang)) {

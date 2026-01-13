@@ -11,6 +11,7 @@ export const FEATURE_FLAGS = {
   LEARN_ENABLED: false, // Learn page (training)
   MODES_ENABLED: false, // App Modes page (scientific, hippie, pro)
   SUPPORT_ENABLED: false, // Support page (Buy Me a Coffee, Shop)
+  LANGUAGE_DETECTION_ENABLED: false, // Auto-detect browser language (German/English)
 };
 
 // ===== TIMER CONFIGURATION =====
