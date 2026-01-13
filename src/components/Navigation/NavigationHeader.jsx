@@ -1,6 +1,7 @@
 // components/Navigation/NavigationHeader.jsx
 import React, { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { FEATURE_FLAGS } from '../../config/constants';
 
 /**
  * NavigationHeader Component
@@ -26,15 +27,18 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
   const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const menuItems = [
+  const allMenuItems = [
     { id: 'timer', label: t('nav.timer'), description: 'Intermittent Fasting Timer' },
     { id: 'hub', label: t('nav.dashboard'), description: user ? 'Your Statistics' : 'Sign In / Sign Up' },
-    { id: 'training', label: t('nav.learn'), description: 'Learn about IF' },
-    { id: 'modes', label: t('nav.modes'), description: 'Scientific, Hippie, Pro' },
+    { id: 'training', label: t('nav.learn'), description: 'Learn about IF', enabled: FEATURE_FLAGS.LEARN_ENABLED },
+    { id: 'modes', label: t('nav.modes'), description: 'Scientific, Hippie, Pro', enabled: FEATURE_FLAGS.MODES_ENABLED },
     { id: 'community', label: t('nav.community'), description: 'Who\'s fasting now' },
     { id: 'about', label: t('nav.about'), description: 'About this project' },
-    { id: 'support', label: t('nav.support'), description: 'Buy Me a Coffee & Shop' }
+    { id: 'support', label: t('nav.support'), description: 'Buy Me a Coffee & Shop', enabled: FEATURE_FLAGS.SUPPORT_ENABLED }
   ];
+
+  // Filter menu items based on feature flags
+  const menuItems = allMenuItems.filter(item => item.enabled !== false);
 
   const handleMenuClick = (itemId) => {
     // Special handling for hub when user not logged in or anonymous

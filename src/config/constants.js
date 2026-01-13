@@ -5,6 +5,14 @@
  * Single source of truth for app-wide constants.
  */
 
+// ===== FEATURE FLAGS =====
+
+export const FEATURE_FLAGS = {
+  LEARN_ENABLED: false, // Learn page (training)
+  MODES_ENABLED: false, // App Modes page (scientific, hippie, pro)
+  SUPPORT_ENABLED: false, // Support page (Buy Me a Coffee, Shop)
+};
+
 // ===== TIMER CONFIGURATION =====
 
 export const TIMER_CONSTANTS = {
