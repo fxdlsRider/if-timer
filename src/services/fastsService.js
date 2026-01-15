@@ -1,5 +1,6 @@
 // services/fastsService.js
 import { supabase } from '../supabaseClient';
+import { checkAchievements } from './achievementsService';
 
 /**
  * Save a completed fast to the database
@@ -47,6 +48,25 @@ export async function saveFast(userId, fastData) {
     if (error) {
       console.error('Error saving fast:', error);
       return null;
+    }
+
+    // Check for newly earned achievements
+    try {
+      const stats = await getStatistics(userId);
+      const completedFast = {
+        duration: fastData.duration,
+        originalGoal: fastData.originalGoal,
+        cancelled: fastData.cancelled || false,
+        unit: fastData.unit || 'hours'
+      };
+      const newAchievements = checkAchievements(userId, stats, completedFast);
+
+      if (newAchievements.length > 0) {
+        console.log(`🏆 New achievements earned: ${newAchievements.join(', ')}`);
+      }
+    } catch (achievementError) {
+      console.error('Error checking achievements:', achievementError);
+      // Don't fail the save if achievement check fails
     }
 
     return data;

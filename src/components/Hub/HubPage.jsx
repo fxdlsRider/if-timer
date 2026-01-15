@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ProfileCard from './ProfileCard';
 import { getStatistics } from '../../services/fastsService';
+import { getAchievementsWithStatus, getAchievementProgress } from '../../services/achievementsService';
 
 /**
  * HubPage - User Hub
@@ -22,35 +23,38 @@ export default function HubPage({ user, onSignIn }) {
   });
   const [loading, setLoading] = useState(true);
 
-  // Load statistics when user changes
+  // State for achievements
+  const [achievements, setAchievements] = useState([]);
+  const [achievementProgress, setAchievementProgress] = useState({ earned: 0, total: 0, percentage: 0 });
+
+  // Load statistics and achievements when user changes
   useEffect(() => {
-    async function loadStats() {
+    async function loadData() {
       if (!user || !user.id) {
         setLoading(false);
         return;
       }
 
       setLoading(true);
+
+      // Load statistics
       const stats = await getStatistics(user.id);
       setStatsData(stats);
+
+      // Load achievements
+      const achievementsWithStatus = getAchievementsWithStatus(user.id);
+      setAchievements(achievementsWithStatus);
+
+      // Load achievement progress
+      const progress = getAchievementProgress(user.id);
+      setAchievementProgress(progress);
+
       setLoading(false);
     }
 
-    loadStats();
+    loadData();
   }, [user]);
 
-  const achievements = [
-    { id: 'first-fast', icon: '🎯', label: 'First Fast', earned: true },
-    { id: '7-day-streak', icon: '🔥', label: '7 Day Streak', earned: true },
-    { id: '24h-fast', icon: '⏰', label: '24h Fast', earned: false },
-    { id: '30-day-streak', icon: '⭐', label: '30 Day Streak', earned: false },
-    { id: '3-day-streak', icon: '💪', label: '3 Day Streak', earned: true },
-    { id: '48h-fast', icon: '⭐', label: '48h Fast', earned: false }
-  ];
-
-  const earnedCount = achievements.filter(a => a.earned).length;
-  const totalCount = achievements.length;
-  const progress = Math.round((earnedCount / totalCount) * 100);
 
   // Anonymous users should also see sign-in screen (same logic as My Journey)
   if (!user || user.is_anonymous) {
@@ -212,8 +216,8 @@ export default function HubPage({ user, onSignIn }) {
                 justifyContent: 'space-between',
                 alignItems: 'baseline'
               }}>
-                <span style={{ fontSize: '28px', fontWeight: '300', color: '#4ECDC4' }}>{earnedCount}/{totalCount}</span>
-                <span style={{ fontSize: '28px', fontWeight: '300', color: 'var(--color-text, #0F172A)' }}>{progress}%</span>
+                <span style={{ fontSize: '28px', fontWeight: '300', color: '#4ECDC4' }}>{achievementProgress.earned}/{achievementProgress.total}</span>
+                <span style={{ fontSize: '28px', fontWeight: '300', color: 'var(--color-text, #0F172A)' }}>{achievementProgress.percentage}%</span>
               </div>
             </div>
           </div>
