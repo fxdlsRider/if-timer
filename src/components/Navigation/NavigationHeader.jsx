@@ -41,9 +41,12 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
   const menuItems = allMenuItems.filter(item => item.enabled !== false);
 
   const handleMenuClick = (itemId) => {
+    console.log('🔘 NavigationHeader - Menu clicked:', itemId, { user: user?.id, isAnonymous: user?.is_anonymous });
+
     // Special handling for hub when user not logged in or anonymous
     // Same logic as My Journey fix (commit 44f11f6)
     if (itemId === 'hub' && (!user || user.is_anonymous)) {
+      console.log('⚠️ NavigationHeader - User is anonymous/not logged in, showing sign in');
       // Anonymous users should sign in to access Dashboard
       if (onSignIn) {
         onSignIn();
@@ -53,6 +56,7 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
     }
 
     // Normal navigation for authenticated email users
+    console.log('✅ NavigationHeader - Calling onTabChange with:', itemId);
     onTabChange(itemId);
     setIsMobileMenuOpen(false);
   };
