@@ -49,7 +49,7 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
 
   // Calculate initial indices based on the value prop
   // Since anchorDate is the value's date and is at index 180, we need to find the offset
-  const initialValue = value || new Date();
+  const initialValue = useMemo(() => value || new Date(), [value]);
 
   const initialDateIndex = useMemo(() => {
     const targetDay = initialValue.getDate();
@@ -63,7 +63,6 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     );
 
     return index >= 0 ? index : 180; // Default to today (index 180) if not found
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateOptions, initialValue]);
 
   // Start in the middle section for infinite scroll (second copy of the tripled array)

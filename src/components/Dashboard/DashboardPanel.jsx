@@ -1,7 +1,7 @@
 // components/Dashboard/DashboardPanel.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
-import { fetchProfile, calculateWeightToGo } from '../../services/profileService';
+import { fetchProfile } from '../../services/profileService';
 import { getLastFast, getStatistics } from '../../services/fastsService';
 import { philosophyQuotes } from '../../data/philosophyQuotes';
 
