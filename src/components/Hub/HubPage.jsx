@@ -29,12 +29,16 @@ export default function HubPage({ user, onSignIn }) {
 
   // Load statistics and achievements when user changes
   useEffect(() => {
+    console.log('🚀 HubPage useEffect triggered', { user: user?.id, isAnonymous: user?.is_anonymous });
+
     async function loadData() {
       if (!user || !user.id) {
+        console.log('⚠️ HubPage: No user or user.id, aborting');
         setLoading(false);
         return;
       }
 
+      console.log('📊 HubPage: Loading data for user', user.id);
       setLoading(true);
 
       // Load statistics and fasts
@@ -42,8 +46,10 @@ export default function HubPage({ user, onSignIn }) {
       setStatsData(stats);
 
       const allFasts = await getFasts(user.id);
+      console.log('📦 Loaded fasts:', allFasts.length);
 
       // Backfill achievements from historical fasts
+      console.log('🎯 Calling backfillAchievements...');
       backfillAchievements(user.id, stats, allFasts);
 
       // Load achievements with status
