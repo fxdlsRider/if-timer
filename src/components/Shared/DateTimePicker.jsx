@@ -63,6 +63,7 @@ export default function DateTimePicker({ value, onChange, onSave, onCancel, goal
     );
 
     return index >= 0 ? index : 180; // Default to today (index 180) if not found
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateOptions, initialValue]);
 
   // Start in the middle section for infinite scroll (second copy of the tripled array)

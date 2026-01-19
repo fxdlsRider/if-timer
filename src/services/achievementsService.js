@@ -1,5 +1,5 @@
 // services/achievementsService.js
-import { getAllAchievements, getAchievementById } from '../config/achievements';
+import { getAllAchievements } from '../config/achievements';
 
 /**
  * Achievements Service

@@ -8,7 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
  * Personal story, technical details, feedback, and contact
  */
 export default function AboutPage() {
-  const { t, language } = useTranslation();
+  const { language } = useTranslation();
 
   const containerStyle = {
     maxWidth: '800px',

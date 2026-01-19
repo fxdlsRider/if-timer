@@ -16,7 +16,7 @@ import { philosophyQuotes } from '../../data/philosophyQuotes';
 export default function DashboardPanel({ userData = {} }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true); // eslint-disable-line no-unused-vars
   const [lastFast, setLastFast] = useState(null);
   const [statistics, setStatistics] = useState(null);
 
@@ -35,6 +35,7 @@ export default function DashboardPanel({ userData = {} }) {
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const loadProfile = async () => {
@@ -71,7 +72,7 @@ export default function DashboardPanel({ userData = {} }) {
     longestFast: statistics?.longestFast ? Math.round(statistics.longestFast * 10) / 10 : 0
   };
 
-  const weightToGo = calculateWeightToGo(displayProfile.currentWeight, displayProfile.targetWeight);
+  // const weightToGo = calculateWeightToGo(displayProfile.currentWeight, displayProfile.targetWeight); // Unused - keeping for future use
 
   const styles = {
     container: {

@@ -77,8 +77,8 @@ export default function TimerCircle({
   const [tempEndTime, setTempEndTime] = useState(null);
 
   // State for editing start time in running state
-  const [isEditingStartTime, setIsEditingStartTime] = useState(false);
-  const [tempStartTime, setTempStartTime] = useState(null);
+  const [, setIsEditingStartTime] = useState(false); // eslint-disable-line no-unused-vars
+  const [, setTempStartTime] = useState(null); // eslint-disable-line no-unused-vars
 
   // State for time since last fast
   const [timeSinceLastFast, setTimeSinceLastFast] = useState('');
@@ -256,7 +256,8 @@ export default function TimerCircle({
     setTempEndTime(null);
   };
 
-  // Handlers for start time editing in running state
+  // Handlers for start time editing in running state (prepared for future use)
+  // eslint-disable-next-line no-unused-vars
   const handleStartTimeEdit = () => {
     if (startTime) {
       setTempStartTime(startTime);
@@ -264,6 +265,7 @@ export default function TimerCircle({
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleStartTimeSave = (newStartTime) => {
     if (!newStartTime) return;
 
@@ -275,6 +277,7 @@ export default function TimerCircle({
     setIsEditingStartTime(false);
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleStartTimeCancel = () => {
     setIsEditingStartTime(false);
     setTempStartTime(null);

@@ -21,7 +21,7 @@ export default function HubPage({ user, onSignIn }) {
     longestFast: 0,
     averageFast: 0
   });
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true); // eslint-disable-line no-unused-vars
 
   // State for achievements
   const [achievements, setAchievements] = useState([]);

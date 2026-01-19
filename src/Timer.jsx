@@ -62,7 +62,7 @@ export default function Timer() {
     startTime,
     timeLeft,
     isExtended,
-    showCelebration,
+    // showCelebration, // Unused - keeping for future use
     completedFastData,
     showCompletionSummary,
     showWellDoneMessage,
@@ -73,8 +73,8 @@ export default function Timer() {
     cancelTimer,
     changeGoal,
     changeStartTime,
-    continueFasting,
-    stopFasting,
+    // continueFasting, // Unused - keeping for future use
+    // stopFasting, // Unused - keeping for future use
     updateCompletedFastData,
     restoreState,
   } = timerState;
