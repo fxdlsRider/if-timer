@@ -41,6 +41,11 @@ export default function NavigationHeader({ activeTab, onTabChange, user = null, 
   const menuItems = allMenuItems.filter(item => item.enabled !== false);
 
   const handleMenuClick = (itemId) => {
+    // DEBUG: Simple alert for Dashboard clicks
+    if (itemId === 'hub') {
+      alert('Dashboard geklickt');
+    }
+
     console.log('🔘 NavigationHeader - Menu clicked:', itemId, { user: user?.id, isAnonymous: user?.is_anonymous });
 
     // Special handling for hub when user not logged in or anonymous
