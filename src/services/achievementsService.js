@@ -159,6 +159,63 @@ export function getAchievementProgress(userId) {
 }
 
 /**
+ * Backfill achievements based on historical fasts
+ * Checks all past fasts and awards missing achievements
+ * @param {string} userId - User ID
+ * @param {object} userStats - Current user statistics
+ * @param {array} allFasts - All historical fasts
+ * @returns {array} Array of newly awarded achievement IDs
+ */
+export function backfillAchievements(userId, userStats, allFasts) {
+  if (!userId || !userStats || !allFasts) return [];
+
+  const allAchievements = getAllAchievements();
+  const newlyAwarded = [];
+
+  for (const achievement of allAchievements) {
+    // Skip if already earned
+    if (hasAchievement(userId, achievement.id)) {
+      continue;
+    }
+
+    // Check achievement against all historical fasts
+    try {
+      let shouldAward = false;
+
+      // Check if any historical fast satisfies the condition
+      for (const fast of allFasts) {
+        const fastData = {
+          duration: fast.unit === 'seconds' ? fast.duration / 3600 : fast.duration,
+          originalGoal: fast.original_goal,
+          cancelled: fast.cancelled || false,
+          unit: fast.unit || 'hours'
+        };
+
+        if (achievement.checkCondition(userStats, fastData)) {
+          shouldAward = true;
+          break;
+        }
+      }
+
+      if (shouldAward) {
+        const awarded = awardAchievement(userId, achievement.id);
+        if (awarded) {
+          newlyAwarded.push(achievement.id);
+        }
+      }
+    } catch (error) {
+      console.error(`Error backfilling achievement ${achievement.id}:`, error);
+    }
+  }
+
+  if (newlyAwarded.length > 0) {
+    console.log(`✨ Backfilled achievements: ${newlyAwarded.join(', ')}`);
+  }
+
+  return newlyAwarded;
+}
+
+/**
  * Reset all achievements for a user (for testing)
  * @param {string} userId - User ID
  */

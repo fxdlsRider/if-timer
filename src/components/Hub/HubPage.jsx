@@ -1,8 +1,8 @@
 // components/Hub/HubPage.jsx
 import React, { useState, useEffect } from 'react';
 import ProfileCard from './ProfileCard';
-import { getStatistics } from '../../services/fastsService';
-import { getAchievementsWithStatus, getAchievementProgress } from '../../services/achievementsService';
+import { getStatistics, getFasts } from '../../services/fastsService';
+import { getAchievementsWithStatus, getAchievementProgress, backfillAchievements } from '../../services/achievementsService';
 
 /**
  * HubPage - User Hub
@@ -37,11 +37,16 @@ export default function HubPage({ user, onSignIn }) {
 
       setLoading(true);
 
-      // Load statistics
+      // Load statistics and fasts
       const stats = await getStatistics(user.id);
       setStatsData(stats);
 
-      // Load achievements
+      const allFasts = await getFasts(user.id);
+
+      // Backfill achievements from historical fasts
+      backfillAchievements(user.id, stats, allFasts);
+
+      // Load achievements with status
       const achievementsWithStatus = getAchievementsWithStatus(user.id);
       setAchievements(achievementsWithStatus);
 
