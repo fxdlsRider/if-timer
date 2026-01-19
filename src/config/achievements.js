@@ -43,6 +43,26 @@ export const ACHIEVEMENT_DEFINITIONS = {
     }
   },
 
+  '3-day-streak': {
+    id: '3-day-streak',
+    icon: '🔥',
+    label: '3 Day Streak',
+    description: 'Fast for 3 consecutive days',
+    checkCondition: (userStats, currentFast) => {
+      return userStats.currentStreak >= 3;
+    }
+  },
+
+  '7-day-streak': {
+    id: '7-day-streak',
+    icon: '💪',
+    label: '7 Day Streak',
+    description: 'Fast for 7 consecutive days',
+    checkCondition: (userStats, currentFast) => {
+      return userStats.currentStreak >= 7;
+    }
+  },
+
   // === TEMPLATE FOR FUTURE ACHIEVEMENTS ===
   // Copy this template to add new achievements:
   //
