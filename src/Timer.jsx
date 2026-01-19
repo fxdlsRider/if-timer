@@ -48,11 +48,6 @@ export default function Timer() {
   const [activeTab, setActiveTab] = useState('timer');
   const [showLogin, setShowLogin] = useState(false);
 
-  // Debug: Log activeTab changes
-  useEffect(() => {
-    console.log('📍 activeTab changed to:', activeTab);
-  }, [activeTab]);
-
   const circleRef = useRef(null);
 
   // Local state for angle and hours (controlled by parent, not hooks)
@@ -227,7 +222,6 @@ export default function Timer() {
 
   // Render active page based on navigation
   const renderActivePage = () => {
-    console.log('🎯 Timer.jsx renderActivePage - activeTab:', activeTab);
     switch (activeTab) {
       case 'timer':
         return (
@@ -277,7 +271,6 @@ export default function Timer() {
       case 'modes':
         return <ModesPage />;
       case 'hub':
-        console.log('🏠 Rendering HubPage with user:', user?.id, 'isAnonymous:', user?.is_anonymous);
         return <HubPage user={user} onSignIn={() => setShowLogin(true)} />;
       case 'community':
         return <CommunityPage />;

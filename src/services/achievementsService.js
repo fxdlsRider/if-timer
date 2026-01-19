@@ -167,26 +167,18 @@ export function getAchievementProgress(userId) {
  * @returns {array} Array of newly awarded achievement IDs
  */
 export function backfillAchievements(userId, userStats, allFasts) {
-  console.log('🔍 Backfill started:', { userId, statsTotal: userStats?.totalFasts, fastsCount: allFasts?.length });
-
   if (!userId || !userStats || !allFasts) {
-    console.log('⚠️ Backfill aborted: Missing data');
     return [];
   }
 
   const allAchievements = getAllAchievements();
   const newlyAwarded = [];
 
-  console.log(`📋 Checking ${allAchievements.length} achievements against ${allFasts.length} fasts`);
-
   for (const achievement of allAchievements) {
     // Skip if already earned
     if (hasAchievement(userId, achievement.id)) {
-      console.log(`✓ Already earned: ${achievement.id}`);
       continue;
     }
-
-    console.log(`🔎 Checking achievement: ${achievement.id}`);
 
     // Check achievement against all historical fasts
     try {
@@ -201,10 +193,7 @@ export function backfillAchievements(userId, userStats, allFasts) {
           unit: fast.unit || 'hours'
         };
 
-        console.log(`  Fast: ${fastData.duration}h (goal: ${fastData.originalGoal}h)`);
-
         if (achievement.checkCondition(userStats, fastData)) {
-          console.log(`  ✅ Condition met for ${achievement.id}!`);
           shouldAward = true;
           break;
         }
@@ -215,18 +204,10 @@ export function backfillAchievements(userId, userStats, allFasts) {
         if (awarded) {
           newlyAwarded.push(achievement.id);
         }
-      } else {
-        console.log(`  ❌ Condition not met for ${achievement.id}`);
       }
     } catch (error) {
       console.error(`Error backfilling achievement ${achievement.id}:`, error);
     }
-  }
-
-  if (newlyAwarded.length > 0) {
-    console.log(`✨ Backfilled achievements: ${newlyAwarded.join(', ')}`);
-  } else {
-    console.log('ℹ️ No new achievements to backfill');
   }
 
   return newlyAwarded;
