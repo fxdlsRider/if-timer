@@ -27,7 +27,8 @@ export const ACHIEVEMENT_DEFINITIONS = {
      * @returns {boolean} True if achievement earned
      */
     checkCondition: (userStats, currentFast) => {
-      return userStats.totalFasts === 1;
+      // Award if user has at least one completed fast
+      return userStats.totalFasts >= 1;
     }
   },
 
